@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#070916" />
+  <title>NEON RIDDLE 2060 | المكتبة الكبرى</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-theme="neon">
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <div class="noise"></div>
+  <div class="scanline"></div>
+
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="brand" data-action="home" aria-label="الرئيسية">
+        <span class="brand-mark">?</span>
+        <span><strong>NEON RIDDLE 2060</strong><small>GRAND PUZZLE ARENA</small></span>
+      </button>
+      <div class="top-actions">
+        <button class="coin-chip" data-action="shop" title="المتجر"><span>◉</span><strong id="headerCoins">0</strong></button>
+        <button class="icon-btn" data-action="rewards" title="المكافآت">🎁</button>
+        <button id="soundBtn" class="icon-btn" data-action="toggle-sound" title="الصوت"><span id="soundIcon">🔊</span></button>
+        <button class="profile-chip" data-action="profiles" title="اللاعبون"><span id="headerAvatar" class="mini-avatar">🧠</span><span id="headerPlayer">اللاعب</span></button>
+      </div>
+    </header>
+    <main id="mainView" class="main-view"></main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <div id="profileModal" class="modal-backdrop hidden" aria-hidden="true">
+    <section class="modal-card profile-modal" role="dialog" aria-modal="true">
+      <button class="modal-close" data-action="close-profiles">×</button>
+      <div class="eyebrow">PLAYER PROFILES</div>
+      <h2>ملفات اللاعبين</h2>
+      <p class="muted">لكل لاعب نقاطه وعملاته ومتجره وإنجازاته ونتائجه في البطولات.</p>
+      <div id="profilesList" class="profiles-list"></div>
+      <form id="profileForm" class="profile-form">
+        <label for="profileName">إضافة لاعب جديد</label>
+        <div class="profile-form-row"><input id="profileName" maxlength="18" autocomplete="off" placeholder="اكتب الاسم..." /><button type="submit" class="primary-btn compact">إضافة</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div id="confirmModal" class="modal-backdrop hidden" aria-hidden="true">
+    <section class="modal-card small-modal" role="dialog" aria-modal="true">
+      <div class="modal-symbol">⚠</div><h2 id="confirmTitle">تأكيد</h2><p id="confirmText" class="muted"></p>
+      <div class="modal-actions"><button id="confirmCancel" class="secondary-btn">إلغاء</button><button id="confirmOk" class="danger-btn">تأكيد</button></div>
+    </section>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
