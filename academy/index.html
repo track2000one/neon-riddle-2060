@@ -7,13 +7,22 @@
   <meta name="description" content="NEON Academy 2060 — مكتبة تعليمية وترفيهية متكاملة" />
   <title>NEON Academy 2060 | المكتبة التعليمية المتكاملة</title>
   <link rel="stylesheet" href="academy.css" />
+  <link rel="stylesheet" href="account.css" />
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-NZNC6929YS"></script>
 </head>
-<body>
+<body class="auth-pending">
   <div class="world-grid"></div>
   <div class="world-glow glow-a"></div>
   <div class="world-glow glow-b"></div>
   <div class="world-glow glow-c"></div>
+
+  <div id="authBoot" class="auth-boot">
+    <div class="auth-boot-card">
+      <div class="auth-loader"></div>
+      <h2>جارٍ التحقق من حساب الطالب</h2>
+      <p>يتم الآن إعداد جلستك التعليمية الآمنة.</p>
+    </div>
+  </div>
 
   <header class="site-header">
     <a class="brand" href="../">
@@ -30,11 +39,16 @@
     </nav>
 
     <div class="header-actions">
+      <button id="authAccountButton" class="auth-user-chip" title="الحساب والملف التعليمي">
+        <span id="accountAvatar">ط</span>
+        <span><strong id="accountName">الطالب</strong><small id="accountEmail">الحساب</small></span>
+      </button>
       <button id="dailyButton" class="header-icon" title="تحدي اليوم">🔥</button>
       <button id="studentButton" class="student-chip">
         <span id="studentAvatar">🧠</span>
         <span><strong id="studentName">الطالب</strong><small id="studentLevel">المستوى 1</small></span>
       </button>
+      <button id="studentLogoutButton" class="student-logout-btn" title="تسجيل الخروج">⇥</button>
     </div>
   </header>
 
@@ -215,7 +229,7 @@
 
   <footer class="site-footer section-shell">
     <div><strong>NEON Academy 2060</strong><p>مكتبة تعليمية ترفيهية قابلة للتوسع والتطوير المستمر.</p></div>
-    <div class="footer-links"><a href="../">لعبة الألغاز</a><a href="../track2000one/">لوحة المسؤول</a><button id="exportProgressButton">تصدير التقدم</button></div>
+    <div class="footer-links"><a href="../">لعبة الألغاز</a><a href="auth.html">الحساب</a><a href="../track2000one/">لوحة المسؤول</a><button id="exportProgressButton">تصدير التقدم</button></div>
   </footer>
 
   <div id="lessonModal" class="modal-backdrop hidden">
@@ -263,6 +277,6 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="catalog.js"></script>
-  <script src="academy.js"></script>
+  <script type="module" src="auth-guard.js"></script>
 </body>
 </html>
