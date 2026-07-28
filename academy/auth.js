@@ -229,8 +229,7 @@ registerForm.addEventListener('submit', async event => {
     const credential = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(credential.user, { displayName: name });
     try { await sendEmailVerification(credential.user); } catch { /* verification email is optional */ }
-    await credential.user.reload();
-    seedLocalProfile({ ...credential.user, displayName: name });
+    seedLocalProfile(credential.user);
     showMessage(registerMessage, 'تم إنشاء الحساب. أرسلنا رسالة تحقق إلى بريدك، وسيتم نقلك إلى الأكاديمية.', true);
     track('student_account_created');
     setTimeout(() => { window.location.href = './'; }, 1200);
