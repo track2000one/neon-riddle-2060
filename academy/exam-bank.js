@@ -12,7 +12,7 @@
   window.NEON_EXAM_BANK = bank;
   const academy = window.NEON_ACADEMY;
   if (!academy) return;
-  const oldIds = new Set(['tahsili']);
+  const replacedTrackIds = new Set(['tahsili', 'qudurat-verbal', 'qudurat-quant']);
   academy.examTracks.splice(0, academy.examTracks.length,
     { id:'qudurat-verbal', title:'القدرات اللفظية', icon:'ض', color:'#8db6ff', modules:['التناظر اللفظي','إكمال الجمل','الخطأ السياقي','معاني المفردات','الارتباط والاختلاف','استيعاب المقروء','اختبار قصير','محاكاة لفظية'] },
     { id:'qudurat-quant', title:'القدرات الكمية', icon:'ك', color:'#ffb454', modules:['الحساب','الكسور والنسب','النسب المئوية','الجبر','الهندسة','الإحصاء والاحتمال','السرعة والعمل','محاكاة كمية'] },
@@ -23,7 +23,7 @@
     { id:'placement', title:'تحديد المستوى', icon:'◎', color:'#d98cff', modules:['لغة عربية','لغة إنجليزية','رياضيات','علوم','تقنية','تقرير المستوى'] },
     { id:'timed', title:'المحاكاة الزمنية', icon:'⏱️', color:'#ff6dbc', modules:['10 أسئلة','20 سؤالًا','40 سؤالًا','اختبار مختلط','تحدي النخبة'] }
   );
-  academy.lessons.splice(0, academy.lessons.length, ...academy.lessons.filter(item => !oldIds.has(item.subjectId)));
+  academy.lessons.splice(0, academy.lessons.length, ...academy.lessons.filter(item => !replacedTrackIds.has(item.subjectId)));
   const levels=[['foundation','تأسيسي',55],['practice','تطبيقي',70],['mastery','إتقان',90]];
   academy.examTracks.filter(track => !['placement','timed'].includes(track.id)).forEach(track => {
     track.modules.forEach((module,index) => {
