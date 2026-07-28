@@ -17,6 +17,7 @@
     quant: questions.filter(item => item.subject === 'qudurat-quant').length,
     verbal: questions.filter(item => item.subject === 'qudurat-verbal').length,
     filesReviewed: 11,
-    exactDuplicateFilesSkipped: 2
+    exactDuplicateFilesSkipped: 1,
+    duplicateHeavyFilesSkipped: 1
   };
 })();
