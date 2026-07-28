@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070916" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <title>NEON RIDDLE 2060 | لوحة المسؤول</title>
+  <link rel="stylesheet" href="admin.css" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NZNC6929YS"></script>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="glow glow-one"></div>
+  <div class="glow glow-two"></div>
+
+  <section id="bootScreen" class="state-screen">
+    <div class="boot-card">
+      <div class="loader-ring"></div>
+      <h1>جارٍ التحقق من الجلسة</h1>
+      <p>يتم الآن الاتصال بخدمة المصادقة الآمنة.</p>
+    </div>
+  </section>
+
+  <section id="loginScreen" class="state-screen hidden">
+    <div class="login-layout">
+      <div class="login-showcase">
+        <div class="brand-orbit">
+          <div class="orbit-line orbit-a"></div>
+          <div class="orbit-line orbit-b"></div>
+          <div class="orbit-core">N</div>
+        </div>
+        <div class="eyebrow">SECURE ADMIN ACCESS</div>
+        <h1>بوابة التحكم<br><span>NEON RIDDLE 2060</span></h1>
+        <p>لوحة خاصة للمسؤول لإدارة المشروع ومراجعة المحتوى والبيانات المحلية والوصول السريع إلى خدمات التحليل والنشر.</p>
+        <div class="security-list">
+          <span>مصادقة Firebase</span>
+          <span>تحقق مباشر من UID</span>
+          <span>جلسة دخول مشفرة</span>
+        </div>
+      </div>
+
+      <form id="loginForm" class="login-card" autocomplete="on">
+        <div class="login-mark">◈</div>
+        <div class="eyebrow">ADMIN LOGIN</div>
+        <h2>تسجيل دخول المسؤول</h2>
+        <p class="muted">استخدم حساب المسؤول الذي أنشأته داخل Firebase Authentication.</p>
+
+        <label for="email">البريد الإلكتروني</label>
+        <input id="email" name="email" type="email" autocomplete="username" required placeholder="admin@example.com" />
+
+        <label for="password">كلمة المرور</label>
+        <div class="password-field">
+          <input id="password" name="password" type="password" autocomplete="current-password" required minlength="6" placeholder="••••••••" />
+          <button id="togglePassword" type="button" aria-label="إظهار أو إخفاء كلمة المرور">◉</button>
+        </div>
+
+        <button id="loginButton" class="primary-button" type="submit">
+          <span>دخول آمن</span><b>←</b>
+        </button>
+        <div id="loginMessage" class="form-message" role="alert"></div>
+        <a class="back-link" href="../">العودة إلى اللعبة</a>
+      </form>
+    </div>
+  </section>
+
+  <div id="dashboard" class="dashboard hidden">
+    <aside class="sidebar">
+      <a class="admin-brand" href="#overview" data-section-link="overview">
+        <span class="admin-brand-mark">N</span>
+        <span><strong>NEON ADMIN</strong><small>CONTROL CENTER 2060</small></span>
+      </a>
+
+      <nav class="side-nav">
+        <button class="nav-item active" data-section="overview"><span>◫</span>نظرة عامة</button>
+        <button class="nav-item" data-section="players"><span>♟</span>اللاعبون المحليون</button>
+        <button class="nav-item" data-section="library"><span>▦</span>مكتبة المحتوى</button>
+        <button class="nav-item" data-section="analytics"><span>⌁</span>الإحصاءات</button>
+        <button class="nav-item" data-section="security"><span>◆</span>الأمان والجلسة</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="connection-card">
+          <span class="status-dot"></span>
+          <div><strong>Firebase متصل</strong><small>UID محمي</small></div>
+        </div>
+        <a href="../" class="secondary-link">فتح اللعبة العامة</a>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div>
+          <div class="eyebrow">ADMINISTRATOR CONSOLE</div>
+          <h1 id="sectionTitle">نظرة عامة</h1>
+        </div>
+        <div class="admin-actions">
+          <button id="refreshButton" class="icon-action" title="تحديث البيانات">↻</button>
+          <div class="admin-user">
+            <span class="user-avatar">A</span>
+            <span><strong id="adminEmail">المسؤول</strong><small>جلسة موثقة</small></span>
+          </div>
+          <button id="logoutButton" class="logout-button">تسجيل الخروج</button>
+        </div>
+      </header>
+
+      <section id="overviewSection" class="admin-section active-section">
+        <div class="hero-panel">
+          <div>
+            <div class="eyebrow">SYSTEM STATUS</div>
+            <h2>المشروع يعمل بصورة طبيعية</h2>
+            <p>لوحة المسؤول متصلة بمصادقة Firebase، وموقع اللعبة منشور عبر GitHub Pages، وتتبع الزيارات يعمل عبر Google Analytics 4.</p>
+          </div>
+          <div class="hero-signal">
+            <div class="signal-ring"></div>
+            <div class="signal-ring ring-two"></div>
+            <strong>LIVE</strong>
+          </div>
+        </div>
+
+        <div class="metric-grid">
+          <article class="metric-card"><span class="metric-icon">♟</span><div><small>الملفات على هذا الجهاز</small><strong id="metricProfiles">0</strong><p>بيانات محلية في المتصفح الحالي</p></div></article>
+          <article class="metric-card"><span class="metric-icon">▦</span><div><small>إجمالي التحديات</small><strong id="metricQuestions">0</strong><p>للبالغين والأطفال</p></div></article>
+          <article class="metric-card"><span class="metric-icon">◈</span><div><small>أقسام المكتبة</small><strong id="metricModes">0</strong><p>أنماط تعلم وترفيه وقدرات</p></div></article>
+          <article class="metric-card"><span class="metric-icon">★</span><div><small>المراحل المكتملة محليًا</small><strong id="metricCompleted">0</strong><p>على هذا الجهاز فقط</p></div></article>
+        </div>
+
+        <div class="overview-grid">
+          <article class="panel quick-panel">
+            <div class="panel-heading"><div><span class="eyebrow">QUICK LINKS</span><h3>الوصول السريع</h3></div></div>
+            <div class="quick-links">
+              <a href="https://analytics.google.com/" target="_blank" rel="noopener"><span>⌁</span><div><strong>Google Analytics</strong><small>الزيارات والأحداث المباشرة</small></div><b>↗</b></a>
+              <a href="https://console.firebase.google.com/project/neon-riddle-2060-admin/authentication/users" target="_blank" rel="noopener"><span>◆</span><div><strong>Firebase Console</strong><small>المصادقة والمستخدم المسؤول</small></div><b>↗</b></a>
+              <a href="https://github.com/track2000one/neon-riddle-2060" target="_blank" rel="noopener"><span>◫</span><div><strong>GitHub Repository</strong><small>ملفات المشروع والتحديثات</small></div><b>↗</b></a>
+              <a href="../" target="_blank"><span>▶</span><div><strong>الموقع العام</strong><small>فتح نسخة اللعبة المنشورة</small></div><b>↗</b></a>
+            </div>
+          </article>
+
+          <article class="panel activity-panel">
+            <div class="panel-heading"><div><span class="eyebrow">LOCAL SNAPSHOT</span><h3>ملخص الجهاز الحالي</h3></div></div>
+            <div id="localSummary" class="summary-list"></div>
+            <button id="exportButton" class="outline-button">تصدير البيانات المحلية JSON</button>
+          </article>
+        </div>
+      </section>
+
+      <section id="playersSection" class="admin-section">
+        <div class="section-note"><strong>تنبيه:</strong> هذه القائمة تعرض ملفات اللاعبين المحفوظة في متصفح هذا الجهاز فقط. اللاعبين على أجهزة أخرى لا يظهرون هنا لأن اللعبة ما زالت تعتمد على LocalStorage.</div>
+        <article class="panel table-panel">
+          <div class="panel-heading"><div><span class="eyebrow">LOCAL PLAYERS</span><h3>اللاعبون على هذا الجهاز</h3></div><button id="playersRefresh" class="outline-button compact">تحديث</button></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>اللاعب</th><th>النقاط</th><th>العملات</th><th>المراحل</th><th>أفضل قدرات</th><th>أفضل بطولة</th></tr></thead>
+              <tbody id="playersTableBody"></tbody>
+            </table>
+          </div>
+          <div id="playersEmpty" class="empty-state hidden">لا توجد ملفات لاعبين محفوظة على هذا الجهاز.</div>
+        </article>
+      </section>
+
+      <section id="librarySection" class="admin-section">
+        <div class="library-summary" id="libraryCards"></div>
+        <article class="panel table-panel">
+          <div class="panel-heading"><div><span class="eyebrow">CONTENT INVENTORY</span><h3>تفصيل مكتبة الأسئلة</h3></div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>القسم</th><th>للبالغين</th><th>للأطفال</th><th>الإجمالي</th></tr></thead>
+              <tbody id="libraryTableBody"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section id="analyticsSection" class="admin-section">
+        <div class="analytics-grid">
+          <article class="panel analytics-card featured"><span>⌁</span><div><div class="eyebrow">GA4 CONNECTED</div><h3>Google Analytics 4</h3><p>معرّف القياس الرئيسي متصل بالموقع، ويجمع الزيارات وأحداث بدء وإكمال المراحل ومحاكاة القدرات.</p><a href="https://analytics.google.com/" target="_blank" rel="noopener" class="primary-link">فتح لوحة الإحصاءات</a></div></article>
+          <article class="panel analytics-card"><span>●</span><div><h3>Realtime</h3><p>شاهد المستخدمين النشطين والأحداث خلال الدقائق الأخيرة.</p></div></article>
+          <article class="panel analytics-card"><span>↗</span><div><h3>Acquisition</h3><p>اعرف مصدر الزيارات: رابط مباشر، بحث، مشاركة أو إحالة.</p></div></article>
+          <article class="panel analytics-card"><span>◎</span><div><h3>Engagement</h3><p>راجع الأقسام الأكثر استخدامًا ومعدل إكمال التحديات.</p></div></article>
+        </div>
+        <div class="section-note"><strong>ملاحظة:</strong> لا يمكن عرض أرقام Google Analytics مباشرة داخل هذه الصفحة دون تفعيل Google Analytics Data API ومصادقة خادم آمنة. الرابط أعلاه يفتح التقارير الرسمية بحسابك.</div>
+      </section>
+
+      <section id="securitySection" class="admin-section">
+        <div class="security-grid">
+          <article class="panel security-card"><div class="security-icon">◆</div><h3>حساب المسؤول</h3><dl><div><dt>البريد</dt><dd id="securityEmail">—</dd></div><div><dt>UID</dt><dd id="securityUid">—</dd></div><div><dt>مزود الدخول</dt><dd id="securityProvider">—</dd></div><div><dt>آخر دخول</dt><dd id="securityLastLogin">—</dd></div></dl></article>
+          <article class="panel security-card"><div class="security-icon">◈</div><h3>طبقات الحماية الحالية</h3><ul><li>المسار غير ظاهر في واجهة اللعبة.</li><li>تسجيل الدخول عبر Firebase Authentication.</li><li>التحقق من UID المحدد قبل إظهار اللوحة.</li><li>تسجيل الخروج التلقائي للحساب غير المصرح.</li><li>النطاق العام مضاف إلى Authorized domains.</li></ul></article>
+          <article class="panel security-card warning"><div class="security-icon">!</div><h3>المرحلة الأمنية القادمة</h3><p>عند إضافة تعديل الأسئلة أو إدارة المستخدمين عبر قاعدة بيانات، يجب حماية Firestore Rules بالـUID نفسه. إخفاء المسار وحده ليس بديلًا عن قواعد الخادم.</p></article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="../data.js"></script>
+  <script type="module" src="admin.js"></script>
+</body>
+</html>
