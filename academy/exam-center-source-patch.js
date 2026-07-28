@@ -29,12 +29,15 @@
       const question = sourceMap.get(normalize(questionElement.textContent));
       if (question) {
         const page = question.sourcePage ? ` • الصفحة ${Number(question.sourcePage).toLocaleString('ar-SA')}` : '';
-        sourceElement.textContent = `${question.source}${page}`;
+        const value = `${question.source}${page}`;
+        if (sourceElement.textContent !== value) sourceElement.textContent = value;
       }
     }
 
     const quduratEyebrow = document.querySelector('.qudurat-family .eyebrow');
-    if (quduratEyebrow) quduratEyebrow.textContent = 'GENERAL APTITUDE TEST';
+    if (quduratEyebrow && quduratEyebrow.textContent !== 'GENERAL APTITUDE TEST') {
+      quduratEyebrow.textContent = 'GENERAL APTITUDE TEST';
+    }
 
     const note = document.querySelector('.exam-source-note');
     if (note && note.dataset.importReviewApplied !== 'true') {
