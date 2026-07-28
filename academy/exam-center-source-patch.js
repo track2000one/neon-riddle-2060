@@ -33,6 +33,9 @@
       }
     }
 
+    const quduratEyebrow = document.querySelector('.qudurat-family .eyebrow');
+    if (quduratEyebrow) quduratEyebrow.textContent = 'GENERAL APTITUDE TEST';
+
     const note = document.querySelector('.exam-source-note');
     if (note && note.dataset.importReviewApplied !== 'true') {
       const report = window.NEON_EXAM_DEDUPE_REPORT || {};
