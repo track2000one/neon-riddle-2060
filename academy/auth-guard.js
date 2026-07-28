@@ -20,8 +20,16 @@ const ACADEMY_SCRIPTS = [
   'exam-bank-tahsili-biology.js',
   'exam-bank-qudurat-verbal.js',
   'exam-bank-qudurat-quant.js',
+  'exam-bank-imported-quant-a.js',
+  'exam-bank-imported-quant-b.js',
+  'exam-bank-imported-quant-c.js',
+  'exam-bank-imported-verbal-a.js',
+  'exam-bank-imported-verbal-b.js',
+  'exam-bank-imported-reading.js',
+  'exam-bank-imported-2026.js',
   'exam-bank.js',
   'exam-center-ui.js',
+  'exam-center-source-patch.js',
   'academy.js'
 ];
 
