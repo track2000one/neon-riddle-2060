@@ -7,7 +7,10 @@
   const DATA = window.GAME_DATA;
   const AUDIENCES = { adult: 'للبالغين', kids: 'للأطفال' };
   const TIMER_OPTIONS = ['25', '45', '75', '120', 'open'];
-  const ELIGIBLE_TOURNAMENT_MODES = ['book', 'logic', 'lateral', 'math', 'words', 'visual', 'hidden'];
+  const ELIGIBLE_TOURNAMENT_MODES = ['book', 'logic', 'lateral', 'math', 'words', 'knowledge', 'visual', 'hidden'];
+  const ENTERTAINMENT_MODES = ['book','logic','lateral','scramble','visual','hidden','cross'];
+  const KNOWLEDGE_MODES = ['knowledge','words','math'];
+  const APTITUDE_MODES = ['qudurat_verbal','qudurat_quant'];
 
   const THEMES = [
     { id: 'neon', title: 'نيون 2060', icon: '◈', price: 0 },
@@ -37,7 +40,8 @@
     { id: 'perfect10', icon: '★', title: 'إتقان النجوم', desc: 'احصل على 10 نتائج بثلاث نجوم.', coins: 150, test: s => s.perfect >= 10 },
     { id: 'book20', icon: '📘', title: 'قارئ الألغاز', desc: 'أكمل 20 لغزًا من مكتبة الكتاب.', coins: 160, test: s => s.bookCompleted >= 20 },
     { id: 'tourney', icon: '🏆', title: 'منافس خطير', desc: 'حقق 1000 نقطة في بطولة.', coins: 220, test: s => s.bestTournament >= 1000 },
-    { id: 'rich', icon: '◉', title: 'خزنة ممتلئة', desc: 'امتلك 1000 عملة.', coins: 100, test: s => s.coins >= 1000 }
+    { id: 'rich', icon: '◉', title: 'خزنة ممتلئة', desc: 'امتلك 1000 عملة.', coins: 100, test: s => s.coins >= 1000 },
+    { id: 'aptitude80', icon: '🎯', title: 'متفوق القدرات', desc: 'حقق 80% في المحاكاة التدريبية.', coins: 250, test: s => s.bestAptitude >= 80 }
   ];
 
   const mainView = document.getElementById('mainView');
@@ -80,7 +84,7 @@
       levels: {}, stats: { answered: 0, correct: 0, hintsUsed: 0 },
       inventory: { hints: 3, freezes: 1, skips: 0, themes: ['neon'], avatars: ['🧠'] },
       theme: 'neon', avatar: '🧠', dailyReward: '', claimedAchievements: [],
-      tournament: { best: 0, played: 0, lastScore: 0 }
+      tournament: { best: 0, played: 0, lastScore: 0 }, aptitude: { best: 0, attempts: 0, last: 0, verbal: 0, quant: 0 }
     });
   }
 
@@ -110,6 +114,12 @@
     p.tournament.best ??= 0;
     p.tournament.played ??= 0;
     p.tournament.lastScore ??= 0;
+    p.aptitude ??= {};
+    p.aptitude.best ??= 0;
+    p.aptitude.attempts ??= 0;
+    p.aptitude.last ??= 0;
+    p.aptitude.verbal ??= 0;
+    p.aptitude.quant ??= 0;
     return p;
   }
 
@@ -127,7 +137,7 @@
   function localDateKey() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 
   function totalStats(p = profile(), audience = settings.audience) {
-    const stats = { completed: 0, stars: 0, perfect: 0, total: 0, bookCompleted: 0, bestTournament: p?.tournament?.best || 0, coins: p?.coins || 0 };
+    const stats = { completed: 0, stars: 0, perfect: 0, total: 0, bookCompleted: 0, bestTournament: p?.tournament?.best || 0, bestAptitude: p?.aptitude?.best || 0, coins: p?.coins || 0 };
     if (!p) return stats;
     Object.keys(MODES).forEach(mode => {
       const bank = DATA[audience][mode] || [];
@@ -185,33 +195,39 @@
 
     const stats = totalStats(p);
     const todayAvailable = p.dailyReward !== localDateKey();
-    const modesHtml = Object.entries(MODES).map(([id, mode]) => {
+    const modeCard = ([id, mode]) => {
       const ms = modeStats(id), total = puzzleBank(id).length;
       const pct = Math.round(ms.completed / Math.max(1, total) * 100);
       return `<button class="mode-card" data-action="open-mode" data-mode="${id}" style="--mode-color:${mode.color}"><div class="mode-icon">${mode.icon}</div><h3>${mode.title}</h3><p>${mode.sub}</p><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div class="mode-foot"><span class="mode-progress">${ms.completed} / ${total} مرحلة</span><span class="arrow-circle">←</span></div></button>`;
-    }).join('');
+    };
+    const trackHtml = (title, subtitle, icon, ids, cls='') => `<section class="mode-track ${cls}"><div class="track-head"><span class="track-icon">${icon}</span><div><h3>${title}</h3><p>${subtitle}</p></div></div><div class="mode-grid">${ids.filter(id => MODES[id]).map(id => modeCard([id, MODES[id]])).join('')}</div></section>`;
+    const modesHtml = [
+      trackHtml('المتعة وحل الألغاز','ألغاز منطقية وتفاعلية وصور وكلمات.', '🎮', ENTERTAINMENT_MODES, 'fun-track'),
+      trackHtml('المعرفة والتعلّم','معلومات عامة ولغة وحساب مع تفسير الإجابة.', '📚', KNOWLEDGE_MODES, 'knowledge-track'),
+      trackHtml('التدريب على القدرات','تدريب أصلي غير رسمي على المهارات اللفظية والكمية.', '🎯', APTITUDE_MODES, 'aptitude-track')
+    ].join('');
     const shelfHtml = Object.entries(MODES).map(([id, mode]) => `<article class="library-card" style="--shelf:${mode.color}"><div class="library-head"><span class="library-icon">${mode.icon}</span><strong>${mode.title}</strong></div><div class="library-count">${puzzleBank(id).length}</div><small>تحديًا في الفئة الحالية</small></article>`).join('');
 
     mainView.innerHTML = `
       <section class="hero mega-hero"><div><div class="eyebrow">WELCOME ${escapeHtml(p.name)} • HYPER ARENA ONLINE</div><h1>تحديات بلا نهاية<br><span class="gradient-text">ومتجر وبطولات</span></h1><p>تم توسيع المكتبة إلى ${stats.total} مرحلة في الفئة الحالية، مع نظام عملات ومكافآت يومية ومتجر ثيمات وأدوات مساعدة وبطولة محلية بين اللاعبين.</p><div class="hero-actions"><button class="primary-btn" data-action="quick-start">متابعة التحدي</button><button class="secondary-btn" data-action="tournament">دخول البطولة</button><button class="secondary-btn" data-action="library">استعراض المكتبة</button></div><div class="hero-meta"><span class="hero-chip">${audienceLabel()}</span><span class="hero-chip">${timerLabel()}</span><span class="hero-chip">${stats.total} مرحلة</span><span class="hero-chip">${p.coins.toLocaleString('ar-SA')} عملة</span></div></div><div class="hero-orbit"><div class="orbit-ring"></div><div class="orbit-ring2"></div><div class="orbit-core">${p.avatar}</div></div></section>
 
-      <section class="marquee"><div class="marquee-track"><span>📘 ألغاز من الكتاب</span><span>🏆 بطولة محلية</span><span>◉ متجر العملات</span><span>✦ كلمات متقطعة</span><span>🧠 منطق واستنتاج</span><span>⚡ تفكير جانبي</span><span>📘 ألغاز من الكتاب</span><span>🏆 بطولة محلية</span><span>◉ متجر العملات</span><span>✦ كلمات متقطعة</span></div></section>
+      <section class="marquee"><div class="marquee-track"><span>🎮 متعة وألغاز</span><span>📚 معرفة عامة</span><span>🎯 قدرات لفظي</span><span>∑ قدرات كمي</span><span>🏆 بطولة محلية</span><span>◉ متجر العملات</span><span>🎮 متعة وألغاز</span><span>📚 معرفة عامة</span><span>🎯 قدرات لفظي</span><span>∑ قدرات كمي</span></div></section>
 
       <section class="action-grid">
         <article class="action-card hot"><div class="action-kicker">BOOK VAULT</div><h3>مكتبة الكتاب</h3><p>${puzzleBank('book').length} لغزًا مستوحى من الكتاب المرفوع ومعاد الصياغة للفئة الحالية.</p><button class="secondary-btn" data-action="open-mode" data-mode="book">فتح المخزن</button></article>
         <article class="action-card pulse"><div class="action-kicker">ARENA BATTLE</div><h3>بطولة العقول</h3><p>10 أسئلة موحدة، ونتيجة محفوظة في لوحة الصدارة المحلية.</p><button class="secondary-btn" data-action="tournament">دخول الساحة</button></article>
         <article class="action-card beam"><div class="action-kicker">REWARD DROP</div><h3>${todayAvailable ? 'مكافأة يومية جاهزة' : 'مركز المكافآت'}</h3><p>${todayAvailable ? 'لديك 100 عملة بانتظار الاستلام اليوم.' : 'راجع الإنجازات والمكافآت التي حققتها.'}</p><button class="secondary-btn" data-action="rewards">عرض المكافآت</button></article>
-        <article class="action-card shop-action"><div class="action-kicker">NEON MARKET</div><h3>المتجر المستقبلي</h3><p>ثيمات وصور شخصية وتلميحات وتجميد للوقت وتجاوزات.</p><button class="secondary-btn" data-action="shop">فتح المتجر</button></article>
+        <article class="action-card aptitude-action"><div class="action-kicker">APTITUDE LAB</div><h3>محاكاة القدرات</h3><p>اختبار تدريبي من 20 سؤالًا لفظيًا وكميًا مع تحليل النتيجة.</p><button class="secondary-btn" data-action="aptitude">دخول المحاكاة</button></article><article class="action-card shop-action"><div class="action-kicker">NEON MARKET</div><h3>المتجر المستقبلي</h3><p>ثيمات وصور شخصية وتلميحات وتجميد للوقت وتجاوزات.</p><button class="secondary-btn" data-action="shop">فتح المتجر</button></article>
       </section>
 
-      <section class="stats-strip"><article class="stat-card"><div class="stat-label">إجمالي النقاط</div><div class="stat-value">${p.score.toLocaleString('ar-SA')}</div><div class="stat-note">نقطة خبرة</div></article><article class="stat-card"><div class="stat-label">عملات المتجر</div><div class="stat-value">${p.coins.toLocaleString('ar-SA')}</div><div class="stat-note">عملة متاحة</div></article><article class="stat-card"><div class="stat-label">تقدم الفئة</div><div class="stat-value">${stats.completed}<small> / ${stats.total}</small></div><div class="stat-note">${Math.round(stats.completed / Math.max(1, stats.total) * 100)}% مكتمل</div></article><article class="stat-card"><div class="stat-label">أفضل بطولة</div><div class="stat-value">${p.tournament.best.toLocaleString('ar-SA')}</div><div class="stat-note">أفضل نتيجة</div></article></section>
+      <section class="stats-strip"><article class="stat-card"><div class="stat-label">إجمالي النقاط</div><div class="stat-value">${p.score.toLocaleString('ar-SA')}</div><div class="stat-note">نقطة خبرة</div></article><article class="stat-card"><div class="stat-label">عملات المتجر</div><div class="stat-value">${p.coins.toLocaleString('ar-SA')}</div><div class="stat-note">عملة متاحة</div></article><article class="stat-card"><div class="stat-label">تقدم الفئة</div><div class="stat-value">${stats.completed}<small> / ${stats.total}</small></div><div class="stat-note">${Math.round(stats.completed / Math.max(1, stats.total) * 100)}% مكتمل</div></article><article class="stat-card"><div class="stat-label">أفضل نتيجة قدرات</div><div class="stat-value">${p.aptitude.best}%</div><div class="stat-note">نسبة تدريبية غير رسمية</div></article></section>
 
       <section class="setup-grid"><article class="setup-card"><h3>الفئة المستهدفة</h3><p>يُحفظ التقدم بشكل مستقل للبالغين والأطفال.</p><div class="choice-row"><button class="choice-chip ${settings.audience === 'adult' ? 'active' : ''}" data-action="set-audience" data-value="adult">للبالغين</button><button class="choice-chip ${settings.audience === 'kids' ? 'active' : ''}" data-action="set-audience" data-value="kids">للأطفال</button></div></article><article class="setup-card"><h3>مهلة الإجابة</h3><p>اختر المهلة أو العب بوقت مفتوح.</p><div class="choice-row">${TIMER_OPTIONS.map(value => `<button class="choice-chip ${settings.timer === value ? 'active' : ''}" data-action="set-timer" data-value="${value}">${value === 'open' ? 'وقت مفتوح' : `${value} ثانية`}</button>`).join('')}</div></article></section>
 
       <div class="section-head"><div><div class="section-kicker">MEGA LIBRARY</div><h2>حجم المكتبة</h2><p>${libraryTotal} تحديًا إجماليًا عبر الفئتين.</p></div><button class="secondary-btn" data-action="library">البحث في المكتبة</button></div>
       <section class="library-grid">${shelfHtml}</section>
-      <div class="section-head"><div><div class="section-kicker">GAME MODES</div><h2>أنماط اللعب</h2><p>تسعة أقسام مترابطة ومتدرجة الصعوبة.</p></div></div>
-      <section class="mode-grid">${modesHtml}</section>`;
+      <div class="section-head"><div><div class="section-kicker">LEARNING PATHS</div><h2>مسارات المكتبة</h2><p>اختر بين المتعة والمعرفة والتدريب على القدرات.</p></div></div>
+      ${modesHtml}`;
     setHeader();
   }
 
@@ -260,12 +276,12 @@
     startLevel('book', 0);
   }
 
-  function startLevel(mode, index, tournamentContext = null) {
+  function startLevel(mode, index, tournamentContext = null, aptitudeContext = null) {
     clearTimer();
-    const puzzle = tournamentContext?.puzzle || puzzleBank(mode)[index];
-    const maxTime = tournamentContext ? 30 : timerValue();
+    const puzzle = tournamentContext?.puzzle || aptitudeContext?.puzzle || puzzleBank(mode)[index];
+    const maxTime = tournamentContext ? 30 : aptitudeContext ? 60 : timerValue();
     game = {
-      mode, index, puzzle, tournament: tournamentContext,
+      mode, index, puzzle, tournament: tournamentContext, aptitude: aptitudeContext,
       timeLeft: maxTime, maxTime, attempts: 0, answered: false, hintUsed: false,
       revealCount: mode === 'hidden' ? 3 : 0, tileReveals: 0, overtime: false,
       scrambleGuess: [], scrambleUsed: [], crossInputs: {}, frozen: false
@@ -301,8 +317,8 @@
     const p = profile();
     const timerText = Number.isFinite(game.timeLeft) ? `${game.timeLeft} ثانية` : '∞ مفتوح';
     const pct = Number.isFinite(game.timeLeft) ? Math.max(0, game.timeLeft / Math.max(1, game.maxTime) * 100) : 100;
-    const stageText = game.tournament ? `الجولة ${game.tournament.round + 1} من ${game.tournament.total}` : `المرحلة ${game.index + 1} من ${puzzleBank(mode).length}`;
-    mainView.innerHTML = `<div class="page-head"><div class="page-title-wrap"><button class="back-btn" data-action="exit-game">→</button><div><div class="section-kicker">${game.tournament ? '🏆 بطولة العقول' : `${meta.icon} ${meta.title}`}</div><h1>${escapeHtml(puzzle.title || (game.tournament ? `الجولة ${game.tournament.round + 1}` : `المرحلة ${game.index + 1}`))}</h1></div></div><div class="quick-row"><span class="setup-pill">${audienceLabel()}</span><span class="setup-pill">${game.tournament ? '30 ثانية ثابتة' : timerLabel()}</span></div></div><section class="game-layout"><article class="game-card"><div class="game-top"><span class="stage-pill">${stageText}</span><span class="difficulty-pill">${puzzle.difficulty || 'متوسط'}</span></div><div class="timer-wrap"><div class="timer-line"><span>الوقت المتبقي</span><strong id="timerText">${timerText}</strong></div><div class="timer-track"><div id="timerBar" class="timer-bar" style="width:${pct}%"></div></div></div><div class="question-area"><div class="question-label">${questionLabel(puzzle.type, mode)}</div><h2>${escapeHtml(puzzle.q || puzzle.title)}</h2>${renderPuzzleBody()}<div id="feedback" class="feedback-banner"></div><div id="hintBox" class="hint-box">${escapeHtml(puzzle.hint || '')}</div></div></article><aside class="game-sidebar"><section class="side-card"><h3>لوحة اللاعب</h3><div class="score-big">${p.score.toLocaleString('ar-SA')} <small>نقطة</small></div><div class="info-list" style="margin-top:16px"><div class="info-row"><span>العملات</span><strong>◉ ${p.coins.toLocaleString('ar-SA')}</strong></div><div class="info-row"><span>المحاولات</span><strong id="attemptCount">${game.attempts}</strong></div><div class="info-row"><span>التتابع</span><strong>× ${p.streak}</strong></div>${game.tournament ? `<div class="info-row"><span>نقاط البطولة</span><strong>${game.tournament.score.toLocaleString('ar-SA')}</strong></div>` : ''}</div></section><section class="side-card"><h3>أدوات المساعدة</h3><button id="hintBtn" class="tool-btn" data-action="use-hint" ${p.inventory.hints <= 0 ? 'disabled' : ''}>💡 تلميح (${p.inventory.hints})</button><button class="tool-btn" data-action="freeze-time" ${!Number.isFinite(game.timeLeft) || p.inventory.freezes <= 0 ? 'disabled' : ''}>❄ تجميد +15ث (${p.inventory.freezes})</button><button class="tool-btn" data-action="skip-level" ${p.inventory.skips <= 0 ? 'disabled' : ''}>↪ تجاوز (${p.inventory.skips})</button>${mode === 'hidden' ? '<button id="revealBtn" class="tool-btn" data-action="reveal-tile">◫ كشف جزء</button>' : ''}</section><section class="side-card"><h3>مفتاح النجوم</h3><div class="info-list"><div class="info-row"><span>دون خطأ أو مساعدة</span><strong>★★★</strong></div><div class="info-row"><span>خطأ أو مساعدة واحدة</span><strong>★★</strong></div><div class="info-row"><span>أكثر</span><strong>★</strong></div></div></section></aside></section>`;
+    const stageText = game.tournament ? `الجولة ${game.tournament.round + 1} من ${game.tournament.total}` : game.aptitude ? `السؤال ${game.aptitude.round + 1} من ${game.aptitude.total}` : `المرحلة ${game.index + 1} من ${puzzleBank(mode).length}`;
+    mainView.innerHTML = `<div class="page-head"><div class="page-title-wrap"><button class="back-btn" data-action="exit-game">→</button><div><div class="section-kicker">${game.tournament ? '🏆 بطولة العقول' : game.aptitude ? '🎯 محاكاة القدرات' : `${meta.icon} ${meta.title}`}</div><h1>${escapeHtml(puzzle.title || (game.tournament ? `الجولة ${game.tournament.round + 1}` : game.aptitude ? `السؤال ${game.aptitude.round + 1}` : `المرحلة ${game.index + 1}`))}</h1></div></div><div class="quick-row"><span class="setup-pill">${audienceLabel()}</span><span class="setup-pill">${game.tournament ? '30 ثانية ثابتة' : game.aptitude ? '60 ثانية لكل سؤال' : timerLabel()}</span></div></div><section class="game-layout"><article class="game-card"><div class="game-top"><span class="stage-pill">${stageText}</span><span class="difficulty-pill">${puzzle.difficulty || 'متوسط'}</span></div><div class="timer-wrap"><div class="timer-line"><span>الوقت المتبقي</span><strong id="timerText">${timerText}</strong></div><div class="timer-track"><div id="timerBar" class="timer-bar" style="width:${pct}%"></div></div></div><div class="question-area"><div class="question-label">${questionLabel(puzzle.type, mode)}</div>${puzzle.context ? `<div class="reading-passage">${escapeHtml(puzzle.context)}</div>` : ''}<h2>${escapeHtml(puzzle.q || puzzle.title)}</h2>${renderPuzzleBody()}<div id="feedback" class="feedback-banner"></div><div id="hintBox" class="hint-box">${escapeHtml(puzzle.hint || '')}</div></div></article><aside class="game-sidebar"><section class="side-card"><h3>لوحة اللاعب</h3><div class="score-big">${p.score.toLocaleString('ar-SA')} <small>نقطة</small></div><div class="info-list" style="margin-top:16px"><div class="info-row"><span>العملات</span><strong>◉ ${p.coins.toLocaleString('ar-SA')}</strong></div><div class="info-row"><span>المحاولات</span><strong id="attemptCount">${game.attempts}</strong></div><div class="info-row"><span>التتابع</span><strong>× ${p.streak}</strong></div>${game.tournament ? `<div class="info-row"><span>نقاط البطولة</span><strong>${game.tournament.score.toLocaleString('ar-SA')}</strong></div>` : game.aptitude ? `<div class="info-row"><span>الصحيح</span><strong>${game.aptitude.correct}/${game.aptitude.total}</strong></div>` : ''}</div></section>${game.aptitude ? `<section class="side-card exam-rules"><h3>قواعد المحاكاة</h3><p>محاولة واحدة لكل سؤال، دون تلميحات أو تجاوزات. النتيجة تدريبية وليست درجة رسمية.</p></section>` : `<section class="side-card"><h3>أدوات المساعدة</h3><button id="hintBtn" class="tool-btn" data-action="use-hint" ${p.inventory.hints <= 0 ? 'disabled' : ''}>💡 تلميح (${p.inventory.hints})</button><button class="tool-btn" data-action="freeze-time" ${!Number.isFinite(game.timeLeft) || p.inventory.freezes <= 0 ? 'disabled' : ''}>❄ تجميد +15ث (${p.inventory.freezes})</button><button class="tool-btn" data-action="skip-level" ${p.inventory.skips <= 0 ? 'disabled' : ''}>↪ تجاوز (${p.inventory.skips})</button>${mode === 'hidden' ? '<button id="revealBtn" class="tool-btn" data-action="reveal-tile">◫ كشف جزء</button>' : ''}</section>`}<section class="side-card"><h3>مفتاح النجوم</h3><div class="info-list"><div class="info-row"><span>دون خطأ أو مساعدة</span><strong>★★★</strong></div><div class="info-row"><span>خطأ أو مساعدة واحدة</span><strong>★★</strong></div><div class="info-row"><span>أكثر</span><strong>★</strong></div></div></section></aside></section>`;
   }
 
   function questionLabel(type, mode) {
@@ -370,6 +386,7 @@
   function handleTimeout() {
     clearTimer();
     if (game.tournament) return tournamentWrong('انتهى الوقت.');
+    if (game.aptitude) return aptitudeWrong('انتهى الوقت.');
     game.attempts++;
     updateAttempts();
     if (!game.overtime) {
@@ -398,8 +415,10 @@
       showFeedback(true, `إجابة صحيحة! ${game.puzzle.explain}`);
       tone('success');
       if (game.tournament) setTimeout(() => tournamentCorrect(), 650);
+      else if (game.aptitude) setTimeout(() => aptitudeCorrect(), 650);
       else setTimeout(() => completeLevel(), 750);
     } else {
+      if (game.aptitude) return aptitudeWrong('إجابة غير صحيحة.');
       selected?.classList.add('wrong');
       selected.disabled = true;
       profile().streak = 0;
@@ -641,6 +660,76 @@
     p.claimedAchievements.push(id); p.coins += item.coins; saveAll(); setHeader(); renderRewards(); tone('success');
   }
 
+
+  function renderAptitude() {
+    clearTimer(); currentView = { name: 'aptitude' };
+    const p = profile();
+    const adult = settings.audience === 'adult';
+    const count = adult ? 20 : 12;
+    mainView.innerHTML = `<div class="page-head"><div class="page-title-wrap"><button class="back-btn" data-action="home">→</button><div><div class="section-kicker">APTITUDE TRAINING LAB</div><h1>محاكاة القدرات العامة</h1><p>تدريب أصلي غير رسمي على الاستدلال اللفظي والكمي لطلاب المرحلة الثانوية.</p></div></div></div>
+      <section class="aptitude-hero"><div class="aptitude-core">🎯</div><div><div class="eyebrow">VERBAL + QUANTITATIVE</div><h2>${adult ? 'اختبار تدريبي متوازن' : 'تهيئة مبسطة للقدرات'}</h2><p>${count} سؤالًا؛ نصفها لفظي ونصفها كمي، بمهلة 60 ثانية لكل سؤال. تحصل في النهاية على نسبة تدريبية وتحليل مستقل للقسمين.</p><div class="aptitude-actions"><button class="primary-btn" data-action="start-aptitude">بدء المحاكاة</button><button class="secondary-btn" data-action="open-mode" data-mode="qudurat_verbal">تدريب لفظي</button><button class="secondary-btn" data-action="open-mode" data-mode="qudurat_quant">تدريب كمي</button></div></div></section>
+      <section class="aptitude-stats"><article><span>أفضل نتيجة</span><strong>${p.aptitude.best}%</strong></article><article><span>آخر نتيجة</span><strong>${p.aptitude.last}%</strong></article><article><span>اللفظي</span><strong>${p.aptitude.verbal}%</strong></article><article><span>الكمي</span><strong>${p.aptitude.quant}%</strong></article><article><span>المحاولات</span><strong>${p.aptitude.attempts}</strong></article></section>
+      <section class="aptitude-disclaimer"><strong>تنبيه:</strong> هذه محاكاة تدريبية من إعداد المنصة، وليست اختبارًا رسميًا ولا تحتوي أسئلة مسرّبة، ولا تمثل الدرجة المعيارية الصادرة من هيئة تقويم التعليم والتدريب.</section>
+      <div class="section-head"><div><h2>ماذا يقيس التدريب؟</h2><p>الفهم والتحليل والاستدلال والتطبيق وحل المشكلات.</p></div></div>
+      <section class="aptitude-skill-grid"><article><span>ل</span><h3>القدرات اللفظية</h3><p>التناظر اللفظي، إكمال الجمل، المفردات، الخطأ السياقي، والاستيعاب المقروء.</p></article><article><span>ك</span><h3>القدرات الكمية</h3><p>النسب المئوية، التناسب، المتوسط، الجبر، الهندسة، المتتاليات والمسائل التطبيقية.</p></article></section>`;
+  }
+
+  function aptitudeQueue() {
+    const perSection = settings.audience === 'adult' ? 10 : 6;
+    const dateSeed = [...`${localDateKey()}_${settings.audience}_${profile().aptitude.attempts}`].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+    const verbal = seededShuffle(puzzleBank('qudurat_verbal').map((puzzle,index)=>({mode:'qudurat_verbal',index,puzzle,section:'verbal'})), dateSeed).slice(0, perSection);
+    const quant = seededShuffle(puzzleBank('qudurat_quant').map((puzzle,index)=>({mode:'qudurat_quant',index,puzzle,section:'quant'})), dateSeed + 991).slice(0, perSection);
+    return seededShuffle([...verbal, ...quant], dateSeed + 313);
+  }
+
+  function startAptitude() {
+    const queue = aptitudeQueue();
+    const first = queue[0];
+    const context = { kind:'aptitude', queue, round:0, total:queue.length, correct:0, verbalCorrect:0, quantCorrect:0, verbalTotal:queue.filter(x=>x.section==='verbal').length, quantTotal:queue.filter(x=>x.section==='quant').length };
+    startLevel(first.mode, first.index, null, { ...context, puzzle:first.puzzle, section:first.section });
+  }
+
+  function aptitudeCorrect() {
+    const a = game.aptitude;
+    a.correct++;
+    if (a.section === 'verbal') a.verbalCorrect++; else a.quantCorrect++;
+    advanceAptitude(a);
+  }
+
+  function aptitudeWrong(message) {
+    if (!game || game.answered) return;
+    game.answered = true; clearTimer();
+    document.querySelectorAll('.answer-btn').forEach((b, i) => { b.disabled = true; if (i === game.puzzle.answer) b.classList.add('correct'); });
+    showFeedback(false, `${message} الإجابة الصحيحة: ${game.puzzle.options?.[game.puzzle.answer] || ''}`);
+    tone('wrong');
+    setTimeout(() => advanceAptitude(game.aptitude), 900);
+  }
+
+  function advanceAptitude(a) {
+    const nextRound = a.round + 1;
+    if (nextRound >= a.total) return finishAptitude(a);
+    const next = a.queue[nextRound];
+    startLevel(next.mode, next.index, null, { ...a, round:nextRound, puzzle:next.puzzle, section:next.section });
+  }
+
+  function finishAptitude(a) {
+    clearTimer();
+    const p = profile();
+    const score = Math.round(a.correct / Math.max(1,a.total) * 100);
+    const verbal = Math.round(a.verbalCorrect / Math.max(1,a.verbalTotal) * 100);
+    const quant = Math.round(a.quantCorrect / Math.max(1,a.quantTotal) * 100);
+    p.aptitude.attempts++;
+    p.aptitude.last = score;
+    p.aptitude.best = Math.max(p.aptitude.best, score);
+    p.aptitude.verbal = verbal;
+    p.aptitude.quant = quant;
+    const reward = 25 + a.correct * 3;
+    p.coins += reward;
+    saveAll(); setHeader(); currentView = { name:'aptitude-result' };
+    const band = score >= 90 ? 'ممتاز جدًا' : score >= 80 ? 'متقدم' : score >= 70 ? 'جيد' : score >= 60 ? 'متوسط' : 'يحتاج تدريبًا إضافيًا';
+    mainView.innerHTML = `<section class="aptitude-result"><div class="score-ring"><strong>${score}%</strong><span>نسبة تدريبية</span></div><div class="eyebrow">APTITUDE SIMULATION COMPLETED</div><h1>${band}</h1><p>أجبت عن ${a.correct} من ${a.total} سؤالًا. هذه النتيجة للتدريب داخل المنصة وليست درجة قياس رسمية.</p><div class="result-stats"><div class="result-stat"><strong>${verbal}%</strong><small>لفظي</small></div><div class="result-stat"><strong>${quant}%</strong><small>كمي</small></div><div class="result-stat"><strong>+${reward}</strong><small>عملة</small></div></div><div class="result-actions"><button class="secondary-btn" data-action="aptitude">لوحة القدرات</button><button class="primary-btn" data-action="start-aptitude">محاولة جديدة</button></div></section>`;
+  }
+
   function renderTournament() {
     clearTimer(); currentView = { name: 'tournament' };
     const leaderboard = Object.values(profiles).sort((a,b) => (b.tournament?.best || 0) - (a.tournament?.best || 0));
@@ -701,7 +790,7 @@
 
   function renderProfiles() {
     const list = Object.values(profiles);
-    profilesList.innerHTML = list.length ? list.map(p => `<div class="profile-item ${p.id === activeId ? 'active' : ''}"><div class="profile-main" data-action="select-profile" data-id="${p.id}"><span class="avatar">${p.avatar}</span><span><strong>${escapeHtml(p.name)}</strong><small>${p.score.toLocaleString('ar-SA')} نقطة • ◉ ${p.coins.toLocaleString('ar-SA')} • بطولة ${p.tournament.best.toLocaleString('ar-SA')}</small></span></div><div class="profile-actions"><button class="profile-action" data-action="reset-profile" data-id="${p.id}">↻</button><button class="profile-action" data-action="delete-profile" data-id="${p.id}">🗑</button></div></div>`).join('') : '<div class="empty-state">لا يوجد لاعبون. أضف أول لاعب للبدء.</div>';
+    profilesList.innerHTML = list.length ? list.map(p => `<div class="profile-item ${p.id === activeId ? 'active' : ''}"><div class="profile-main" data-action="select-profile" data-id="${p.id}"><span class="avatar">${p.avatar}</span><span><strong>${escapeHtml(p.name)}</strong><small>${p.score.toLocaleString('ar-SA')} نقطة • ◉ ${p.coins.toLocaleString('ar-SA')} • قدرات ${p.aptitude.best}%</small></span></div><div class="profile-actions"><button class="profile-action" data-action="reset-profile" data-id="${p.id}">↻</button><button class="profile-action" data-action="delete-profile" data-id="${p.id}">🗑</button></div></div>`).join('') : '<div class="empty-state">لا يوجد لاعبون. أضف أول لاعب للبدء.</div>';
   }
 
   function openProfiles(force = false) {
@@ -734,6 +823,11 @@
   }
 
   async function exitGame() {
+    if (game?.aptitude) {
+      const ok = await requestConfirm('الخروج من محاكاة القدرات', 'ستفقد نتيجة المحاولة الحالية.');
+      if (ok) renderAptitude();
+      return;
+    }
     if (game?.tournament) {
       const ok = await requestConfirm('الخروج من البطولة', 'ستفقد نتيجة البطولة الحالية.');
       if (ok) renderTournament();
@@ -810,6 +904,8 @@
     else if (action === 'rewards') renderRewards();
     else if (action === 'claim-daily') claimDaily();
     else if (action === 'claim-achievement') claimAchievement(el.dataset.id);
+    else if (action === 'aptitude') renderAptitude();
+    else if (action === 'start-aptitude') startAptitude();
     else if (action === 'tournament') renderTournament();
     else if (action === 'start-tournament') startTournament();
     else if (action === 'select-profile') selectProfile(el.dataset.id);
