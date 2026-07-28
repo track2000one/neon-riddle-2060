@@ -12,6 +12,19 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 let academyLoaded = false;
 
+const ACADEMY_SCRIPTS = [
+  'exam-bank-tahsili-math.js',
+  'exam-bank-tahsili-physics.js',
+  'exam-bank-tahsili-chemistry-1.js',
+  'exam-bank-tahsili-chemistry-2.js',
+  'exam-bank-tahsili-biology.js',
+  'exam-bank-qudurat-verbal.js',
+  'exam-bank-qudurat-quant.js',
+  'exam-bank.js',
+  'exam-center-ui.js',
+  'academy.js'
+];
+
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
   catch { return fallback; }
@@ -79,6 +92,34 @@ function finishAcademyLoading() {
   document.getElementById('authBoot')?.classList.add('hidden');
 }
 
+function loadClassicScript(src) {
+  return new Promise((resolve, reject) => {
+    const absoluteSrc = new URL(src, document.baseURI).href;
+    const existing = [...document.scripts].find(script => script.src === absoluteSrc);
+
+    if (existing?.dataset.loaded === 'true') {
+      resolve();
+      return;
+    }
+
+    if (existing) {
+      existing.addEventListener('load', resolve, { once: true });
+      existing.addEventListener('error', () => reject(new Error(`تعذر تحميل ${src}`)), { once: true });
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = src;
+    script.async = false;
+    script.onload = () => {
+      script.dataset.loaded = 'true';
+      resolve();
+    };
+    script.onerror = () => reject(new Error(`تعذر تحميل ${src}`));
+    document.body.appendChild(script);
+  });
+}
+
 function loadRealAiTeacher() {
   const button = document.getElementById('askTeacherButton');
   if (button) {
@@ -105,17 +146,21 @@ function loadRealAiTeacher() {
   document.body.appendChild(aiScript);
 }
 
-function loadAcademy() {
+async function loadAcademy() {
   if (academyLoaded) return;
   academyLoaded = true;
-  const script = document.createElement('script');
-  script.src = 'academy.js';
-  script.onload = loadRealAiTeacher;
-  script.onerror = () => {
+
+  try {
+    for (const src of ACADEMY_SCRIPTS) {
+      await loadClassicScript(src);
+    }
+    loadRealAiTeacher();
+  } catch (error) {
+    academyLoaded = false;
+    console.error('Academy loading error:', error);
     const bootText = document.querySelector('#authBoot p');
-    if (bootText) bootText.textContent = 'تعذر تحميل الأكاديمية. حدّث الصفحة وحاول مجددًا.';
-  };
-  document.body.appendChild(script);
+    if (bootText) bootText.textContent = 'تعذر تحميل الأكاديمية أو مركز الاختبارات. حدّث الصفحة وحاول مجددًا.';
+  }
 }
 
 document.getElementById('studentLogoutButton')?.addEventListener('click', async () => {
