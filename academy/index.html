@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#07101f" />
+  <meta name="description" content="NEON Academy 2060 — مكتبة تعليمية وترفيهية متكاملة" />
+  <title>NEON Academy 2060 | المكتبة التعليمية المتكاملة</title>
+  <link rel="stylesheet" href="academy.css" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NZNC6929YS"></script>
+</head>
+<body>
+  <div class="world-grid"></div>
+  <div class="world-glow glow-a"></div>
+  <div class="world-glow glow-b"></div>
+  <div class="world-glow glow-c"></div>
+
+  <header class="site-header">
+    <a class="brand" href="../">
+      <span class="brand-mark">N</span>
+      <span><strong>NEON ACADEMY 2060</strong><small>MEGA LEARNING LIBRARY</small></span>
+    </a>
+
+    <nav class="main-nav" aria-label="التنقل الرئيسي">
+      <button class="nav-link active" data-scroll="home">الرئيسية</button>
+      <button class="nav-link" data-scroll="tracks">المسارات</button>
+      <button class="nav-link" data-scroll="library">المكتبة</button>
+      <button class="nav-link" data-scroll="coding">مختبر البرمجة</button>
+      <button class="nav-link" data-scroll="teacher">المعلم الذكي</button>
+    </nav>
+
+    <div class="header-actions">
+      <button id="dailyButton" class="header-icon" title="تحدي اليوم">🔥</button>
+      <button id="studentButton" class="student-chip">
+        <span id="studentAvatar">🧠</span>
+        <span><strong id="studentName">الطالب</strong><small id="studentLevel">المستوى 1</small></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section id="home" class="hero section-shell">
+      <div class="hero-content">
+        <div class="eyebrow">THE COMPLETE DIGITAL LEARNING UNIVERSE</div>
+        <h1>مكتبة تعليمية وترفيهية<br><span>ضخمة ومتطورة</span></h1>
+        <p>منصة واحدة تجمع الألعاب والألغاز، الدروس والمعرفة، اختبارات القدرات والتحصيلي، تعليم البرمجة، نظام تقدم الطالب، والمعلم الذكي المحلي — تعمل مباشرة دون npm.</p>
+        <div class="hero-actions">
+          <button class="primary-action" data-scroll="tracks">استكشف المسارات</button>
+          <button class="secondary-action" id="continueButton">واصل من حيث توقفت</button>
+        </div>
+        <div class="hero-pills">
+          <span><b id="heroLessonCount">0</b> وحدة تعليمية</span>
+          <span><b id="heroSubjectCount">0</b> تخصصًا ومسارًا</span>
+          <span><b id="heroQuestionCount">0</b> سؤالًا تفاعليًا</span>
+          <span>حفظ تلقائي محلي</span>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="academy-orbit orbit-outer"></div>
+        <div class="academy-orbit orbit-middle"></div>
+        <div class="academy-orbit orbit-inner"></div>
+        <div class="academy-core">
+          <span>2060</span>
+          <small>LEARN • PLAY • BUILD</small>
+        </div>
+        <div class="floating-node node-a">🎮</div>
+        <div class="floating-node node-b">📚</div>
+        <div class="floating-node node-c">💻</div>
+        <div class="floating-node node-d">🎯</div>
+      </div>
+    </section>
+
+    <section class="metric-strip section-shell">
+      <article><span>⚡</span><div><small>نقاط الخبرة</small><strong id="metricXp">0</strong></div></article>
+      <article><span>✓</span><div><small>الوحدات المكتملة</small><strong id="metricCompleted">0</strong></div></article>
+      <article><span>🔥</span><div><small>سلسلة التعلم</small><strong id="metricStreak">0 يوم</strong></div></article>
+      <article><span>🏅</span><div><small>الشهادات</small><strong id="metricCertificates">0</strong></div></article>
+      <article><span>◎</span><div><small>نسبة الإتقان</small><strong id="metricMastery">0%</strong></div></article>
+    </section>
+
+    <section id="tracks" class="section-shell section-block">
+      <div class="section-heading">
+        <div><span class="eyebrow">FOUR GRAND WORLDS</span><h2>المسارات الرئيسية</h2><p>اختر عالمك، وتقدّم من التأسيس إلى التطبيق ثم الإتقان.</p></div>
+        <button class="text-action" data-scroll="library">عرض جميع الوحدات ←</button>
+      </div>
+      <div id="areaCards" class="area-grid"></div>
+    </section>
+
+    <section class="section-shell action-zone">
+      <article class="action-card escape-action">
+        <div class="action-symbol">🚪</div>
+        <div><span class="eyebrow">ESCAPE ROOMS</span><h3>غرف الهروب التعليمية</h3><p>ألغاز مترابطة في مختبر ومكتبة ومحطة فضائية وخزنة رقمية.</p></div>
+        <button id="escapeButton" class="compact-action">ابدأ غرفة هروب</button>
+      </article>
+      <article class="action-card exam-action">
+        <div class="action-symbol">⏱️</div>
+        <div><span class="eyebrow">TIMED SIMULATION</span><h3>محاكاة اختبار زمنية</h3><p>اختر المجال وعدد الأسئلة والوقت، ثم احصل على تقرير أداء فوري.</p></div>
+        <button id="examButton" class="compact-action">إنشاء اختبار</button>
+      </article>
+      <article class="action-card daily-action">
+        <div class="action-symbol">🔥</div>
+        <div><span class="eyebrow">DAILY MISSION</span><h3>تحدي اليوم</h3><p>مهمة يومية تتغير تلقائيًا وتمنحك نقاط خبرة إضافية.</p></div>
+        <button id="dailyActionButton" class="compact-action">افتح تحدي اليوم</button>
+      </article>
+    </section>
+
+    <section id="library" class="section-shell section-block">
+      <div class="section-heading library-heading">
+        <div><span class="eyebrow">MEGA CONTENT CATALOG</span><h2>مكتبة الدروس والوحدات</h2><p>ابحث في مئات الوحدات التعليمية والترفيهية والبرمجية.</p></div>
+        <div class="catalog-stats"><strong id="visibleCount">0</strong><small>نتيجة ظاهرة</small></div>
+      </div>
+
+      <div class="library-toolbar">
+        <label class="search-box"><span>⌕</span><input id="searchInput" type="search" placeholder="ابحث عن درس، لغة، موضوع، اختبار..." /></label>
+        <select id="areaFilter" aria-label="تصفية حسب المسار">
+          <option value="all">كل المسارات</option>
+          <option value="games">الألعاب والتسلية</option>
+          <option value="knowledge">المعرفة والدروس</option>
+          <option value="exams">الاختبارات</option>
+          <option value="coding">تعليم البرمجة</option>
+        </select>
+        <select id="levelFilter" aria-label="تصفية حسب المستوى">
+          <option value="all">كل المستويات</option>
+          <option value="foundation">تأسيسي</option>
+          <option value="practice">تطبيقي</option>
+          <option value="mastery">إتقان</option>
+        </select>
+        <select id="subjectFilter" aria-label="تصفية حسب التخصص"><option value="all">كل التخصصات</option></select>
+      </div>
+
+      <div id="subjectRail" class="subject-rail"></div>
+      <div id="lessonGrid" class="lesson-grid"></div>
+      <button id="loadMoreButton" class="load-more">عرض المزيد من الوحدات</button>
+    </section>
+
+    <section id="coding" class="section-shell section-block coding-lab">
+      <div class="section-heading">
+        <div><span class="eyebrow">INTERACTIVE CODE LAB</span><h2>مختبر البرمجة التفاعلي</h2><p>جرّب HTML وCSS وJavaScript مباشرة، واستكشف قوالب بقية اللغات.</p></div>
+        <div class="lab-badge">LIVE PREVIEW</div>
+      </div>
+
+      <div class="coding-layout">
+        <aside class="language-panel">
+          <h3>المسارات البرمجية</h3>
+          <div id="languageList" class="language-list"></div>
+          <div class="lab-note">التشغيل المباشر متاح لـ HTML وCSS وJavaScript داخل المتصفح. بقية اللغات تقدم محررًا وتمارين تحقق تعليمية دون تنفيذ خادم.</div>
+        </aside>
+
+        <div class="editor-panel">
+          <div class="editor-toolbar">
+            <div><span id="activeLanguageIcon">JS</span><strong id="activeLanguageTitle">JavaScript</strong></div>
+            <div class="editor-actions"><button id="resetCodeButton">إعادة القالب</button><button id="runCodeButton" class="run-button">▶ تشغيل وفحص</button></div>
+          </div>
+          <textarea id="codeEditor" spellcheck="false" aria-label="محرر الأكواد"></textarea>
+          <div id="codeFeedback" class="code-feedback">اكتب الكود ثم اضغط تشغيل وفحص.</div>
+        </div>
+
+        <div class="preview-panel">
+          <div class="preview-title"><span>المعاينة / النتيجة</span><strong id="previewStatus">جاهز</strong></div>
+          <iframe id="livePreview" title="المعاينة المباشرة" sandbox="allow-scripts"></iframe>
+          <pre id="consoleOutput" class="console-output">Console ready…</pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="student" class="section-shell section-block student-dashboard">
+      <div class="section-heading">
+        <div><span class="eyebrow">STUDENT INTELLIGENCE PROFILE</span><h2>نظام الطالب وخطة التعلم</h2><p>تقدم محفوظ، مستوى، نقاط قوة وضعف، وشهادات قابلة للطباعة.</p></div>
+        <button id="editStudentButton" class="text-action">تعديل ملف الطالب</button>
+      </div>
+
+      <div class="student-layout">
+        <article class="student-card identity-card">
+          <div id="dashboardAvatar" class="large-avatar">🧠</div>
+          <h3 id="dashboardName">الطالب</h3>
+          <p id="dashboardGrade">المرحلة غير محددة</p>
+          <div class="level-progress"><div><span>المستوى <b id="dashboardLevel">1</b></span><span id="nextLevelText">0 / 500 XP</span></div><div class="progress-track"><div id="levelProgressBar" class="progress-fill"></div></div></div>
+          <button id="certificateButton" class="outline-action">إنشاء شهادة إنجاز</button>
+        </article>
+
+        <article class="student-card">
+          <div class="card-title"><span>◎</span><h3>نقاط القوة والضعف</h3></div>
+          <div id="skillBars" class="skill-bars"></div>
+        </article>
+
+        <article class="student-card plan-card">
+          <div class="card-title"><span>↗</span><h3>خطة التعلم المقترحة</h3></div>
+          <ol id="learningPlan" class="learning-plan"></ol>
+          <button id="startPlanButton" class="primary-small">ابدأ الخطوة التالية</button>
+        </article>
+      </div>
+    </section>
+
+    <section id="teacher" class="section-shell section-block teacher-zone">
+      <div class="teacher-intro">
+        <div class="teacher-avatar">AI</div>
+        <div><span class="eyebrow">LOCAL SMART TUTOR</span><h2>المعلم الذكي المحلي</h2><p>يشرح المفاهيم، يقترح خطوات الحل، وينشئ تدريبًا من مكتبة المنصة وفق مستواك الحالي.</p></div>
+      </div>
+
+      <div class="teacher-layout">
+        <div class="teacher-controls">
+          <label>المجال<select id="teacherSubject"></select></label>
+          <label>نوع المساعدة<select id="teacherMode"><option value="explain">شرح مفهوم</option><option value="practice">إنشاء تمرين</option><option value="plan">خطة مذاكرة</option><option value="code">مراجعة فكرة برمجية</option></select></label>
+          <label>اكتب سؤالك<textarea id="teacherPrompt" placeholder="مثال: اشرح لي النسبة المئوية بطريقة سهلة مع مثال..."></textarea></label>
+          <button id="askTeacherButton" class="primary-action">اسأل المعلم</button>
+          <p class="teacher-disclaimer">المعلم الحالي يعمل محليًا بقواعد ومحتوى المنصة، وليس نموذج ذكاء اصطناعي سحابيًا. يمكن ربطه بخدمة AI آمنة لاحقًا.</p>
+        </div>
+        <article id="teacherResponse" class="teacher-response">
+          <div class="response-placeholder"><span>✦</span><h3>جاهز لمساعدتك</h3><p>اختر المجال واكتب السؤال أو اطلب تمرينًا جديدًا.</p></div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer section-shell">
+    <div><strong>NEON Academy 2060</strong><p>مكتبة تعليمية ترفيهية قابلة للتوسع والتطوير المستمر.</p></div>
+    <div class="footer-links"><a href="../">لعبة الألغاز</a><a href="../track2000one/">لوحة المسؤول</a><button id="exportProgressButton">تصدير التقدم</button></div>
+  </footer>
+
+  <div id="lessonModal" class="modal-backdrop hidden">
+    <section class="modal-card lesson-modal">
+      <button class="modal-close" data-close="lessonModal">×</button>
+      <div id="lessonModalContent"></div>
+    </section>
+  </div>
+
+  <div id="studentModal" class="modal-backdrop hidden">
+    <section class="modal-card student-modal">
+      <button class="modal-close" data-close="studentModal">×</button>
+      <div class="eyebrow">STUDENT PROFILE</div>
+      <h2>إعداد ملف الطالب</h2>
+      <form id="studentForm">
+        <label>الاسم<input id="studentNameInput" maxlength="24" required /></label>
+        <label>المرحلة<select id="studentGradeInput"><option>المرحلة الابتدائية</option><option>المرحلة المتوسطة</option><option selected>المرحلة الثانوية</option><option>المرحلة الجامعية</option><option>تعلم عام</option></select></label>
+        <label>الصورة الرمزية<div id="avatarChoices" class="avatar-choices"></div></label>
+        <button class="primary-action" type="submit">حفظ الملف</button>
+      </form>
+    </section>
+  </div>
+
+  <div id="examModal" class="modal-backdrop hidden">
+    <section class="modal-card exam-modal">
+      <button class="modal-close" data-close="examModal">×</button>
+      <div id="examContent"></div>
+    </section>
+  </div>
+
+  <div id="escapeModal" class="modal-backdrop hidden">
+    <section class="modal-card escape-modal">
+      <button class="modal-close" data-close="escapeModal">×</button>
+      <div id="escapeContent"></div>
+    </section>
+  </div>
+
+  <div id="certificateModal" class="modal-backdrop hidden">
+    <section class="modal-card certificate-modal">
+      <button class="modal-close" data-close="certificateModal">×</button>
+      <div id="certificateContent"></div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="catalog.js"></script>
+  <script src="academy.js"></script>
+</body>
+</html>
