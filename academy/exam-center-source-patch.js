@@ -37,8 +37,9 @@
     if (note && note.dataset.importReviewApplied !== 'true') {
       const report = window.NEON_EXAM_DEDUPE_REPORT || {};
       const stats = window.NEON_IMPORTED_EXAM_SOURCE_STATS || {};
+      const visualCount = Number(stats.visualQuant || 0);
       note.dataset.importReviewApplied = 'true';
-      note.innerHTML = `<strong>تنبيه:</strong> المحتوى تدريبي غير رسمي. تمت مراجعة المرفقات المرفوعة وإضافة ${Number(stats.total || imported.length).toLocaleString('ar-SA')} سؤالًا نصيًا واضحًا، مع استبعاد الأسئلة المعتمدة على صور غير قابلة للعرض وحذف المكرر آليًا${Number(report.removedInsideBanks || 0) ? ` (${Number(report.removedInsideBanks).toLocaleString('ar-SA')} مكررًا)` : ''}.`;
+      note.innerHTML = `<strong>تنبيه:</strong> المحتوى تدريبي غير رسمي. تمت مراجعة المرفقات وإضافة ${Number(stats.total || imported.length).toLocaleString('ar-SA')} سؤالًا واضحًا${visualCount ? `، منها <b>${visualCount.toLocaleString('ar-SA')}</b> سؤال قدرات كمي برسومات متجهية دقيقة` : ''}. استُبعدت الصور غير الواضحة أو المشتتة، وحُذف المكرر آليًا${Number(report.removedInsideBanks || 0) ? ` (${Number(report.removedInsideBanks).toLocaleString('ar-SA')} مكررًا)` : ''}.`;
     }
   }
 
