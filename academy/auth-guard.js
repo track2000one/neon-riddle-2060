@@ -1,9 +1,9 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
 import {
   getAuth,
   onAuthStateChanged,
   signOut
-} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import { firebaseConfig } from './firebase-config.js';
 
 const PROFILE_KEY = 'neonRiddleGrandProfilesV4';
@@ -74,15 +74,43 @@ function updateAccountUi(user) {
   if (accountAvatar) accountAvatar.textContent = displayName.charAt(0).toUpperCase();
 }
 
+function finishAcademyLoading() {
+  document.body.classList.remove('auth-pending');
+  document.getElementById('authBoot')?.classList.add('hidden');
+}
+
+function loadRealAiTeacher() {
+  const button = document.getElementById('askTeacherButton');
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'جارٍ تشغيل المعلم الذكي...';
+  }
+
+  const aiScript = document.createElement('script');
+  aiScript.type = 'module';
+  aiScript.src = 'real-ai-teacher.js';
+  aiScript.onload = finishAcademyLoading;
+  aiScript.onerror = () => {
+    finishAcademyLoading();
+    if (button) {
+      button.disabled = false;
+      button.textContent = 'إعادة تحميل المعلم الذكي';
+      button.addEventListener('click', () => window.location.reload(), { once: true });
+    }
+    const response = document.getElementById('teacherResponse');
+    if (response) {
+      response.innerHTML = '<div class="response-placeholder"><span>!</span><h3>تعذر تحميل وحدة الذكاء الاصطناعي</h3><p>حدّث الصفحة وتأكد من اتصال الإنترنت.</p></div>';
+    }
+  };
+  document.body.appendChild(aiScript);
+}
+
 function loadAcademy() {
   if (academyLoaded) return;
   academyLoaded = true;
   const script = document.createElement('script');
   script.src = 'academy.js';
-  script.onload = () => {
-    document.body.classList.remove('auth-pending');
-    document.getElementById('authBoot')?.classList.add('hidden');
-  };
+  script.onload = loadRealAiTeacher;
   script.onerror = () => {
     const bootText = document.querySelector('#authBoot p');
     if (bootText) bootText.textContent = 'تعذر تحميل الأكاديمية. حدّث الصفحة وحاول مجددًا.';
