@@ -1,66 +1,36 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#070916" />
-  <title>NEON RIDDLE 2060 | المعرفة والقدرات</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#07101f" />
+  <meta name="robots" content="noindex,follow" />
+  <title>NEON Academy 2060</title>
+  <script>
+    (() => {
+      const target = new URL('academy/', window.location.href);
+      target.search = window.location.search;
+      target.hash = window.location.hash;
+      window.location.replace(target.href);
+    })();
+  </script>
   <style>
-    .academy-entry{min-height:44px;display:flex;align-items:center;gap:8px;padding:0 13px;border-radius:14px;border:1px solid rgba(103,237,255,.22);background:linear-gradient(135deg,rgba(103,237,255,.1),rgba(165,108,255,.1));color:#eefbff;text-decoration:none;font-size:11px;font-weight:800;white-space:nowrap}.academy-entry span{width:27px;height:27px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,#67edff,#a56cff);color:#07111b}@media(max-width:720px){.academy-entry b{display:none}.academy-entry{padding:0 8px}}
+    :root{font-family:Tahoma,"Segoe UI",Arial,sans-serif;color-scheme:dark}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at 20% 15%,rgba(99,235,255,.16),transparent 28%),radial-gradient(circle at 82% 20%,rgba(164,110,255,.18),transparent 30%),linear-gradient(135deg,#050814,#0b1126 55%,#060916);color:#f7f9ff;padding:24px}
+    main{width:min(520px,100%);padding:34px;border:1px solid rgba(255,255,255,.12);border-radius:28px;background:rgba(12,18,40,.84);box-shadow:0 25px 80px rgba(0,0,0,.42);text-align:center}
+    .mark{width:74px;height:74px;margin:0 auto 18px;border-radius:22px;display:grid;place-items:center;background:linear-gradient(135deg,#63ebff,#789eff,#a46eff);color:#07111b;font-size:34px;font-weight:900}
+    h1{margin:0 0 10px;font-size:29px}
+    p{margin:0 0 22px;color:#aab4d6;line-height:1.8}
+    a{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 20px;border-radius:14px;background:linear-gradient(135deg,#63ebff,#789eff,#a46eff);color:#07111b;text-decoration:none;font-weight:900}
   </style>
-
-  <!-- Google Analytics 4 -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NZNC6929YS"></script>
 </head>
-<body data-theme="neon">
-  <div class="ambient ambient-one"></div>
-  <div class="ambient ambient-two"></div>
-  <div class="noise"></div>
-  <div class="scanline"></div>
-
-  <div class="app-shell">
-    <header class="topbar">
-      <button class="brand" data-action="home" aria-label="الرئيسية">
-        <span class="brand-mark">?</span>
-        <span><strong>NEON RIDDLE 2060</strong><small>KNOWLEDGE & APTITUDE ARENA</small></span>
-      </button>
-      <div class="top-actions">
-        <a class="academy-entry" href="academy/" title="المكتبة التعليمية المتكاملة"><span>📚</span><b>الأكاديمية الكبرى</b></a>
-        <button class="coin-chip" data-action="shop" title="المتجر"><span>◉</span><strong id="headerCoins">0</strong></button>
-        <button class="icon-btn" data-action="rewards" title="المكافآت">🎁</button>
-        <button id="soundBtn" class="icon-btn" data-action="toggle-sound" title="الصوت"><span id="soundIcon">🔊</span></button>
-        <button class="profile-chip" data-action="profiles" title="اللاعبون"><span id="headerAvatar" class="mini-avatar">🧠</span><span id="headerPlayer">اللاعب</span></button>
-      </div>
-    </header>
-    <main id="mainView" class="main-view"></main>
-  </div>
-
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-  <div id="profileModal" class="modal-backdrop hidden" aria-hidden="true">
-    <section class="modal-card profile-modal" role="dialog" aria-modal="true">
-      <button class="modal-close" data-action="close-profiles">×</button>
-      <div class="eyebrow">PLAYER PROFILES</div>
-      <h2>ملفات اللاعبين</h2>
-      <p class="muted">لكل لاعب نقاطه وعملاته ومتجره وإنجازاته ونتائجه في البطولات.</p>
-      <div id="profilesList" class="profiles-list"></div>
-      <form id="profileForm" class="profile-form">
-        <label for="profileName">إضافة لاعب جديد</label>
-        <div class="profile-form-row"><input id="profileName" maxlength="18" autocomplete="off" placeholder="اكتب الاسم..." /><button type="submit" class="primary-btn compact">إضافة</button></div>
-      </form>
-    </section>
-  </div>
-
-  <div id="confirmModal" class="modal-backdrop hidden" aria-hidden="true">
-    <section class="modal-card small-modal" role="dialog" aria-modal="true">
-      <div class="modal-symbol">⚠</div><h2 id="confirmTitle">تأكيد</h2><p id="confirmText" class="muted"></p>
-      <div class="modal-actions"><button id="confirmCancel" class="secondary-btn">إلغاء</button><button id="confirmOk" class="danger-btn">تأكيد</button></div>
-    </section>
-  </div>
-
-  <script src="data.js"></script>
-  <script src="app.js"></script>
-  <script src="analytics.js"></script>
+<body>
+  <main>
+    <div class="mark">N</div>
+    <h1>يتم نقلك إلى NEON Academy 2060</h1>
+    <p>أصبح الدخول المعتمد للمنصة من خلال الأكاديمية، ويتطلب إنشاء حساب أو تسجيل الدخول.</p>
+    <a href="academy/">الدخول إلى المنصة</a>
+  </main>
 </body>
 </html>
