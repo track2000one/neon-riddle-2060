@@ -39,6 +39,7 @@ const ACADEMY_SCRIPTS = [
   'exam-bank-imported-visual-quant-page10-11.js',
   'exam-bank-imported-2026.js',
   'exam-bank.js',
+  'exam-dedupe-enhanced.js',
   'exam-center-ui.js',
   'exam-center-source-patch.js',
   'academy.js'
