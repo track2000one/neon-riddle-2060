@@ -6,6 +6,14 @@
   const academy = window.NEON_ACADEMY;
   const answerLabels = ['أ','ب','ج','د','هـ','و'];
 
+  if (!document.querySelector('script[data-lesson-quickcheck-loader]')) {
+    const quickCheckScript = document.createElement('script');
+    quickCheckScript.src = 'lesson-quickcheck-unique.js';
+    quickCheckScript.async = false;
+    quickCheckScript.dataset.lessonQuickcheckLoader = 'true';
+    document.body.appendChild(quickCheckScript);
+  }
+
   function normalize(value) {
     const digits = '٠١٢٣٤٥٦٧٨٩';
     return String(value || '')
