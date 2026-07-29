@@ -11,5 +11,8 @@ export const firebaseConfig = {
 // الحساب الوحيد المسموح له بفتح لوحة المسؤول.
 export const ADMIN_UID = "EE2dpbeCwnSe1Ih7yahI5AhTSK13";
 
+// خدمة إدارة مستخدمي Firebase المنشورة على Railway.
+export const ADMIN_API_BASE_URL = "https://neon-riddle-2060-backend-production.up.railway.app";
+
 // معرّف الإحصاءات الرئيسي للموقع العام.
 export const SITE_ANALYTICS_ID = "G-NZNC6929YS";
