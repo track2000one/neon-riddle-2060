@@ -1,4 +1,4 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
 import {
   getAuth,
   setPersistence,
@@ -11,11 +11,12 @@ import {
   updateProfile,
   onAuthStateChanged,
   signOut
-} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import { firebaseConfig, SITE_ANALYTICS_ID } from './firebase-config.js';
 
 const PROFILE_KEY = 'neonRiddleGrandProfilesV4';
 const SETTINGS_KEY = 'neonRiddleGrandSettingsV4';
+const RESET_COOLDOWN_SECONDS = 45;
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -35,10 +36,12 @@ const loginMessage = document.getElementById('loginMessage');
 const registerMessage = document.getElementById('registerMessage');
 const resetMessage = document.getElementById('resetMessage');
 const registerPassword = document.getElementById('registerPassword');
+const resetEmailInput = document.getElementById('resetEmail');
 const passwordMeterBar = document.getElementById('passwordMeterBar');
 const passwordStrengthText = document.getElementById('passwordStrengthText');
 const toast = document.getElementById('toast');
 let toastTimer = null;
+let resetCooldownTimer = null;
 
 window.dataLayer = window.dataLayer || [];
 window.gtag = window.gtag || function gtag() { window.dataLayer.push(arguments); };
@@ -98,6 +101,13 @@ function structuredCloneSafe(value) {
   catch { return JSON.parse(JSON.stringify(value)); }
 }
 
+function prefillResetEmail() {
+  if (resetEmailInput.value.trim()) return;
+  const loginEmail = document.getElementById('loginEmail')?.value.trim();
+  const registerEmail = document.getElementById('registerEmail')?.value.trim();
+  resetEmailInput.value = loginEmail || registerEmail || '';
+}
+
 function switchView(viewName) {
   tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.view === viewName));
   forms.forEach(form => form.classList.toggle('active-form', form.dataset.form === viewName));
@@ -105,8 +115,14 @@ function switchView(viewName) {
     message.textContent = '';
     message.classList.remove('success');
   });
+
+  if (viewName === 'reset') {
+    prefillResetEmail();
+    window.setTimeout(() => resetEmailInput.focus(), 80);
+  }
+
   const hash = viewName === 'login' ? '' : `#${viewName}`;
-  history.replaceState(null, '', `${location.pathname}${hash}`);
+  history.replaceState(null, '', `${location.pathname}${location.search}${hash}`);
 }
 
 function setButtonBusy(button, busy, busyText, defaultText) {
@@ -137,7 +153,8 @@ function friendlyError(error) {
     'auth/too-many-requests': 'تم إيقاف المحاولات مؤقتًا بسبب كثرتها. حاول لاحقًا.',
     'auth/network-request-failed': 'تعذر الاتصال بالخدمة. تحقق من الإنترنت.',
     'auth/missing-password': 'اكتب كلمة المرور.',
-    'auth/user-not-found': 'لا يوجد حساب مسجل بهذا البريد.'
+    'auth/unauthorized-continue-uri': 'نطاق المنصة غير مصرح به في إعدادات Firebase.',
+    'auth/invalid-continue-uri': 'تعذر إنشاء رابط الرجوع إلى المنصة.'
   };
   return messages[error?.code] || 'تعذر تنفيذ العملية. تحقق من البيانات وحاول مرة أخرى.';
 }
@@ -165,6 +182,39 @@ function updatePasswordMeter() {
   passwordMeterBar.style.width = width;
   passwordMeterBar.style.background = color;
   passwordStrengthText.textContent = text;
+}
+
+function getResetActionSettings() {
+  const returnUrl = new URL('./auth.html', window.location.href);
+  returnUrl.hash = 'login';
+  return {
+    url: returnUrl.href,
+    handleCodeInApp: false
+  };
+}
+
+function beginResetCooldown() {
+  clearInterval(resetCooldownTimer);
+  let seconds = RESET_COOLDOWN_SECONDS;
+  resetButton.disabled = true;
+
+  const updateLabel = () => {
+    const span = resetButton.querySelector('span');
+    if (span) span.textContent = `إعادة الإرسال بعد ${seconds} ثانية`;
+  };
+
+  updateLabel();
+  resetCooldownTimer = window.setInterval(() => {
+    seconds -= 1;
+    if (seconds <= 0) {
+      clearInterval(resetCooldownTimer);
+      resetButton.disabled = false;
+      const span = resetButton.querySelector('span');
+      if (span) span.textContent = 'إرسال الرابط مرة أخرى';
+      return;
+    }
+    updateLabel();
+  }, 1000);
 }
 
 async function redirectToAcademy(user) {
@@ -243,15 +293,39 @@ registerForm.addEventListener('submit', async event => {
 resetForm.addEventListener('submit', async event => {
   event.preventDefault();
   showMessage(resetMessage, '');
-  setButtonBusy(resetButton, true, 'جارٍ إرسال الرسالة...', 'إرسال رابط الاستعادة');
+
+  const email = resetEmailInput.value.trim().toLowerCase();
+  resetEmailInput.value = email;
+
+  if (!email) {
+    resetEmailInput.focus();
+    return showMessage(resetMessage, 'اكتب البريد الإلكتروني المسجل في حسابك.');
+  }
+
+  if (!resetEmailInput.checkValidity()) {
+    resetEmailInput.focus();
+    return showMessage(resetMessage, 'صيغة البريد الإلكتروني غير صحيحة.');
+  }
+
+  setButtonBusy(resetButton, true, 'جارٍ إرسال رابط الاستعادة...', 'إرسال رابط الاستعادة');
 
   try {
-    const email = document.getElementById('resetEmail').value.trim();
-    await sendPasswordResetEmail(auth, email);
-    showMessage(resetMessage, 'تم إرسال رابط إعادة تعيين كلمة المرور. تحقق من بريدك والرسائل غير المرغوب فيها.', true);
-    setButtonBusy(resetButton, false, '', 'إرسال الرابط مرة أخرى');
+    await sendPasswordResetEmail(auth, email, getResetActionSettings());
+    showMessage(
+      resetMessage,
+      'تم إرسال رابط إعادة تعيين كلمة المرور. افتح الرسالة واتبع التعليمات، ثم ارجع لتسجيل الدخول بكلمة المرور الجديدة. تحقق أيضًا من البريد غير المرغوب فيه.',
+      true
+    );
+    beginResetCooldown();
     track('password_reset_requested');
   } catch (error) {
+    if (error?.code === 'auth/user-not-found') {
+      showMessage(resetMessage, 'إذا كان البريد مرتبطًا بحساب فستصلك رسالة إعادة التعيين. تحقق من البريد غير المرغوب فيه.', true);
+      beginResetCooldown();
+      track('password_reset_requested');
+      return;
+    }
+
     showMessage(resetMessage, friendlyError(error));
     setButtonBusy(resetButton, false, '', 'إرسال رابط الاستعادة');
     track('password_reset_failed', { error_code: error?.code || 'unknown' });
