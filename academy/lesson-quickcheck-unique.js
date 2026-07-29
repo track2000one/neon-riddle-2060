@@ -4,8 +4,22 @@
   const academy = window.NEON_ACADEMY;
   if (!academy || !Array.isArray(academy.lessons) || !Array.isArray(academy.questionBank)) return;
 
+  const lessons = academy.lessons.filter(lesson => lesson?.id && lesson?.title);
   const generatedByLesson = new Map();
+  const lessonsByTitle = new Map();
+  const lessonsBySubject = new Map();
+  const lessonsByArea = new Map();
   const arabicDigits = '٠١٢٣٤٥٦٧٨٩';
+  let applyQueued = false;
+
+  lessons.forEach(lesson => {
+    if (!lessonsByTitle.has(lesson.title)) lessonsByTitle.set(lesson.title, []);
+    lessonsByTitle.get(lesson.title).push(lesson);
+    if (!lessonsBySubject.has(lesson.subjectId)) lessonsBySubject.set(lesson.subjectId, []);
+    lessonsBySubject.get(lesson.subjectId).push(lesson);
+    if (!lessonsByArea.has(lesson.area)) lessonsByArea.set(lesson.area, []);
+    lessonsByArea.get(lesson.area).push(lesson);
+  });
 
   function normalize(value) {
     return String(value || '')
@@ -68,27 +82,27 @@
     return `أي وصف يطابق محتوى وحدة ${title}؟`;
   }
 
+  function appendCandidates(group, lesson, variant, seen, output) {
+    if (!Array.isArray(group) || group.length < 2 || output.length >= 3) return;
+    const start = hash(`${lesson.id}|${variant}|${group.length}`) % group.length;
+    for (let offset = 0; offset < group.length && output.length < 3; offset++) {
+      const candidate = group[(start + offset) % group.length];
+      if (!candidate || candidate.id === lesson.id) continue;
+      const value = lessonValue(candidate, variant);
+      const key = normalize(value);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      output.push(value);
+    }
+  }
+
   function distractorsFor(lesson, variant, correct) {
     const seen = new Set([normalize(correct)]);
     const output = [];
-    const groups = [
-      academy.lessons.filter(item => item.id !== lesson.id && item.subjectId === lesson.subjectId),
-      academy.lessons.filter(item => item.id !== lesson.id && item.area === lesson.area),
-      academy.lessons.filter(item => item.id !== lesson.id)
-    ];
 
-    groups.forEach(group => {
-      group
-        .map(item => lessonValue(item, variant))
-        .filter(Boolean)
-        .sort((left, right) => hash(`${lesson.id}|${left}`) - hash(`${lesson.id}|${right}`))
-        .forEach(value => {
-          const key = normalize(value);
-          if (!key || seen.has(key) || output.length >= 3) return;
-          seen.add(key);
-          output.push(value);
-        });
-    });
+    appendCandidates(lessonsBySubject.get(lesson.subjectId), lesson, variant, seen, output);
+    appendCandidates(lessonsByArea.get(lesson.area), lesson, variant, seen, output);
+    appendCandidates(lessons, lesson, variant, seen, output);
 
     const fallbacks = {
       coding: ['حفظ أسماء الأوامر دون بناء أي مثال تطبيقي.', 'تغيير ألوان الواجهة فقط دون دراسة المفهوم.', 'استخدام أداة لا ترتبط باللغة أو الموضوع الحالي.'],
@@ -132,8 +146,7 @@
   }
 
   const existingIds = new Set(academy.questionBank.map(question => question.id));
-  academy.lessons.forEach((lesson, index) => {
-    if (!lesson?.id || !lesson?.title) return;
+  lessons.forEach((lesson, index) => {
     const question = createQuestion(lesson, index);
     generatedByLesson.set(lesson.id, question);
     if (!existingIds.has(question.id)) {
@@ -154,36 +167,44 @@
     return `<div class="quick-check" data-question-id="${escapeHtml(question.id)}" data-lesson-unique="true"><h4>تحقق سريع: ${escapeHtml(question.q)}</h4><div class="quick-options">${question.options.map((option, index) => `<button class="quick-option" data-quick-answer="${index}">${escapeHtml(option)}</button>`).join('')}</div><div class="quick-feedback"></div></div>`;
   }
 
-  function applyUniqueQuestion(root = document) {
-    const containers = [];
-    if (root instanceof Element && root.matches('.quick-check')) containers.push(root);
-    root.querySelectorAll?.('.quick-check:not([data-lesson-unique])').forEach(container => containers.push(container));
-
-    containers.forEach(container => {
-      const modalContent = container.closest('#lessonModalContent');
-      const title = modalContent?.querySelector('.lesson-head h2')?.textContent?.trim();
-      const subject = modalContent?.querySelector('.lesson-head .eyebrow')?.textContent || '';
-      if (!title) return;
-      const lesson = academy.lessons.find(item => item.title === title && (!item.subject || subject.includes(item.levelTitle || ''))) || academy.lessons.find(item => item.title === title);
-      const question = lesson && generatedByLesson.get(lesson.id);
-      if (!question) return;
-      container.outerHTML = renderQuickCheck(question);
-    });
+  function resolveLesson(modalContent) {
+    const title = modalContent?.querySelector('.lesson-head h2')?.textContent?.trim();
+    if (!title) return null;
+    const matches = lessonsByTitle.get(title) || [];
+    if (matches.length <= 1) return matches[0] || null;
+    const eyebrow = modalContent.querySelector('.lesson-head .eyebrow')?.textContent || '';
+    return matches.find(lesson => eyebrow.includes(lesson.levelTitle || '')) || matches[0];
   }
 
-  const observer = new MutationObserver(mutations => {
-    mutations.forEach(mutation => mutation.addedNodes.forEach(node => {
-      if (node instanceof Element) applyUniqueQuestion(node);
-    }));
-  });
+  function applyUniqueQuestion() {
+    applyQueued = false;
+    const modalContent = document.getElementById('lessonModalContent');
+    if (!modalContent) return;
+    const container = modalContent.querySelector('.quick-check:not([data-lesson-unique])');
+    if (!container) return;
+    const lesson = resolveLesson(modalContent);
+    const question = lesson && generatedByLesson.get(lesson.id);
+    if (question) container.outerHTML = renderQuickCheck(question);
+  }
 
-  observer.observe(document.documentElement, { childList: true, subtree: true });
-  applyUniqueQuestion();
+  function scheduleApply() {
+    if (applyQueued) return;
+    applyQueued = true;
+    const schedule = window.requestAnimationFrame || (callback => window.setTimeout(callback, 16));
+    schedule(applyUniqueQuestion);
+  }
+
+  const modalContent = document.getElementById('lessonModalContent');
+  if (modalContent) {
+    const observer = new MutationObserver(scheduleApply);
+    observer.observe(modalContent, { childList: true, subtree: true });
+  }
+  scheduleApply();
 
   window.NEON_LESSON_QUESTION_REPORT = {
     generated: generatedByLesson.size,
     uniqueQuestionIds: new Set([...generatedByLesson.values()].map(item => item.id)).size,
-    strategy: 'one-contextual-question-per-lesson'
+    strategy: 'one-contextual-question-per-lesson-optimized'
   };
 
   console.info('[NEON Academy] Unique lesson questions ready', window.NEON_LESSON_QUESTION_REPORT);
