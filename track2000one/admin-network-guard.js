@@ -37,4 +37,12 @@
       originalSignal?.removeEventListener?.('abort', abortFromOriginal);
     }
   };
+
+  if (!document.querySelector('script[data-content-audit-loader]')) {
+    const auditScript = document.createElement('script');
+    auditScript.src = 'content-audit.js';
+    auditScript.async = false;
+    auditScript.dataset.contentAuditLoader = 'true';
+    document.head.appendChild(auditScript);
+  }
 })();
