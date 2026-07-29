@@ -5,6 +5,7 @@
   const bank = window.NEON_EXAM_BANK;
   const academy = window.NEON_ACADEMY;
   const answerLabels = ['أ','ب','ج','د','هـ','و'];
+  let updateQueued = false;
 
   if (!document.querySelector('script[data-lesson-quickcheck-loader]')) {
     const quickCheckScript = document.createElement('script');
@@ -38,8 +39,8 @@
     return 'other';
   }
 
-  function repairOptionButtons() {
-    document.querySelectorAll('.center-exam-screen .exam-option[data-center-answer]').forEach((button, index) => {
+  function repairOptionButtons(root = document) {
+    root.querySelectorAll?.('.center-exam-screen .exam-option[data-center-answer]').forEach((button, index) => {
       const label = button.querySelector('b');
       if (label && label.textContent !== answerLabels[index]) label.textContent = answerLabels[index] || String(index + 1);
       const screen = button.closest('.center-exam-screen');
@@ -57,10 +58,20 @@
 
     const family = familySelect?.value || 'all';
     const subjectMeta = new Map((bank.meta?.subjects || []).map(item => [item.id, item]));
+    const subjectCounts = new Map();
+    const categoryCounts = new Map();
+
+    questions.forEach(item => {
+      if (family === 'all' || inferFamily(item) === family) {
+        subjectCounts.set(item.subject, (subjectCounts.get(item.subject) || 0) + 1);
+      }
+      categoryCounts.set(`${item.subject}|${item.category}`, (categoryCounts.get(`${item.subject}|${item.category}`) || 0) + 1);
+    });
+
     [...subjectSelect.options].forEach(option => {
       if (option.value === 'all') return;
       const meta = subjectMeta.get(option.value);
-      const count = questions.filter(item => item.subject === option.value && (family === 'all' || inferFamily(item) === family)).length;
+      const count = subjectCounts.get(option.value) || 0;
       option.disabled = count === 0;
       const text = `${meta?.icon || '🎯'} ${meta?.title || option.value} (${count.toLocaleString('ar-SA')})`;
       if (option.textContent !== text) option.textContent = text;
@@ -70,7 +81,7 @@
     const subject = subjectSelect.value;
     [...categorySelect.options].forEach(option => {
       if (option.value === 'all') return;
-      const count = questions.filter(item => item.subject === subject && item.category === option.value).length;
+      const count = categoryCounts.get(`${subject}|${option.value}`) || 0;
       option.disabled = count === 0;
       const base = option.dataset.baseTitle || option.textContent.replace(/\s*\(\d+\)\s*$/, '');
       option.dataset.baseTitle = base;
@@ -80,8 +91,10 @@
   }
 
   function updateSourceDisplay() {
-    const questionElement = document.querySelector('.center-exam-screen .exam-question');
-    const sourceElement = document.querySelector('.center-exam-screen .center-source-line');
+    updateQueued = false;
+    const examModal = document.getElementById('examModal');
+    const questionElement = examModal?.querySelector('.center-exam-screen .exam-question');
+    const sourceElement = examModal?.querySelector('.center-exam-screen .center-source-line');
 
     if (questionElement && sourceElement) {
       const question = sourceMap.get(normalize(questionElement.textContent));
@@ -93,16 +106,17 @@
       }
     }
 
-    repairOptionButtons();
+    repairOptionButtons(examModal || document);
     repairSetupControls();
 
-    const quduratEyebrow = document.querySelector('.qudurat-family .eyebrow');
+    const testCenter = document.getElementById('test-center');
+    const quduratEyebrow = testCenter?.querySelector('.qudurat-family .eyebrow');
     if (quduratEyebrow && quduratEyebrow.textContent !== 'GENERAL APTITUDE TEST') {
       quduratEyebrow.textContent = 'GENERAL APTITUDE TEST';
     }
 
     const audit = window.NEON_PLATFORM_AUDIT_REPORT || {};
-    const health = document.querySelector('.exam-bank-health');
+    const health = testCenter?.querySelector('.exam-bank-health');
     if (health && health.dataset.finalized !== 'true') {
       health.dataset.finalized = 'true';
       const active = Number(audit.activeExamQuestions || 0);
@@ -111,7 +125,7 @@
       health.innerHTML = `<span>✓ تم فحص بنك الأسئلة</span><span><b>${active.toLocaleString('ar-SA')}</b> سؤالًا فعالًا</span><span><b>تمت معالجة التكرار</b></span>${repaired ? `<span><b>${repaired.toLocaleString('ar-SA')}</b> حالة تم إصلاحها</span>` : ''}${invalid ? `<span class="warn">${invalid.toLocaleString('ar-SA')} سؤالًا غير صالح تم استبعاده</span>` : ''}`;
     }
 
-    const note = document.querySelector('.exam-source-note');
+    const note = testCenter?.querySelector('.exam-source-note');
     if (note && note.dataset.importReviewApplied !== 'true') {
       const report = window.NEON_EXAM_DEDUPE_REPORT || {};
       const stats = window.NEON_IMPORTED_EXAM_SOURCE_STATS || {};
@@ -121,10 +135,22 @@
     }
   }
 
-  const observer = new MutationObserver(updateSourceDisplay);
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  function scheduleUpdate() {
+    if (updateQueued) return;
+    updateQueued = true;
+    const schedule = window.requestAnimationFrame || (callback => window.setTimeout(callback, 16));
+    schedule(updateSourceDisplay);
+  }
+
+  const observer = new MutationObserver(scheduleUpdate);
+  const examModal = document.getElementById('examModal');
+  const testCenter = document.getElementById('test-center');
+  if (examModal) observer.observe(examModal, { childList: true, subtree: true });
+  if (testCenter) observer.observe(testCenter, { childList: true, subtree: true });
+
   document.addEventListener('change', event => {
-    if (['centerFamily','centerSubject','centerCategory'].includes(event.target?.id)) queueMicrotask(updateSourceDisplay);
+    if (['centerFamily','centerSubject','centerCategory'].includes(event.target?.id)) scheduleUpdate();
   }, true);
-  updateSourceDisplay();
+
+  scheduleUpdate();
 })();
