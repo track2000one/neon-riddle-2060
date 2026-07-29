@@ -13,7 +13,7 @@
   function scatter(){let body=text(480,52,'إنتاج مصنع العصير بالدقيقة',30,900);const left=120,top=90,w=700,h=360;for(let i=0;i<=5;i++){const y=top+h-i*h/5;body+=`<line x1="${left}" y1="${y}" x2="${left+w}" y2="${y}" stroke="${grid}" stroke-width="2"/>${text(left-15,y+7,i*20,16,600,muted,'end')}`;}[20,40,60,80,100].forEach((v,i)=>{const x=left+(i+1)*w/6,y=top+h-v/100*h;body+=`<rect x="${x-8}" y="${y-8}" width="16" height="16" rx="3" fill="${ink}"/>${text(x,top+h+38,i+1,18,700)}`;});return frame(body,'إنتاج مصنع العصير بالدقيقة');}
   const additions={
     'visual-children-median-43':table({title:'عدد الأطفال في 20 أسرة',headers:['4','3','2','2','1'],rows:[['3','5','1','4','2'],['2','5','3','3','5'],['6','1','3','4','3']]}),
-    'visual-salaries-43':bars({title:'عدد العاملين حسب الراتب الشهري',labels:['1000','2000','3000','4000','5000'],series:[{name:'عدد العاملين',values:[40,30,20,10,20],color:ink}],max:50}),
+    'visual-salaries-43':bars({title:'عدد العاملين حسب الراتب الشهري',labels:['1000','2000','3000','4000','5000'],series:[{name:'عدد العاملين',values:[40,30,20,10,10],color:ink}],max:50}),
     'visual-fruit-43':pie({title:'توزيع 540 ثمرة',items:[{label:'خوخ',value:30},{label:'موز',value:15},{label:'مانجو',value:20},{label:'عنب',value:15},{label:'فواكه أخرى',value:20}]}),
     'visual-sectors-43':table({title:'قيم القطاعات بين 2003 و2006',headers:['القطاع','2003','2004','2005','2006'],rows:[['الصناعة','3000','1500','6000','2000'],['الزراعة','500','200','1500','5000'],['المصارف','4000','5000','8000','9000'],['التجارة','2000','4000','6000','10000']]}),
     'visual-quarter-decrease-43':line({title:'قيمة أربعة أشهر متتالية',labels:['محرم','صفر','ربيع الأول','ربيع الثاني'],values:[50,49,45,50],max:60}),
