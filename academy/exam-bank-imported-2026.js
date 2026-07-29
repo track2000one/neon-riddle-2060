@@ -19,7 +19,9 @@
     ...(window.NEON_IMPORTED_VISUAL_QUANT_PAGE30_35 || []),
     ...(window.NEON_IMPORTED_VISUAL_QUANT_PAGE36_41 || []),
     ...(window.NEON_IMPORTED_VISUAL_QUANT_PAGE42_45 || []),
-    ...(window.NEON_IMPORTED_VISUAL_QUANT_PAGE46_49 || [])
+    ...(window.NEON_IMPORTED_VISUAL_QUANT_PAGE46_49 || []),
+    ...(window.NEON_IMPORTED_VIDEO_QUANT_A || []),
+    ...(window.NEON_IMPORTED_VIDEO_QUANT_B || [])
   ];
   window.NEON_IMPORTED_EXAM_QUESTIONS_2026 = questions;
   window.NEON_IMPORTED_EXAM_SOURCE_STATS = {
@@ -27,7 +29,10 @@
     quant: questions.filter(item => item.subject === 'qudurat-quant').length,
     verbal: questions.filter(item => item.subject === 'qudurat-verbal').length,
     visualQuant: questions.filter(item => item.subject === 'qudurat-quant' && item.visualId).length,
-    filesReviewed: 39,
+    filesReviewed: 42,
+    videoFramesReviewed: 48,
+    videoUniqueQuestionsPrepared: 47,
+    videoDuplicateFramesSkipped: 1,
     exactDuplicateFilesSkipped: 1,
     duplicateHeavyFilesSkipped: 1
   };
