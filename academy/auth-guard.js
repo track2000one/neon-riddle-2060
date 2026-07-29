@@ -55,10 +55,12 @@ const ACADEMY_SCRIPTS = [
   'exam-bank-imported-video-compilations-2026-b.js',
   'exam-bank-imported-2026.js',
   'exam-bank.js',
+  'academy-performance-bootstrap.js',
   'exam-dedupe-enhanced.js',
   'exam-center-ui.js',
   'exam-center-source-patch.js',
-  'academy.js'
+  'academy.js',
+  'academy-performance-guard.js'
 ];
 
 function readJson(key, fallback) {
