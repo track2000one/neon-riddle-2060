@@ -7,6 +7,7 @@
   <meta name="robots" content="noindex,nofollow,noarchive" />
   <title>NEON RIDDLE 2060 | لوحة المسؤول</title>
   <link rel="stylesheet" href="admin.css" />
+  <link rel="stylesheet" href="firebase-users.css" />
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-NZNC6929YS"></script>
 </head>
 <body>
@@ -32,7 +33,7 @@
         </div>
         <div class="eyebrow">SECURE ADMIN ACCESS</div>
         <h1>بوابة التحكم<br><span>NEON RIDDLE 2060</span></h1>
-        <p>لوحة خاصة للمسؤول لإدارة المشروع ومراجعة المحتوى والبيانات المحلية والوصول السريع إلى خدمات التحليل والنشر.</p>
+        <p>لوحة خاصة للمسؤول لإدارة المشروع ومراجعة المحتوى ومستخدمي Firebase والوصول السريع إلى خدمات التحليل والنشر.</p>
         <div class="security-list">
           <span>مصادقة Firebase</span>
           <span>تحقق مباشر من UID</span>
@@ -73,7 +74,7 @@
 
       <nav class="side-nav">
         <button class="nav-item active" data-section="overview"><span>◫</span>نظرة عامة</button>
-        <button class="nav-item" data-section="players"><span>♟</span>اللاعبون المحليون</button>
+        <button class="nav-item" data-section="players"><span>♟</span>مستخدمو Firebase</button>
         <button class="nav-item" data-section="library"><span>▦</span>مكتبة المحتوى</button>
         <button class="nav-item" data-section="analytics"><span>⌁</span>الإحصاءات</button>
         <button class="nav-item" data-section="security"><span>◆</span>الأمان والجلسة</button>
@@ -109,7 +110,7 @@
           <div>
             <div class="eyebrow">SYSTEM STATUS</div>
             <h2>المشروع يعمل بصورة طبيعية</h2>
-            <p>لوحة المسؤول متصلة بمصادقة Firebase، وموقع اللعبة منشور عبر GitHub Pages، وتتبع الزيارات يعمل عبر Google Analytics 4.</p>
+            <p>لوحة المسؤول متصلة بمصادقة Firebase، وخدمة إدارة المستخدمين منشورة على Railway، وموقع اللعبة منشور عبر GitHub Pages، وتتبع الزيارات يعمل عبر Google Analytics 4.</p>
           </div>
           <div class="hero-signal">
             <div class="signal-ring"></div>
@@ -130,8 +131,9 @@
             <div class="panel-heading"><div><span class="eyebrow">QUICK LINKS</span><h3>الوصول السريع</h3></div></div>
             <div class="quick-links">
               <a href="https://analytics.google.com/" target="_blank" rel="noopener"><span>⌁</span><div><strong>Google Analytics</strong><small>الزيارات والأحداث المباشرة</small></div><b>↗</b></a>
-              <a href="https://console.firebase.google.com/project/neon-riddle-2060-admin/authentication/users" target="_blank" rel="noopener"><span>◆</span><div><strong>Firebase Console</strong><small>المصادقة والمستخدم المسؤول</small></div><b>↗</b></a>
+              <a href="https://console.firebase.google.com/project/neon-riddle-2060-admin/authentication/users" target="_blank" rel="noopener"><span>◆</span><div><strong>Firebase Console</strong><small>المصادقة والمستخدمون</small></div><b>↗</b></a>
               <a href="https://github.com/track2000one/neon-riddle-2060" target="_blank" rel="noopener"><span>◫</span><div><strong>GitHub Repository</strong><small>ملفات المشروع والتحديثات</small></div><b>↗</b></a>
+              <a href="https://neon-riddle-2060-backend-production.up.railway.app/api/health" target="_blank" rel="noopener"><span>●</span><div><strong>Railway Admin API</strong><small>فحص حالة خدمة إدارة المستخدمين</small></div><b>↗</b></a>
               <a href="../" target="_blank"><span>▶</span><div><strong>الموقع العام</strong><small>فتح نسخة اللعبة المنشورة</small></div><b>↗</b></a>
             </div>
           </article>
@@ -145,17 +147,51 @@
       </section>
 
       <section id="playersSection" class="admin-section">
-        <div class="section-note"><strong>تنبيه:</strong> هذه القائمة تعرض ملفات اللاعبين المحفوظة في متصفح هذا الجهاز فقط. اللاعبين على أجهزة أخرى لا يظهرون هنا لأن اللعبة ما زالت تعتمد على LocalStorage.</div>
+        <div id="firebaseUsersError" class="api-error-box hidden"></div>
+        <div class="firebase-users-toolbar">
+          <div>
+            <div class="eyebrow">FIREBASE AUTHENTICATION USERS</div>
+            <h2 style="margin:0">إدارة الحسابات المسجلة</h2>
+            <div id="firebaseApiState" class="firebase-api-state">جارٍ التحقق من خدمة Railway...</div>
+          </div>
+          <div class="firebase-users-search">
+            <input id="firebaseUsersSearch" type="search" placeholder="ابحث بالاسم أو البريد أو UID أو الدور..." />
+            <button id="firebaseUsersRefresh" class="outline-button compact" type="button">تحديث</button>
+            <button id="firebaseUserCreate" class="primary-button" type="button" style="width:auto;min-height:42px;margin:0;padding:0 18px">مستخدم جديد</button>
+          </div>
+        </div>
+
+        <div class="firebase-user-stats">
+          <article class="firebase-user-stat"><small>إجمالي الحسابات</small><strong id="firebaseUsersTotal">0</strong></article>
+          <article class="firebase-user-stat"><small>الحسابات النشطة</small><strong id="firebaseUsersActive">0</strong></article>
+          <article class="firebase-user-stat"><small>الحسابات المعطلة</small><strong id="firebaseUsersDisabled">0</strong></article>
+          <article class="firebase-user-stat"><small>البريد الموثّق</small><strong id="firebaseUsersVerified">0</strong></article>
+        </div>
+
         <article class="panel table-panel">
-          <div class="panel-heading"><div><span class="eyebrow">LOCAL PLAYERS</span><h3>اللاعبون على هذا الجهاز</h3></div><button id="playersRefresh" class="outline-button compact">تحديث</button></div>
+          <div class="panel-heading"><div><span class="eyebrow">LIVE FIREBASE USERS</span><h3>المستخدمون المسجلون</h3><p class="firebase-user-count-note">العمليات التالية تنفذ مباشرة على Firebase Authentication عبر خادم Railway المحمي.</p></div></div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>اللاعب</th><th>النقاط</th><th>العملات</th><th>المراحل</th><th>أفضل قدرات</th><th>أفضل بطولة</th></tr></thead>
-              <tbody id="playersTableBody"></tbody>
+              <thead><tr><th>المستخدم</th><th>الدور</th><th>التوثيق</th><th>الحالة</th><th>تاريخ التسجيل</th><th>آخر دخول</th><th>الإجراءات</th></tr></thead>
+              <tbody id="firebaseUsersTableBody"></tbody>
             </table>
           </div>
-          <div id="playersEmpty" class="empty-state hidden">لا توجد ملفات لاعبين محفوظة على هذا الجهاز.</div>
+          <div id="firebaseUsersEmpty" class="empty-state hidden">لا توجد نتائج مطابقة.</div>
         </article>
+
+        <details class="local-players-disclosure">
+          <summary>عرض الملفات المحلية القديمة على هذا الجهاز</summary>
+          <article class="panel table-panel">
+            <div class="panel-heading"><div><span class="eyebrow">LOCAL PLAYERS</span><h3>اللاعبون المحفوظون في LocalStorage</h3></div><button id="playersRefresh" class="outline-button compact">تحديث</button></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>اللاعب</th><th>النقاط</th><th>العملات</th><th>المراحل</th><th>أفضل قدرات</th><th>أفضل بطولة</th></tr></thead>
+                <tbody id="playersTableBody"></tbody>
+              </table>
+            </div>
+            <div id="playersEmpty" class="empty-state hidden">لا توجد ملفات لاعبين محفوظة على هذا الجهاز.</div>
+          </article>
+        </details>
       </section>
 
       <section id="librarySection" class="admin-section">
@@ -184,16 +220,45 @@
       <section id="securitySection" class="admin-section">
         <div class="security-grid">
           <article class="panel security-card"><div class="security-icon">◆</div><h3>حساب المسؤول</h3><dl><div><dt>البريد</dt><dd id="securityEmail">—</dd></div><div><dt>UID</dt><dd id="securityUid">—</dd></div><div><dt>مزود الدخول</dt><dd id="securityProvider">—</dd></div><div><dt>آخر دخول</dt><dd id="securityLastLogin">—</dd></div></dl></article>
-          <article class="panel security-card"><div class="security-icon">◈</div><h3>طبقات الحماية الحالية</h3><ul><li>المسار غير ظاهر في واجهة اللعبة.</li><li>تسجيل الدخول عبر Firebase Authentication.</li><li>التحقق من UID المحدد قبل إظهار اللوحة.</li><li>تسجيل الخروج التلقائي للحساب غير المصرح.</li><li>النطاق العام مضاف إلى Authorized domains.</li></ul></article>
-          <article class="panel security-card warning"><div class="security-icon">!</div><h3>المرحلة الأمنية القادمة</h3><p>عند إضافة تعديل الأسئلة أو إدارة المستخدمين عبر قاعدة بيانات، يجب حماية Firestore Rules بالـUID نفسه. إخفاء المسار وحده ليس بديلًا عن قواعد الخادم.</p></article>
+          <article class="panel security-card"><div class="security-icon">◈</div><h3>طبقات الحماية الحالية</h3><ul><li>تسجيل الدخول عبر Firebase Authentication.</li><li>التحقق من UID المحدد قبل إظهار اللوحة.</li><li>إرسال Firebase ID Token مع كل طلب إداري.</li><li>التحقق من صلاحية المسؤول داخل خادم Railway.</li><li>مفتاح Firebase Admin محفوظ في متغيرات Railway السرية.</li></ul></article>
+          <article class="panel security-card warning"><div class="security-icon">!</div><h3>تنبيه إداري</h3><p>الحذف والتعطيل وتغيير الأدوار عمليات فعلية على Firebase. راجع البريد وUID قبل اعتماد أي عملية، ولا تمنح دور المسؤول إلا للحسابات الموثوقة.</p></article>
         </div>
       </section>
     </main>
+  </div>
+
+  <div id="firebaseUserModal" class="firebase-modal hidden" role="dialog" aria-modal="true" aria-labelledby="firebaseUserModalTitle">
+    <div class="firebase-modal-card">
+      <div class="firebase-modal-head">
+        <div><div class="eyebrow">FIREBASE USER</div><h3 id="firebaseUserModalTitle">بيانات المستخدم</h3></div>
+        <button id="firebaseUserModalClose" class="firebase-modal-close" type="button" aria-label="إغلاق">×</button>
+      </div>
+      <form id="firebaseUserForm" class="firebase-user-form">
+        <input id="firebaseUserUid" type="hidden" />
+        <div class="firebase-form-grid">
+          <div class="firebase-form-field"><label for="firebaseUserDisplayName">الاسم المعروض</label><input id="firebaseUserDisplayName" type="text" maxlength="80" placeholder="اسم المستخدم" /></div>
+          <div class="firebase-form-field"><label for="firebaseUserEmail">البريد الإلكتروني</label><input id="firebaseUserEmail" type="email" required placeholder="name@example.com" /></div>
+          <div class="firebase-form-field"><label for="firebaseUserPhone">رقم الهاتف الدولي</label><input id="firebaseUserPhone" type="tel" dir="ltr" placeholder="+9665XXXXXXXX" /></div>
+          <div class="firebase-form-field"><label for="firebaseUserRole">الدور والصلاحية</label><select id="firebaseUserRole"><option value="student">طالب</option><option value="teacher">معلم</option><option value="content_manager">مسؤول محتوى</option><option value="admin">مسؤول</option></select></div>
+          <div class="firebase-form-field full"><label for="firebaseUserPassword">كلمة المرور المؤقتة أو الجديدة</label><input id="firebaseUserPassword" type="password" minlength="6" autocomplete="new-password" /><div id="firebaseUserPasswordNote" class="firebase-password-note"></div></div>
+        </div>
+        <div class="firebase-checks">
+          <label><input id="firebaseUserVerifiedInput" type="checkbox" /> البريد الإلكتروني موثّق</label>
+          <label><input id="firebaseUserDisabledInput" type="checkbox" /> الحساب معطّل</label>
+        </div>
+        <div id="firebaseUserFormMessage" class="firebase-form-message" role="alert"></div>
+        <div class="firebase-modal-actions">
+          <button id="firebaseUserSave" class="primary-button" type="submit" style="width:auto;min-width:150px;margin:0">حفظ</button>
+          <button id="firebaseUserCancel" class="outline-button" type="button">إلغاء</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="../data.js"></script>
   <script type="module" src="admin.js"></script>
+  <script type="module" src="firebase-users.js"></script>
 </body>
 </html>
