@@ -60,7 +60,8 @@ const ACADEMY_SCRIPTS = [
   'exam-center-ui.js',
   'exam-center-source-patch.js',
   'academy.js',
-  'academy-performance-guard.js'
+  'academy-performance-guard.js',
+  'academy-ai-render-throttle.js'
 ];
 
 function readJson(key, fallback) {
