@@ -12,6 +12,17 @@
   let timer = null;
   const frameDelay = 90;
 
+  function normalizeAiCodeMarkup(value) {
+    const markup = String(value ?? '');
+    return markup.replace(
+      /(<div class="ai-code-block">[\s\S]*?<code>)([\s\S]*?)(<\/code>[\s\S]*?<\/div>)/g,
+      (_, opening, code, closing) => {
+        const normalizedCode = code.replace(/&amp;(amp|lt|gt|quot|#039);/g, '&$1;');
+        return `${opening}${normalizedCode}${closing}`;
+      }
+    );
+  }
+
   function applyPending() {
     timer = null;
     if (!pendingMarkup) return;
@@ -26,7 +37,7 @@
       return descriptor.get.call(panel);
     },
     set(value) {
-      const markup = String(value ?? '');
+      const markup = normalizeAiCodeMarkup(value);
       const streaming = markup.includes('typing-caret') || markup.includes('Gemini يكتب الآن');
 
       if (!streaming) {
