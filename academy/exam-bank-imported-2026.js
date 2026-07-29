@@ -14,7 +14,8 @@
     ...(window.NEON_IMPORTED_VISUAL_QUANT_PAGE06_07 || []),
     ...(window.NEON_IMPORTED_VISUAL_QUANT_PAGE08_09 || []),
     ...(window.NEON_IMPORTED_VISUAL_QUANT_PAGE10_11 || []),
-    ...(window.NEON_IMPORTED_VISUAL_QUANT_PAGE18_23 || [])
+    ...(window.NEON_IMPORTED_VISUAL_QUANT_PAGE18_23 || []),
+    ...(window.NEON_IMPORTED_VISUAL_QUANT_PAGE24_29 || [])
   ];
   window.NEON_IMPORTED_EXAM_QUESTIONS_2026 = questions;
   window.NEON_IMPORTED_EXAM_SOURCE_STATS = {
@@ -22,7 +23,7 @@
     quant: questions.filter(item => item.subject === 'qudurat-quant').length,
     verbal: questions.filter(item => item.subject === 'qudurat-verbal').length,
     visualQuant: questions.filter(item => item.subject === 'qudurat-quant' && item.visualId).length,
-    filesReviewed: 23,
+    filesReviewed: 29,
     exactDuplicateFilesSkipped: 1,
     duplicateHeavyFilesSkipped: 1
   };
