@@ -31,7 +31,7 @@ const centers = [
   },
   {
     id: 'games',
-    href: '/legacy/games.html',
+    href: '/games',
     title: 'الألعاب والألغاز',
     subtitle: 'Games & Puzzles',
     description: 'ألغاز وتحديات ومسابقات وغرف هروب تعليمية.',
