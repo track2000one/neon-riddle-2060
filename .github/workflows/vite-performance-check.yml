@@ -15,6 +15,8 @@ on:
       - 'package-lock.json'
       - 'vite.config.js'
       - 'vercel.json'
+      - 'railway.toml'
+      - 'server.mjs'
 
 permissions:
   contents: read
@@ -47,4 +49,22 @@ jobs:
           test -d dist/legacy
           test -f dist/data/exams/manifest.json
           node -e "const m=require('./dist/data/exams/manifest.json'); if(!m.totalQuestions) process.exit(1); if(Object.keys(m.subjects).length!==6) process.exit(1); console.log('Compiled questions:',m.totalQuestions,'Subjects:',Object.keys(m.subjects).length)"
-          echo "Vite output validated successfully."
+
+      - name: Test Railway production server
+        env:
+          PORT: 4173
+        run: |
+          npm run start > /tmp/neon-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent --show-error http://127.0.0.1:4173/ > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/step > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/exams > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/manifest.json > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/learning.html > /dev/null
+          cat /tmp/neon-server.log
+          echo "Railway production server validated successfully."
