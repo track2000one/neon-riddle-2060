@@ -4,37 +4,87 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#07101f" />
-  <meta name="description" content="NEON Academy 2060 — بوابة مراكز التعلم" />
-  <title>NEON Academy 2060</title>
+  <meta name="description" content="NEON Academy 2060 — مكتبة تعليمية وترفيهية متكاملة" />
+  <title>NEON Academy 2060 | المكتبة التعليمية المتكاملة</title>
 </head>
-<body>
-  <div class="page-glow glow-one"></div>
-  <div class="page-glow glow-two"></div>
+<body class="portal-home">
+  <div class="world-grid"></div>
+  <div class="world-glow glow-a"></div>
+  <div class="world-glow glow-b"></div>
+  <div class="world-glow glow-c"></div>
 
-  <header class="topbar">
+  <header class="site-header">
     <a class="brand" href="/" aria-label="NEON Academy 2060">
       <span class="brand-mark">N</span>
-      <span><strong>NEON ACADEMY 2060</strong><small>LEARN • PLAY • BUILD</small></span>
+      <span><strong>NEON ACADEMY 2060</strong><small>MEGA LEARNING LIBRARY</small></span>
     </a>
-    <div class="account-chip" id="accountChip" aria-live="polite">
-      <span class="account-avatar" id="accountAvatar">N</span>
-      <span><strong id="accountName">جارٍ التحقق…</strong><small id="accountEmail">حساب الطالب</small></span>
+
+    <nav class="main-nav" aria-label="التنقل الرئيسي">
+      <a class="active" href="#home">الرئيسية</a>
+      <a href="#centers">المسارات</a>
+      <a href="/exams">مركز الاختبارات</a>
+      <a href="/step">English STEP</a>
+      <a href="/legacy/learning.html">المكتبة</a>
+    </nav>
+
+    <div class="header-actions">
+      <div class="auth-user-chip" id="accountChip" aria-live="polite">
+        <span id="accountAvatar">ط</span>
+        <span><strong id="accountName">جارٍ التحقق…</strong><small id="accountEmail">حساب الطالب</small></span>
+      </div>
+      <a class="header-icon" href="/legacy/games.html" title="الألعاب والألغاز">🔥</a>
     </div>
   </header>
 
-  <main>
-    <section class="portal-hero">
-      <span class="eyebrow">NEON LEARNING CENTERS</span>
-      <h1>اختر مركز التعلم</h1>
-      <p>كل برنامج يعمل في صفحة مستقلة، لذلك لا يتم تحميل إلا الملفات التي يحتاجها المركز الذي تختاره.</p>
+  <main class="portal-main">
+    <section id="home" class="hero section-shell">
+      <div class="hero-content">
+        <div class="eyebrow">THE COMPLETE DIGITAL LEARNING UNIVERSE</div>
+        <h1>مكتبة تعليمية وترفيهية<br><span>ضخمة ومتطورة</span></h1>
+        <p>منصة واحدة تجمع الألعاب والألغاز، الدروس والمعرفة، اختبارات القدرات والتحصيلي، تعليم البرمجة، اللغة الإنجليزية STEP، ونظام تقدم الطالب.</p>
+        <div class="hero-actions">
+          <a class="primary-action" href="#centers">استكشف المسارات</a>
+          <a class="secondary-action" id="continueButton" href="/step">واصل من حيث توقفت</a>
+        </div>
+        <div class="hero-pills">
+          <span><b id="heroCenterCount">5</b> مراكز تعليمية</span>
+          <span><b id="heroQuestionCount">—</b> سؤالًا تفاعليًا</span>
+          <span><b>STEP</b> شرح وتدريب ومحاكاة</span>
+          <span>حفظ تلقائي محلي</span>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="academy-orbit orbit-outer"></div>
+        <div class="academy-orbit orbit-middle"></div>
+        <div class="academy-orbit orbit-inner"></div>
+        <div class="academy-core"><span>2060</span><small>LEARN • PLAY • BUILD</small></div>
+        <div class="floating-node node-a">🎮</div>
+        <div class="floating-node node-b">📚</div>
+        <div class="floating-node node-c">💻</div>
+        <div class="floating-node node-d">🎯</div>
+      </div>
     </section>
 
-    <section class="center-grid" id="centerGrid" aria-label="مراكز التعلم"></section>
+    <section class="metric-strip section-shell" aria-label="إحصاءات الطالب">
+      <article><span>⚡</span><div><small>نقاط الخبرة</small><strong id="metricXp">0</strong></div></article>
+      <article><span>✓</span><div><small>الوحدات المكتملة</small><strong id="metricCompleted">0</strong></div></article>
+      <article><span>🔥</span><div><small>سلسلة التعلم</small><strong id="metricStreak">0 يوم</strong></div></article>
+      <article><span>🏅</span><div><small>الشهادات</small><strong id="metricCertificates">0</strong></div></article>
+      <article><span>◎</span><div><small>نسبة الإتقان</small><strong id="metricMastery">0%</strong></div></article>
+    </section>
+
+    <section id="centers" class="centers-section section-shell">
+      <div class="section-heading">
+        <div><span class="eyebrow">FIVE GRAND LEARNING CENTERS</span><h2>المسارات الرئيسية</h2><p>اختر مركزك، ثم انتقل إلى صفحة مستقلة وسريعة لا تحمل إلا الملفات المطلوبة.</p></div>
+        <span class="section-badge">تحميل انتقائي سريع</span>
+      </div>
+      <div class="center-grid" id="centerGrid" aria-label="مراكز التعلم"></div>
+    </section>
   </main>
 
-  <footer>NEON ACADEMY 2060 • PERFORMANCE PREVIEW</footer>
-  <div class="boot-overlay" id="bootOverlay"><div class="loader"></div><p>جارٍ تجهيز البوابة السريعة…</p></div>
-
+  <footer>NEON ACADEMY 2060 • LEARN • PLAY • BUILD</footer>
+  <div class="boot-overlay" id="bootOverlay"><div class="loader"></div><p>جارٍ تجهيز الأكاديمية…</p></div>
   <script type="module" src="/src/home.js"></script>
 </body>
 </html>
