@@ -6,6 +6,8 @@ const PROFILE_KEY = 'neonRiddleGrandProfilesV4';
 const SETTINGS_KEY = 'neonRiddleGrandSettingsV4';
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
+let resolveReady;
+window.NEON_CENTER_AUTH_READY = new Promise(resolve => { resolveReady = resolve; });
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -70,12 +72,6 @@ function updateUi(user, profile) {
   }
 }
 
-function finish() {
-  document.body.classList.remove('auth-pending');
-  document.getElementById('authBoot')?.classList.add('hidden');
-  window.dispatchEvent(new CustomEvent('neon-center-auth-ready'));
-}
-
 document.addEventListener('click', async event => {
   if (event.target.closest('#studentLogoutButton')) {
     event.preventDefault();
@@ -96,5 +92,6 @@ onAuthStateChanged(auth, user => {
   }
   const profile = seedProfile(user);
   updateUi(user, profile);
-  finish();
+  resolveReady?.(user);
+  window.dispatchEvent(new CustomEvent('neon-center-auth-ready'));
 });
