@@ -11,6 +11,17 @@ const resetReturnUrl = String(
   'https://track2000one.github.io/neon-riddle-2060/academy/auth.html#login'
 ).trim();
 const perEmailCooldownMs = 60_000;
+const smtpErrorCodes = new Set([
+  'EAUTH',
+  'ECONNECTION',
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'EENVELOPE',
+  'EMESSAGE',
+  'ENOTFOUND',
+  'ESOCKET',
+  'ETIMEDOUT'
+]);
 
 const resetLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -49,6 +60,25 @@ function genericResponse(language = 'ar') {
   };
 }
 
+function customEmailUnavailableResponse(res, language = 'ar') {
+  return res.status(503).json({
+    ok: false,
+    code: 'EMAIL_SERVICE_NOT_CONFIGURED',
+    message: language === 'en'
+      ? 'The custom email service is temporarily unavailable. Use the Firebase fallback.'
+      : 'خدمة البريد المخصصة غير متاحة مؤقتًا. استخدم الإرسال الاحتياطي عبر Firebase.'
+  });
+}
+
+function isSmtpDeliveryError(error) {
+  const code = String(error?.code || '').toUpperCase();
+  const command = String(error?.command || '').toUpperCase();
+
+  return smtpErrorCodes.has(code) ||
+    Number.isInteger(error?.responseCode) ||
+    ['CONN', 'AUTH', 'MAIL FROM', 'RCPT TO', 'DATA'].includes(command);
+}
+
 function cleanExpiredCache() {
   const now = Date.now();
   for (const [key, timestamp] of requestCache.entries()) {
@@ -77,13 +107,7 @@ router.post('/password-reset', resetLimiter, async (req, res, next) => {
   }
 
   if (!isEmailDeliveryConfigured()) {
-    return res.status(503).json({
-      ok: false,
-      code: 'EMAIL_SERVICE_NOT_CONFIGURED',
-      message: language === 'en'
-        ? 'The custom email service is not configured yet.'
-        : 'خدمة البريد المخصصة غير مهيأة بعد.'
-    });
+    return customEmailUnavailableResponse(res, language);
   }
 
   cleanExpiredCache();
@@ -130,6 +154,17 @@ router.post('/password-reset', resetLimiter, async (req, res, next) => {
     if (error?.code === 'auth/user-not-found') {
       return res.json(genericResponse(language));
     }
+
+    if (isSmtpDeliveryError(error)) {
+      console.error('Custom SMTP delivery failed; Firebase fallback requested.', {
+        code: error?.code || 'SMTP_ERROR',
+        command: error?.command || '',
+        responseCode: error?.responseCode || null,
+        timestamp: new Date().toISOString()
+      });
+      return customEmailUnavailableResponse(res, language);
+    }
+
     next(error);
   }
 });
