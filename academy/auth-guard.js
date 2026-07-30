@@ -8,7 +8,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 let academyLoaded = false;
 const ACADEMY_SCRIPTS = [
-  'academy-i18n-dict-1.js','academy-i18n-dict-2.js','academy-i18n-dict-3.js','academy-i18n-dict-4.js','academy-i18n.js',
+  'academy-i18n-dict-1.js','academy-i18n-dict-2.js','academy-i18n-dict-3.js','academy-i18n-dict-4.js','academy-i18n.js','step-nav-bootstrap.js',
   'exam-practice-tah-math.js','exam-practice-tah-physics.js','exam-practice-tah-chemistry.js','exam-practice-tah-biology.js','exam-practice-qud-verbal.js','exam-practice-qud-quant.js',
   'exam-bank-tahsili-math.js','exam-bank-tahsili-physics.js','exam-bank-tahsili-chemistry-1.js','exam-bank-tahsili-chemistry-2.js','exam-bank-tahsili-biology.js','exam-bank-qudurat-verbal.js','exam-bank-qudurat-quant.js',
   'exam-bank-curated-tahsili-math-2026.js','exam-bank-curated-tahsili-physics-2026.js','exam-bank-curated-tahsili-chemistry-2026.js','exam-bank-curated-tahsili-biology-2026.js','exam-bank-curated-qudurat-verbal-2026.js','exam-bank-curated-qudurat-quant-2026.js','exam-bank-uploaded-video-verbal-bank1-2026.js','exam-bank-uploaded-video-quant-2026-02.js','exam-bank-uploaded-video-tahsili-math-model8-2026.js','exam-bank-uploaded-video-tahsili-math-model12-2026.js',
