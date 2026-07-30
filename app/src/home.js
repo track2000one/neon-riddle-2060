@@ -12,7 +12,7 @@ const centers = [
   },
   {
     id: 'exams',
-    href: '/legacy/exams.html',
+    href: '/exams.html',
     title: 'مركز التحصيلي والقدرات',
     subtitle: 'Tahsili & Qudurat',
     description: 'بنوك أسئلة ومحاكاة زمنية وتحليل مفصل للأداء.',
