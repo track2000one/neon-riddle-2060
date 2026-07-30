@@ -1,5 +1,7 @@
 import nodemailer from 'nodemailer';
 
+const brevoApiKey = String(process.env.BREVO_API_KEY || '').trim();
+const brevoApiBaseUrl = 'https://api.brevo.com/v3';
 const smtpHost = String(process.env.SMTP_HOST || 'smtp-relay.brevo.com').trim();
 const smtpPort = Number.parseInt(process.env.SMTP_PORT || '587', 10);
 const smtpUser = String(process.env.SMTP_USER || '').trim();
@@ -21,6 +23,14 @@ function escapeHtml(value) {
     '"': '&quot;',
     "'": '&#039;'
   })[character]);
+}
+
+function isBrevoApiConfigured() {
+  return Boolean(brevoApiKey && fromEmail);
+}
+
+function isSmtpConfigured() {
+  return Boolean(smtpHost && smtpPort && smtpUser && smtpPass && fromEmail);
 }
 
 function getTransporter() {
@@ -45,43 +55,102 @@ function getTransporter() {
   return transporter;
 }
 
+async function readJsonSafely(response) {
+  try {
+    return await response.json();
+  } catch {
+    return {};
+  }
+}
+
+function createDeliveryError(message, code, responseCode = null) {
+  const error = new Error(message);
+  error.code = code;
+  error.responseCode = responseCode;
+  error.status = responseCode && responseCode >= 400 && responseCode < 500 ? 400 : 502;
+  return error;
+}
+
 export function isEmailDeliveryConfigured() {
-  return Boolean(smtpHost && smtpPort && smtpUser && smtpPass && fromEmail);
+  return isBrevoApiConfigured() || isSmtpConfigured();
 }
 
 export async function verifyEmailDelivery() {
-  if (!isEmailDeliveryConfigured()) {
-    return {
-      configured: false,
-      reachable: false,
-      errorCode: 'EMAIL_SERVICE_NOT_CONFIGURED',
-      responseCode: null
-    };
+  if (isBrevoApiConfigured()) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12_000);
+
+    try {
+      const response = await fetch(`${brevoApiBaseUrl}/account`, {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          'api-key': brevoApiKey
+        },
+        signal: controller.signal
+      });
+
+      return {
+        configured: true,
+        reachable: response.ok,
+        provider: response.ok ? 'brevo-api' : 'firebase-default',
+        errorCode: response.ok ? null : `BREVO_API_${response.status}`,
+        responseCode: response.status
+      };
+    } catch (error) {
+      const timedOut = error?.name === 'AbortError';
+      console.error('Brevo API verification failed.', {
+        code: timedOut ? 'BREVO_API_TIMEOUT' : (error?.code || 'BREVO_API_NETWORK_ERROR'),
+        timestamp: new Date().toISOString()
+      });
+
+      return {
+        configured: true,
+        reachable: false,
+        provider: 'firebase-default',
+        errorCode: timedOut ? 'BREVO_API_TIMEOUT' : 'BREVO_API_NETWORK_ERROR',
+        responseCode: null
+      };
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
-  try {
-    await getTransporter().verify();
-    return {
-      configured: true,
-      reachable: true,
-      errorCode: null,
-      responseCode: null
-    };
-  } catch (error) {
-    console.error('SMTP verification failed.', {
-      code: error?.code || 'SMTP_VERIFY_FAILED',
-      command: error?.command || '',
-      responseCode: error?.responseCode || null,
-      timestamp: new Date().toISOString()
-    });
+  if (isSmtpConfigured()) {
+    try {
+      await getTransporter().verify();
+      return {
+        configured: true,
+        reachable: true,
+        provider: 'smtp',
+        errorCode: null,
+        responseCode: null
+      };
+    } catch (error) {
+      console.error('SMTP verification failed.', {
+        code: error?.code || 'SMTP_VERIFY_FAILED',
+        command: error?.command || '',
+        responseCode: error?.responseCode || null,
+        timestamp: new Date().toISOString()
+      });
 
-    return {
-      configured: true,
-      reachable: false,
-      errorCode: String(error?.code || 'SMTP_VERIFY_FAILED'),
-      responseCode: Number.isInteger(error?.responseCode) ? error.responseCode : null
-    };
+      return {
+        configured: true,
+        reachable: false,
+        provider: 'firebase-default',
+        errorCode: String(error?.code || 'SMTP_VERIFY_FAILED'),
+        responseCode: Number.isInteger(error?.responseCode) ? error.responseCode : null
+      };
+    }
   }
+
+  return {
+    configured: false,
+    reachable: false,
+    provider: 'firebase-default',
+    errorCode: 'EMAIL_SERVICE_NOT_CONFIGURED',
+    responseCode: null
+  };
 }
 
 function buildArabicMessage({ displayName, resetLink }) {
@@ -168,7 +237,7 @@ function buildEnglishMessage({ displayName, resetLink }) {
           </p>
           <p style="margin:20px 0 8px;font-size:13px;color:#aebada">If the button does not open, copy and paste this link into your browser:</p>
           <p style="margin:0;padding:12px;border-radius:10px;background:#0a132b;word-break:break-all;font-size:12px;color:#80e7ff">${safeLink}</p>
-          <p style="margin:24px 0 0;color:#b7c3e3">If you did not request this change, ignore this email and your account will remain unchanged.</p>
+          <p style="margin:24px 0 0;color:#b7c3e3">If you did not request this change, ignore the email and your account will remain unchanged.</p>
         </td></tr>
         <tr><td style="padding:18px 32px;border-top:1px solid #29375e;color:#8997bd;font-size:12px">Automated security message from NEON Academy 2060 — never share your password.</td></tr>
       </table>
@@ -178,6 +247,82 @@ function buildEnglishMessage({ displayName, resetLink }) {
 </html>`;
 
   return { subject, text, html };
+}
+
+async function sendViaBrevoApi({ to, displayName, content }) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 18_000);
+
+  try {
+    const payload = {
+      sender: { name: fromName, email: fromEmail },
+      to: [{ email: to, name: displayName || undefined }],
+      subject: content.subject,
+      textContent: content.text,
+      htmlContent: content.html,
+      headers: {
+        'X-Entity-Ref-ID': `neon-reset-${Date.now()}`,
+        'Auto-Submitted': 'auto-generated'
+      }
+    };
+
+    if (replyTo) payload.replyTo = { email: replyTo };
+
+    const response = await fetch(`${brevoApiBaseUrl}/smtp/email`, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'api-key': brevoApiKey
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+
+    const result = await readJsonSafely(response);
+    if (!response.ok) {
+      throw createDeliveryError(
+        result.message || `Brevo API rejected the message with status ${response.status}.`,
+        result.code || `BREVO_API_${response.status}`,
+        response.status
+      );
+    }
+
+    return {
+      provider: 'brevo-api',
+      messageId: result.messageId || null
+    };
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw createDeliveryError('Brevo API request timed out.', 'BREVO_API_TIMEOUT');
+    }
+    if (error instanceof TypeError) {
+      throw createDeliveryError('Brevo API network request failed.', 'BREVO_API_NETWORK_ERROR');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function sendViaSmtp({ to, content }) {
+  const info = await getTransporter().sendMail({
+    from: { name: fromName, address: fromEmail },
+    to,
+    replyTo: replyTo || undefined,
+    subject: content.subject,
+    text: content.text,
+    html: content.html,
+    headers: {
+      'X-Entity-Ref-ID': `neon-reset-${Date.now()}`,
+      'Auto-Submitted': 'auto-generated'
+    }
+  });
+
+  return {
+    provider: 'smtp',
+    messageId: info.messageId || null
+  };
 }
 
 export async function sendPasswordResetMessage({ to, displayName, resetLink, language = 'ar' }) {
@@ -192,16 +337,9 @@ export async function sendPasswordResetMessage({ to, displayName, resetLink, lan
     ? buildEnglishMessage({ displayName, resetLink })
     : buildArabicMessage({ displayName, resetLink });
 
-  return getTransporter().sendMail({
-    from: { name: fromName, address: fromEmail },
-    to,
-    replyTo: replyTo || undefined,
-    subject: content.subject,
-    text: content.text,
-    html: content.html,
-    headers: {
-      'X-Entity-Ref-ID': `neon-reset-${Date.now()}`,
-      'Auto-Submitted': 'auto-generated'
-    }
-  });
+  if (isBrevoApiConfigured()) {
+    return sendViaBrevoApi({ to, displayName, content });
+  }
+
+  return sendViaSmtp({ to, content });
 }
