@@ -46,13 +46,16 @@
 
   function renderNav(){
     const nav=document.querySelector('.main-nav');
-    if(!nav||nav.dataset.portalNav==='true')return;
+    if(!nav)return;
     const current=document.body.dataset.center||'home';
     const items=[
       ['home','index.html','الرئيسية'],['centers','index.html#centers','المراكز'],['step','step.html','English STEP'],['exams','exams.html','التحصيلي والقدرات'],['coding','coding.html','البرمجة'],['games','games.html','الألعاب'],['learning','learning.html','المكتبة']
     ];
+    const signature=items.map(item=>item.join(':')).join('|')+`|${current}`;
+    const valid=nav.dataset.portalSignature===signature&&nav.children.length===items.length&&[...nav.children].every(item=>item.matches('a.nav-link'));
+    if(valid)return;
     nav.innerHTML=items.map(([id,href,label])=>`<a class="nav-link ${current===id||(current==='home'&&id==='home')?'active':''}" href="${href}">${label}</a>`).join('');
-    nav.dataset.portalNav='true';
+    nav.dataset.portalSignature=signature;
   }
 
   function renderCards(){
