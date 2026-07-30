@@ -1,10 +1,13 @@
 import './styles.css';
+import './home-shell.css';
 import { ensureAuth, renderAccount } from './auth.js';
+
+const LAST_CENTER_KEY = 'neonAcademyLastCenterV1';
 
 const centers = [
   {
     id: 'step',
-    href: '/step.html',
+    href: '/step',
     title: 'اللغة الإنجليزية STEP',
     subtitle: 'STEP English',
     description: 'شرح متدرج، تدريب، استماع، قراءة ومحاكاة كاملة.',
@@ -12,7 +15,7 @@ const centers = [
   },
   {
     id: 'exams',
-    href: '/exams.html',
+    href: '/exams',
     title: 'مركز التحصيلي والقدرات',
     subtitle: 'Tahsili & Qudurat',
     description: 'بنوك أسئلة ومحاكاة زمنية وتحليل مفصل للأداء.',
@@ -44,6 +47,10 @@ const centers = [
   }
 ];
 
+function number(value) {
+  return Number(value || 0).toLocaleString('ar-SA');
+}
+
 function renderCards() {
   const grid = document.getElementById('centerGrid');
   grid.innerHTML = centers.map(center => `
@@ -56,12 +63,16 @@ function renderCards() {
       <div class="center-footer">NEON ACADEMY 2060</div>
     </a>
   `).join('');
+
+  grid.querySelectorAll('.center-card').forEach(card => {
+    card.addEventListener('click', () => localStorage.setItem(LAST_CENTER_KEY, card.getAttribute('href')));
+  });
 }
 
 function prefetchOnIntent() {
   const prefetched = new Set();
   const prefetch = href => {
-    if (prefetched.has(href)) return;
+    if (!href || prefetched.has(href)) return;
     prefetched.add(href);
     const link = document.createElement('link');
     link.rel = 'prefetch';
@@ -75,12 +86,53 @@ function prefetchOnIntent() {
   });
 }
 
+function renderStudentMetrics(profile = {}) {
+  const academy = profile.academy || {};
+  const stats = academy.stats || profile.stats || {};
+  const levels = academy.levels || profile.levels || {};
+  const levelValues = Array.isArray(levels) ? levels : Object.values(levels);
+  const completed = levelValues.filter(value => value === true || value === 'completed' || value?.completed === true || Number(value?.progress) >= 100).length;
+  const certificates = academy.certificates || profile.certificates || [];
+  const answered = Number(stats.answered || stats.totalAnswered || 0);
+  const correct = Number(stats.correct || stats.correctAnswers || 0);
+  const mastery = answered > 0 ? Math.round((correct / answered) * 100) : 0;
+  const score = Number(academy.score ?? profile.score ?? academy.xp ?? profile.xp ?? 0);
+  const streak = Number(academy.streak ?? profile.streak ?? 0);
+
+  document.getElementById('metricXp').textContent = number(score);
+  document.getElementById('metricCompleted').textContent = number(completed);
+  document.getElementById('metricStreak').textContent = `${number(streak)} يوم`;
+  document.getElementById('metricCertificates').textContent = number(Array.isArray(certificates) ? certificates.length : certificates);
+  document.getElementById('metricMastery').textContent = `${number(mastery)}%`;
+}
+
+async function loadQuestionCount() {
+  try {
+    const response = await fetch('/data/exams/manifest.json', { cache: 'force-cache' });
+    if (!response.ok) return;
+    const manifest = await response.json();
+    document.getElementById('heroQuestionCount').textContent = number(manifest.totalQuestions);
+  } catch {
+    document.getElementById('heroQuestionCount').textContent = '١٬١٢٢';
+  }
+}
+
+function prepareContinueButton() {
+  const saved = localStorage.getItem(LAST_CENTER_KEY);
+  const valid = centers.some(center => center.href === saved);
+  const button = document.getElementById('continueButton');
+  button.href = valid ? saved : '/step';
+}
+
 async function boot() {
   renderCards();
+  prepareContinueButton();
   prefetchOnIntent();
+  loadQuestionCount();
   try {
     const session = await ensureAuth();
     renderAccount(session);
+    renderStudentMetrics(session.profile);
   } catch (error) {
     if (error.message !== 'Authentication required') console.error(error);
   } finally {
