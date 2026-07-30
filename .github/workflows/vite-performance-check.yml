@@ -9,6 +9,8 @@ on:
       - main
     paths:
       - 'app/**'
+      - 'scripts/**'
+      - 'academy/exam-*.js'
       - 'package.json'
       - 'package-lock.json'
       - 'vite.config.js'
@@ -33,7 +35,7 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Build Vite preview
+      - name: Build Vite preview and exam data
         run: npm run build
 
       - name: Validate output entries
@@ -42,4 +44,6 @@ jobs:
           test -f dist/step.html
           test -d dist/assets
           test -d dist/legacy
+          test -f dist/data/exams/manifest.json
+          node -e "const m=require('./dist/data/exams/manifest.json'); if(!m.totalQuestions) process.exit(1); console.log('Compiled questions:',m.totalQuestions,'Subjects:',Object.keys(m.subjects).length)"
           echo "Vite output validated successfully."
