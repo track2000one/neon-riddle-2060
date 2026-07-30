@@ -17,6 +17,8 @@ import { firebaseConfig, SITE_ANALYTICS_ID } from './firebase-config.js';
 const PROFILE_KEY = 'neonRiddleGrandProfilesV4';
 const SETTINGS_KEY = 'neonRiddleGrandSettingsV4';
 const RESET_COOLDOWN_SECONDS = 45;
+const PASSWORD_RESET_API_URL = 'https://neon-riddle-2060-backend-production.up.railway.app/api/auth/password-reset';
+const RESET_API_TIMEOUT_MS = 16_000;
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -101,6 +103,10 @@ function structuredCloneSafe(value) {
   catch { return JSON.parse(JSON.stringify(value)); }
 }
 
+function currentLanguage() {
+  return window.NEON_I18N?.lang === 'en' ? 'en' : 'ar';
+}
+
 function prefillResetEmail() {
   if (resetEmailInput.value.trim()) return;
   const loginEmail = document.getElementById('loginEmail')?.value.trim();
@@ -154,7 +160,9 @@ function friendlyError(error) {
     'auth/network-request-failed': 'تعذر الاتصال بالخدمة. تحقق من الإنترنت.',
     'auth/missing-password': 'اكتب كلمة المرور.',
     'auth/unauthorized-continue-uri': 'نطاق المنصة غير مصرح به في إعدادات Firebase.',
-    'auth/invalid-continue-uri': 'تعذر إنشاء رابط الرجوع إلى المنصة.'
+    'auth/invalid-continue-uri': 'تعذر إنشاء رابط الرجوع إلى المنصة.',
+    'PASSWORD_RESET_RATE_LIMITED': 'تم تجاوز عدد طلبات الاستعادة مؤقتًا. حاول بعد عدة دقائق.',
+    'EMAIL_DELIVERY_FAILED': 'تعذر إرسال رسالة الاستعادة عبر خدمة البريد. حاول لاحقًا أو راجع مسؤول المنصة.'
   };
   return messages[error?.code] || 'تعذر تنفيذ العملية. تحقق من البيانات وحاول مرة أخرى.';
 }
@@ -191,6 +199,51 @@ function getResetActionSettings() {
     url: returnUrl.href,
     handleCodeInApp: false
   };
+}
+
+async function requestCustomPasswordReset(email) {
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort('password-reset-timeout'), RESET_API_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(PASSWORD_RESET_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, language: currentLanguage() }),
+      signal: controller.signal
+    });
+
+    let payload = {};
+    try { payload = await response.json(); } catch { /* non-JSON response */ }
+
+    if (response.ok) return { sent: true, provider: 'smtp' };
+    if (payload.code === 'EMAIL_SERVICE_NOT_CONFIGURED') {
+      return { sent: false, provider: 'firebase-default' };
+    }
+
+    const error = new Error(payload.message || 'Password reset delivery failed.');
+    error.code = payload.code || 'EMAIL_DELIVERY_FAILED';
+    throw error;
+  } catch (error) {
+    if (error?.name === 'AbortError' || error instanceof TypeError) {
+      return { sent: false, provider: 'firebase-default' };
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
+
+async function requestFirebasePasswordReset(email) {
+  try {
+    await sendPasswordResetEmail(auth, email, getResetActionSettings());
+  } catch (error) {
+    if (['auth/unauthorized-continue-uri', 'auth/invalid-continue-uri'].includes(error?.code)) {
+      await sendPasswordResetEmail(auth, email);
+      return;
+    }
+    throw error;
+  }
 }
 
 function beginResetCooldown() {
@@ -310,19 +363,26 @@ resetForm.addEventListener('submit', async event => {
   setButtonBusy(resetButton, true, 'جارٍ إرسال رابط الاستعادة...', 'إرسال رابط الاستعادة');
 
   try {
-    await sendPasswordResetEmail(auth, email, getResetActionSettings());
+    const customDelivery = await requestCustomPasswordReset(email);
+    let provider = customDelivery.provider;
+
+    if (!customDelivery.sent) {
+      await requestFirebasePasswordReset(email);
+      provider = 'firebase-default';
+    }
+
     showMessage(
       resetMessage,
-      'تم إرسال رابط إعادة تعيين كلمة المرور. افتح الرسالة واتبع التعليمات، ثم ارجع لتسجيل الدخول بكلمة المرور الجديدة. تحقق أيضًا من البريد غير المرغوب فيه.',
+      'إذا كان البريد مرتبطًا بحساب، فستصل رسالة إعادة تعيين كلمة المرور خلال دقائق. تحقق أيضًا من البريد غير المرغوب فيه.',
       true
     );
     beginResetCooldown();
-    track('password_reset_requested');
+    track('password_reset_requested', { delivery_provider: provider });
   } catch (error) {
     if (error?.code === 'auth/user-not-found') {
       showMessage(resetMessage, 'إذا كان البريد مرتبطًا بحساب فستصلك رسالة إعادة التعيين. تحقق من البريد غير المرغوب فيه.', true);
       beginResetCooldown();
-      track('password_reset_requested');
+      track('password_reset_requested', { delivery_provider: 'firebase-default' });
       return;
     }
 
