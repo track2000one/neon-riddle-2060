@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import { firebaseProjectId } from './config/firebase.js';
 import { requireAdmin } from './middleware/auth.js';
 import adminUsersRouter from './routes/admin-users.js';
+import publicAuthRouter from './routes/public-auth.js';
 
 const app = express();
 const port = Number.parseInt(process.env.PORT || '3000', 10);
@@ -59,6 +60,8 @@ app.get('/api/health', (_req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+app.use('/api/auth', publicAuthRouter);
 
 app.get('/api/admin/me', ...requireAdmin, (req, res) => {
   res.json({ ok: true, admin: req.adminUser });
