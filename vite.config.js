@@ -39,7 +39,8 @@ export default defineConfig({
       input: {
         home: fileURLToPath(new URL('./app/index.html', import.meta.url)),
         step: fileURLToPath(new URL('./app/step.html', import.meta.url)),
-        exams: fileURLToPath(new URL('./app/exams.html', import.meta.url))
+        exams: fileURLToPath(new URL('./app/exams.html', import.meta.url)),
+        games: fileURLToPath(new URL('./app/games.html', import.meta.url))
       }
     }
   },
