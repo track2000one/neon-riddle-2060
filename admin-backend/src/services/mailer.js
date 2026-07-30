@@ -49,6 +49,41 @@ export function isEmailDeliveryConfigured() {
   return Boolean(smtpHost && smtpPort && smtpUser && smtpPass && fromEmail);
 }
 
+export async function verifyEmailDelivery() {
+  if (!isEmailDeliveryConfigured()) {
+    return {
+      configured: false,
+      reachable: false,
+      errorCode: 'EMAIL_SERVICE_NOT_CONFIGURED',
+      responseCode: null
+    };
+  }
+
+  try {
+    await getTransporter().verify();
+    return {
+      configured: true,
+      reachable: true,
+      errorCode: null,
+      responseCode: null
+    };
+  } catch (error) {
+    console.error('SMTP verification failed.', {
+      code: error?.code || 'SMTP_VERIFY_FAILED',
+      command: error?.command || '',
+      responseCode: error?.responseCode || null,
+      timestamp: new Date().toISOString()
+    });
+
+    return {
+      configured: true,
+      reachable: false,
+      errorCode: String(error?.code || 'SMTP_VERIFY_FAILED'),
+      responseCode: Number.isInteger(error?.responseCode) ? error.responseCode : null
+    };
+  }
+}
+
 function buildArabicMessage({ displayName, resetLink }) {
   const safeName = escapeHtml(displayName || 'الطالب');
   const safeLink = escapeHtml(resetLink);
