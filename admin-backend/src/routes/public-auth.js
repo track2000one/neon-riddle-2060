@@ -94,7 +94,7 @@ router.get('/email-status', (_req, res) => {
   });
 });
 
-router.post('/password-reset', resetLimiter, async (req, res, next) => {
+router.post('/password-reset', resetLimiter, async (req, res) => {
   const email = normalizeEmail(req.body?.email);
   const language = req.body?.language === 'en' ? 'en' : 'ar';
 
@@ -155,17 +155,16 @@ router.post('/password-reset', resetLimiter, async (req, res, next) => {
       return res.json(genericResponse(language));
     }
 
-    if (isSmtpDeliveryError(error)) {
-      console.error('Custom SMTP delivery failed; Firebase fallback requested.', {
-        code: error?.code || 'SMTP_ERROR',
-        command: error?.command || '',
-        responseCode: error?.responseCode || null,
-        timestamp: new Date().toISOString()
-      });
-      return customEmailUnavailableResponse(res, language);
-    }
+    const deliveryStage = isSmtpDeliveryError(error) ? 'smtp' : 'firebase-admin';
+    console.error('Custom password-reset delivery failed; browser Firebase fallback requested.', {
+      stage: deliveryStage,
+      code: error?.code || 'RESET_DELIVERY_ERROR',
+      command: error?.command || '',
+      responseCode: error?.responseCode || null,
+      timestamp: new Date().toISOString()
+    });
 
-    next(error);
+    return customEmailUnavailableResponse(res, language);
   }
 });
 
