@@ -2,7 +2,11 @@ import crypto from 'node:crypto';
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { adminAuth } from '../config/firebase.js';
-import { isEmailDeliveryConfigured, sendPasswordResetMessage } from '../services/mailer.js';
+import {
+  isEmailDeliveryConfigured,
+  sendPasswordResetMessage,
+  verifyEmailDelivery
+} from '../services/mailer.js';
 
 const router = Router();
 const requestCache = new Map();
@@ -86,11 +90,17 @@ function cleanExpiredCache() {
   }
 }
 
-router.get('/email-status', (_req, res) => {
+router.get('/email-status', async (_req, res) => {
+  const status = await verifyEmailDelivery();
+
   res.json({
     ok: true,
-    configured: isEmailDeliveryConfigured(),
-    provider: isEmailDeliveryConfigured() ? 'smtp' : 'firebase-default'
+    configured: status.configured,
+    reachable: status.reachable,
+    provider: status.reachable ? 'smtp' : 'firebase-default',
+    errorCode: status.errorCode,
+    responseCode: status.responseCode,
+    checkedAt: new Date().toISOString()
   });
 });
 
