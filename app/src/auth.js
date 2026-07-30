@@ -10,6 +10,10 @@ function clone(value) {
   catch { return JSON.parse(JSON.stringify(value)); }
 }
 
+function runtimeImport(url) {
+  return import(/* @vite-ignore */ url);
+}
+
 function seedProfile(user) {
   const profilesKey = 'neonRiddleGrandProfilesV4';
   const settingsKey = 'neonRiddleGrandSettingsV4';
@@ -48,10 +52,14 @@ function seedProfile(user) {
 }
 
 export async function ensureAuth() {
+  const appUrl = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`;
+  const authUrl = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`;
+  const configUrl = new URL('/legacy/firebase-config.js', window.location.origin).href;
+
   const [{ initializeApp, getApp, getApps }, { getAuth, onAuthStateChanged }, configModule] = await Promise.all([
-    import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`),
-    import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`),
-    import('/legacy/firebase-config.js')
+    runtimeImport(appUrl),
+    runtimeImport(authUrl),
+    runtimeImport(configUrl)
   ]);
 
   const app = getApps().length ? getApp() : initializeApp(configModule.firebaseConfig);
