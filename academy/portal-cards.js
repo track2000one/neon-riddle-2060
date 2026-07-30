@@ -30,8 +30,8 @@
       body.portal-home #tracks,body.portal-home .action-zone,body.portal-home #library,body.portal-home #coding,body.portal-home #test-center,body.portal-home #stepAcademy{display:none!important}
       body.portal-home .hero [data-scroll="tracks"]{cursor:pointer}
       .main-nav a.nav-link{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
-      @media(max-width:1240px){.center-portal-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.neon-center-card{min-height:450px}}
-      @media(max-width:820px){.center-portal-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.neon-center-card{min-height:430px}.portal-card-icon{width:112px;margin-top:34px}.center-portal-section{padding-inline:12px}}
+      @media(max-width:1100px){.center-portal-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.neon-center-card{min-height:450px}}
+      @media(max-width:760px){.center-portal-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.neon-center-card{min-height:430px}.portal-card-icon{width:112px;margin-top:34px}.center-portal-section{padding-inline:12px}}
       @media(max-width:520px){.center-portal-grid{grid-template-columns:1fr}.neon-center-card{min-height:410px;max-width:360px;width:100%;margin:auto}.portal-card-icon{margin-top:30px;margin-bottom:24px}.neon-center-card h3{min-height:auto}.center-portal-heading{text-align:right}}
       @media(prefers-reduced-motion:reduce){.neon-center-card{transition:none}.neon-center-card:hover{transform:none}}
     `;
