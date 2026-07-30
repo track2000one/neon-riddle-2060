@@ -83,6 +83,13 @@ function isSmtpDeliveryError(error) {
     ['CONN', 'AUTH', 'MAIL FROM', 'RCPT TO', 'DATA'].includes(command);
 }
 
+function deliveryStageFor(error) {
+  const code = String(error?.code || '').toUpperCase();
+  if (code.startsWith('BREVO_API')) return 'brevo-api';
+  if (isSmtpDeliveryError(error)) return 'smtp';
+  return 'firebase-admin';
+}
+
 function cleanExpiredCache() {
   const now = Date.now();
   for (const [key, timestamp] of requestCache.entries()) {
@@ -97,7 +104,7 @@ router.get('/email-status', async (_req, res) => {
     ok: true,
     configured: status.configured,
     reachable: status.reachable,
-    provider: status.reachable ? 'smtp' : 'firebase-default',
+    provider: status.provider,
     errorCode: status.errorCode,
     responseCode: status.responseCode,
     checkedAt: new Date().toISOString()
@@ -145,7 +152,7 @@ router.post('/password-reset', resetLimiter, async (req, res) => {
       handleCodeInApp: false
     });
 
-    await sendPasswordResetMessage({
+    const delivery = await sendPasswordResetMessage({
       to: email,
       displayName: user.displayName || '',
       resetLink,
@@ -156,6 +163,8 @@ router.post('/password-reset', resetLimiter, async (req, res) => {
     console.info('Password reset email accepted for delivery.', {
       uid: user.uid,
       language,
+      provider: delivery?.provider || 'unknown',
+      messageId: delivery?.messageId || null,
       timestamp: new Date().toISOString()
     });
 
@@ -165,9 +174,8 @@ router.post('/password-reset', resetLimiter, async (req, res) => {
       return res.json(genericResponse(language));
     }
 
-    const deliveryStage = isSmtpDeliveryError(error) ? 'smtp' : 'firebase-admin';
     console.error('Custom password-reset delivery failed; browser Firebase fallback requested.', {
-      stage: deliveryStage,
+      stage: deliveryStageFor(error),
       code: error?.code || 'RESET_DELIVERY_ERROR',
       command: error?.command || '',
       responseCode: error?.responseCode || null,
