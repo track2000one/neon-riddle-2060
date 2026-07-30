@@ -38,7 +38,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         home: fileURLToPath(new URL('./app/index.html', import.meta.url)),
-        step: fileURLToPath(new URL('./app/step.html', import.meta.url))
+        step: fileURLToPath(new URL('./app/step.html', import.meta.url)),
+        exams: fileURLToPath(new URL('./app/exams.html', import.meta.url))
       }
     }
   },
