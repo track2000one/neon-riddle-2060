@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07101f" />
+  <meta name="description" content="مركز التحصيلي والقدرات السريع — NEON Academy 2060" />
+  <title>مركز التحصيلي والقدرات | NEON Academy 2060</title>
+</head>
+<body class="center-body">
+  <div class="page-glow glow-one"></div>
+  <div class="page-glow glow-two"></div>
+
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand-mark">N</span>
+      <span><strong>NEON ACADEMY 2060</strong><small>TAHSILI & QUDURAT CENTER</small></span>
+    </a>
+    <nav class="quick-nav" aria-label="التنقل">
+      <a href="/">المراكز</a>
+      <a href="/step.html">English STEP</a>
+      <a class="active" href="/exams.html">التحصيلي والقدرات</a>
+    </nav>
+    <div class="account-chip" id="accountChip" aria-live="polite">
+      <span class="account-avatar" id="accountAvatar">N</span>
+      <span><strong id="accountName">جارٍ التحقق…</strong><small id="accountEmail">حساب الطالب</small></span>
+    </div>
+  </header>
+
+  <main>
+    <section class="exam-hero">
+      <div>
+        <span class="eyebrow">LAZY-LOADED EXAM CENTER</span>
+        <h1>مركز التحصيلي والقدرات</h1>
+        <p>يتم تحميل فهرس صغير عند فتح الصفحة، ولا يتم تنزيل أسئلة المادة إلا بعد اختيارها.</p>
+      </div>
+      <div class="exam-total"><strong id="totalQuestions">—</strong><small>سؤالًا فريدًا بعد إزالة التكرار</small></div>
+    </section>
+
+    <section class="exam-subjects" id="examSubjects" aria-label="أقسام الاختبارات"></section>
+
+    <section class="exam-setup" id="examSetup" hidden>
+      <div>
+        <span class="eyebrow">CUSTOM EXAM</span>
+        <h2 id="setupTitle">إنشاء اختبار</h2>
+        <p id="setupDescription">حدد عدد الأسئلة والمستوى والزمن.</p>
+      </div>
+      <div class="setup-fields">
+        <label>عدد الأسئلة<select id="examCount"><option value="10">10 أسئلة</option><option value="20" selected>20 سؤالًا</option><option value="40">40 سؤالًا</option><option value="60">60 سؤالًا</option></select></label>
+        <label>المستوى<select id="examLevel"><option value="all">مختلط</option><option value="foundation">تأسيسي</option><option value="practice">تطبيقي</option><option value="mastery">إتقان</option></select></label>
+        <label>الزمن<select id="examMinutes"><option value="10">10 دقائق</option><option value="20" selected>20 دقيقة</option><option value="40">40 دقيقة</option><option value="60">60 دقيقة</option><option value="0">وقت مفتوح</option></select></label>
+        <button class="exam-primary" id="startExamButton">بدء الاختبار</button>
+      </div>
+      <div class="exam-load-note" id="examLoadNote">لم يتم تحميل ملف المادة بعد.</div>
+    </section>
+
+    <section class="exam-runner" id="examRunner" hidden aria-live="polite"></section>
+  </main>
+
+  <div class="boot-overlay" id="bootOverlay"><div class="loader"></div><p id="bootText">جارٍ تحميل فهرس الاختبارات…</p></div>
+  <script type="module" src="/src/exams.js"></script>
+</body>
+</html>
