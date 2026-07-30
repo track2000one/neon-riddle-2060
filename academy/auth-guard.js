@@ -18,6 +18,7 @@ const ACADEMY_SCRIPTS = [
   'exam-bank-uploaded-images-tahsili-talo-math-2026.js','exam-bank-uploaded-images-tahsili-talo-physics-2026.js','exam-bank-uploaded-images-tahsili-talo-chemistry-2026.js','exam-bank-uploaded-images-tahsili-talo-biology-2026.js',
   'exam-bank-uploaded-images-daily-physics-2026.js','exam-bank-uploaded-images-daily-chemistry-2026.js',
   'exam-bank-uploaded-pdf-qudurat-43-44-verbal-2026.js','exam-bank-uploaded-pdf-qudurat-43-44-quant-2026.js',
+  'step-academy-data.js','step-academy.js',
   'exam-bank.js','exam-bank-curated-meta-2026.js','exam-bank-bilingual-practice.js','academy-performance-bootstrap.js','exam-dedupe-enhanced.js','exam-center-ui.js','exam-center-source-patch.js','exam-source-visibility-policy.js','exam-bilingual-runtime.js','academy.js','academy-performance-guard.js','academy-ai-render-throttle.js'
 ];
 function tr(ar,en){return window.NEON_I18N?.pick?.(ar,en)||ar}
