@@ -33,11 +33,6 @@ export default defineConfig({
       input: {
         home: fileURLToPath(new URL('./app/index.html', import.meta.url)),
         step: fileURLToPath(new URL('./app/step.html', import.meta.url))
-      },
-      output: {
-        manualChunks: {
-          'firebase-auth': ['https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js']
-        }
       }
     }
   },
