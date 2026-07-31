@@ -191,8 +191,6 @@ async function handleTutorApi(req, res, requestPath) {
       systemInstruction: { parts: [{ text: tutorSystemInstruction({ subject, level, mode }) }] },
       contents,
       generationConfig: {
-        temperature: mode === 'review' || mode === 'code' ? 0.25 : 0.45,
-        topP: 0.9,
         maxOutputTokens: 2_048
       }
     });
