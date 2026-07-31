@@ -1,0 +1,56 @@
+.portal-home .hero h1.home-hero-title{
+  max-width:760px;
+  margin:14px 0 20px;
+  font-size:clamp(34px,4.15vw,58px);
+  line-height:1.16;
+  letter-spacing:-.025em;
+  text-wrap:balance;
+}
+
+.portal-home .hero h1.home-hero-title .hero-title-main{
+  display:block;
+  color:#f8fafc!important;
+  -webkit-text-fill-color:#f8fafc!important;
+  text-shadow:0 3px 22px rgba(0,0,0,.28);
+}
+
+.portal-home .hero h1.home-hero-title .hero-title-accent{
+  display:block;
+  margin-top:.14em;
+  font-size:.84em;
+  line-height:1.25;
+  background:linear-gradient(90deg,#65e6ff 0%,#8f82ff 52%,#ff82cc 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent!important;
+  -webkit-text-fill-color:transparent!important;
+  text-shadow:none;
+}
+
+.portal-home .hero .eyebrow{
+  color:#7cecff!important;
+}
+
+.portal-home .hero> .hero-content>p{
+  color:#c5d0e2!important;
+}
+
+@media(max-width:820px){
+  .portal-home .hero h1.home-hero-title{
+    max-width:640px;
+    font-size:clamp(32px,7vw,50px);
+  }
+}
+
+@media(max-width:560px){
+  .portal-home .hero h1.home-hero-title{
+    margin:12px 0 16px;
+    font-size:clamp(29px,9.3vw,40px);
+    line-height:1.2;
+  }
+  .portal-home .hero h1.home-hero-title .hero-title-accent{
+    margin-top:.2em;
+    font-size:.78em;
+    line-height:1.35;
+  }
+}
