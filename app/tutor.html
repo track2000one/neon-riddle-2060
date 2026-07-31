@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1B3C53" />
+  <meta name="description" content="المعلم الذكي المحلي في NEON Academy 2060 — شرح وتمارين وخطط ومراجعة دون API خارجي" />
+  <title>المعلم الذكي المحلي | NEON Academy 2060</title>
+</head>
+<body class="center-body tutor-body">
+  <div class="page-glow glow-one"></div>
+  <div class="page-glow glow-two"></div>
+
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand-mark">N</span>
+      <span><strong>NEON ACADEMY 2060</strong><small>LOCAL SMART TUTOR</small></span>
+    </a>
+    <nav class="quick-nav" aria-label="التنقل">
+      <a href="/">المراكز</a>
+      <a href="/step">English STEP</a>
+      <a href="/exams">التحصيلي والقدرات</a>
+      <a href="/learning">المكتبة</a>
+      <a class="active" href="/tutor">المعلم الذكي</a>
+    </nav>
+    <div class="account-chip" id="accountChip" aria-live="polite">
+      <span class="account-avatar" id="accountAvatar">N</span>
+      <span><strong id="accountName">حساب الطالب</strong><small id="accountEmail">جارٍ التحقق…</small></span>
+    </div>
+  </header>
+
+  <main class="tutor-main">
+    <section class="tutor-hero">
+      <div>
+        <span class="eyebrow">PRIVATE • LOCAL • LEARNING ASSISTANT</span>
+        <h1>المعلم الذكي المحلي</h1>
+        <p>مساعد تعليمي يعمل داخل المنصة دون رسوم API: يشرح المفاهيم، ينشئ تدريبات، يبني خطة مذاكرة، يراجع الإجابات والأكواد، ويحفظ محادثاتك على جهازك.</p>
+        <div class="tutor-badges">
+          <span>🔒 بيانات محلية</span><span>⚡ استجابة فورية</span><span>📚 متعدد التخصصات</span><span>🧠 متدرج حسب المستوى</span>
+        </div>
+      </div>
+      <div class="tutor-orb" aria-hidden="true"><span>🧠</span><small>LOCAL AI</small></div>
+    </section>
+
+    <section class="tutor-workspace">
+      <aside class="tutor-sidebar">
+        <div class="tutor-control-group">
+          <label for="tutorSubject">المادة</label>
+          <select id="tutorSubject">
+            <option value="general">تعلم عام</option>
+            <option value="math">الرياضيات</option>
+            <option value="physics">الفيزياء</option>
+            <option value="chemistry">الكيمياء</option>
+            <option value="biology">الأحياء</option>
+            <option value="arabic">اللغة العربية</option>
+            <option value="english">اللغة الإنجليزية</option>
+            <option value="qudurat">القدرات</option>
+            <option value="coding">البرمجة</option>
+          </select>
+        </div>
+        <div class="tutor-control-group">
+          <label for="tutorLevel">المستوى</label>
+          <select id="tutorLevel">
+            <option value="foundation">تأسيسي</option>
+            <option value="practice" selected>تطبيقي</option>
+            <option value="mastery">إتقان</option>
+          </select>
+        </div>
+
+        <div class="tutor-modes" id="tutorModes" aria-label="أوضاع المعلم">
+          <button class="active" data-mode="explain"><span>💡</span><strong>اشرح لي</strong><small>تبسيط وأمثلة وخطوات</small></button>
+          <button data-mode="exercise"><span>📝</span><strong>أنشئ تمرينًا</strong><small>سؤال وتلميح وحل</small></button>
+          <button data-mode="plan"><span>🗓️</span><strong>خطة مذاكرة</strong><small>خطة عملية قابلة للتنفيذ</small></button>
+          <button data-mode="review"><span>✅</span><strong>راجع إجابتي</strong><small>نقاط القوة والتحسين</small></button>
+          <button data-mode="code"><span>⌨️</span><strong>راجع الكود</strong><small>أخطاء وتحسينات آمنة</small></button>
+        </div>
+
+        <div class="tutor-side-actions">
+          <button id="newTutorChat">＋ محادثة جديدة</button>
+          <button id="clearTutorHistory" class="danger-ghost">حذف السجل</button>
+        </div>
+      </aside>
+
+      <section class="tutor-chat-shell" aria-label="محادثة المعلم الذكي">
+        <header class="tutor-chat-head">
+          <div><span class="tutor-status-dot"></span><strong id="tutorModeTitle">وضع الشرح</strong><small id="tutorModeHint">اكتب المفهوم الذي تريد فهمه.</small></div>
+          <span class="tutor-local-label">LOCAL</span>
+        </header>
+
+        <div class="tutor-messages" id="tutorMessages" aria-live="polite"></div>
+
+        <div class="tutor-quick-prompts" id="tutorQuickPrompts">
+          <button>اشرح الفكرة بطريقة سهلة</button>
+          <button>أعطني مثالًا محلولًا</button>
+          <button>اختبر فهمي بسؤال</button>
+          <button>ضع خطوات للمراجعة</button>
+        </div>
+
+        <form class="tutor-composer" id="tutorForm">
+          <textarea id="tutorInput" rows="3" maxlength="5000" placeholder="اكتب سؤالك أو الصق إجابتك أو الكود هنا…" required></textarea>
+          <div class="tutor-composer-foot">
+            <small><span id="tutorCharCount">0</span> / 5000 • لا تُرسل بيانات شخصية</small>
+            <button type="submit" id="sendTutorMessage">إرسال ↵</button>
+          </div>
+        </form>
+      </section>
+    </section>
+  </main>
+
+  <footer>NEON ACADEMY 2060 • LOCAL SMART TUTOR • LEARN RESPONSIBLY</footer>
+  <div class="boot-overlay" id="bootOverlay"><div class="loader"></div><p>جارٍ تجهيز المعلم الذكي المحلي…</p></div>
+  <script type="module" src="/src/tutor.js"></script>
+</body>
+</html>
