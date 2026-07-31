@@ -195,5 +195,100 @@ export async function migrateLegacyProgress() {
   }
 }
 
+function parseStoredJson(value, fallback) {
+  try { return JSON.parse(value || '') ?? fallback; }
+  catch { return fallback; }
+}
+
+async function synchronizeTrackedStorage(key, previousValue, nextValue) {
+  if (!activeSession) return;
+  const events = [];
+
+  if (key === 'neonLearningLastLessonV1' && nextValue && nextValue !== previousValue) {
+    events.push({
+      eventType: 'lesson_start', eventKey: `lesson:${nextValue}:start`,
+      centerId: 'learning', itemType: 'lesson', itemId: nextValue, title: nextValue,
+      status: 'in_progress', progressPercent: 10,
+      href: `/learning#lesson=${encodeURIComponent(nextValue)}`
+    });
+  }
+
+  if (key === 'neonLearningProgressV1') {
+    const before = parseStoredJson(previousValue, { completed: [] });
+    const after = parseStoredJson(nextValue, { completed: [] });
+    const oldCompleted = new Set(Array.isArray(before.completed) ? before.completed : []);
+    for (const lessonId of Array.isArray(after.completed) ? after.completed : []) {
+      if (oldCompleted.has(lessonId)) continue;
+      events.push({
+        eventType: 'lesson_complete', eventKey: `lesson:${lessonId}:complete`,
+        centerId: 'learning', itemType: 'lesson', itemId: lessonId, title: lessonId,
+        status: 'completed', progressPercent: 100, masteryScore: 100,
+        href: `/learning#lesson=${encodeURIComponent(lessonId)}`
+      });
+    }
+  }
+
+  if (key === 'neonGamesProgressV1') {
+    const before = parseStoredJson(previousValue, { completed: [] });
+    const after = parseStoredJson(nextValue, { completed: [] });
+    const oldCompleted = new Set(Array.isArray(before.completed) ? before.completed : []);
+    for (const challengeId of Array.isArray(after.completed) ? after.completed : []) {
+      if (oldCompleted.has(challengeId)) continue;
+      const [track, ...parts] = String(challengeId).split(':');
+      events.push({
+        eventType: 'game_complete', eventKey: `game:${challengeId}:complete`,
+        centerId: 'games', itemType: 'challenge', itemId: challengeId,
+        title: parts.join(':') || challengeId, status: 'completed', progressPercent: 100,
+        masteryScore: Number(after.best || 0), score: Number(after.best || 0), href: '/games',
+        metadata: { track }
+      });
+    }
+  }
+
+  if (key === 'neonOptimizedExamHistoryV1') {
+    const before = parseStoredJson(previousValue, []);
+    const after = parseStoredJson(nextValue, []);
+    const start = Array.isArray(before) ? before.length : 0;
+    for (const [offset, attempt] of (Array.isArray(after) ? after.slice(start) : []).entries()) {
+      const stamp = attempt?.date || attempt?.createdAt || Date.now();
+      const subject = attempt?.subject || attempt?.subjectId || 'exam';
+      events.push({
+        eventType: 'exam_complete', eventKey: `exam:${subject}:${stamp}:${start + offset}`,
+        centerId: 'exams', itemType: 'assessment', itemId: `${subject}-${stamp}`,
+        title: attempt?.title || subject || 'اختبار', status: 'completed', progressPercent: 100,
+        masteryScore: Number(attempt?.score || 0), score: Number(attempt?.score || 0),
+        subjectId: subject, correct: Number(attempt?.correct || 0), total: Number(attempt?.total || 0),
+        durationSeconds: Number(attempt?.durationSeconds || attempt?.duration || 0), href: '/exams',
+        details: attempt || {}
+      });
+    }
+  }
+
+  if (!events.length) return;
+  for (const event of events) await recordProgress(event, { refresh: false });
+  cachedSummary = null;
+  loadProgressSummary({ force: true }).catch(() => {});
+}
+
+function installStorageBridge() {
+  if (window.__NEON_PROGRESS_STORAGE_BRIDGE__) return;
+  window.__NEON_PROGRESS_STORAGE_BRIDGE__ = true;
+  const trackedKeys = new Set([
+    'neonLearningProgressV1',
+    'neonLearningLastLessonV1',
+    'neonGamesProgressV1',
+    'neonOptimizedExamHistoryV1'
+  ]);
+  const originalSetItem = Storage.prototype.setItem;
+  Storage.prototype.setItem = function patchedSetItem(key, value) {
+    const previousValue = this === localStorage && trackedKeys.has(String(key)) ? this.getItem(key) : null;
+    originalSetItem.call(this, key, value);
+    if (this === localStorage && trackedKeys.has(String(key)) && previousValue !== String(value)) {
+      queueMicrotask(() => synchronizeTrackedStorage(String(key), previousValue, String(value)).catch(() => {}));
+    }
+  };
+}
+
+installStorageBridge();
 window.addEventListener('online', () => flushProgressQueue().catch(() => {}));
 window.addEventListener('neon-progress', event => recordProgress(event.detail).catch(() => {}));
