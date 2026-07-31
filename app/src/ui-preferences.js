@@ -1,15 +1,15 @@
 import './ui-preferences.css';
 
-const THEME_KEY = 'neonAcademyThemeV2';
+const THEME_KEY = 'neonAcademyThemeV3';
 const READER_SCALE_KEY = 'neonAcademyReaderScaleV1';
-const DEFAULT_THEME = 'neon';
+const DEFAULT_THEME = 'academic';
 const THEMES = [
-  { id:'neon', name:'نيون ليلي', note:'الأزرق والبنفسجي', colors:['#63e7ff','#956dff','#ff70cf'] },
-  { id:'ocean', name:'محيط هادئ', note:'تركوازي وأزرق', colors:['#63e4da','#5c9dff','#8bdcff'] },
-  { id:'lavender', name:'لافندر', note:'بنفسجي وردي هادئ', colors:['#c69bff','#8c7cff','#f3a6d8'] },
-  { id:'emerald', name:'زمردي', note:'أخضر مريح للعين', colors:['#67e4b5','#53b6c7','#a3e7a8'] },
-  { id:'amber', name:'كهرماني', note:'دافئ للقراءة', colors:['#f0bc68','#e68b67','#f2cf91'] },
-  { id:'arctic', name:'قطبي', note:'رمادي وأزرق ثلجي', colors:['#9bd5ef','#7ca6d8','#c1d9e8'] }
+  { id:'academic', name:'أزرق احترافي', note:'الثيم الافتراضي', mode:'dark', colors:['#1B3C53','#234C6A','#456882','#D2C1B6'] },
+  { id:'deep-blue', name:'أزرق أكاديمي', note:'عميق وواضح', mode:'dark', colors:['#0F2854','#1C4D8D','#4988C4','#BDE8F5'] },
+  { id:'soft-beige', name:'بيج هادئ', note:'دافئ ومريح', mode:'light', colors:['#D6A99D','#EBE3D5','#D6DAC8','#9CAFAA'] },
+  { id:'pastel-study', name:'باستيل تعليمي', note:'ودود وناعم', mode:'light', colors:['#FCF9EA','#BADFDB','#FFA4A4','#FFBDBD'] },
+  { id:'mint-calm', name:'مينت هادئ', note:'مناسب للقراءة', mode:'light', colors:['#C0E1D2','#E5EEE4','#F6F4E8','#DC9B9B'] },
+  { id:'summer-fresh', name:'صيفي مبهج', note:'حيوي ومتوازن', mode:'light', colors:['#FFF6DE','#8BDFDD','#F48F68','#FFE394'] }
 ];
 
 function safeStorageGet(key, fallback) {
@@ -25,9 +25,11 @@ function validTheme(value) {
 }
 function applyTheme(themeId, announce = false) {
   const theme = validTheme(themeId);
+  const metadata = THEMES.find(item => item.id === theme) || THEMES[0];
   document.documentElement.dataset.neonTheme = theme;
+  document.documentElement.style.colorScheme = metadata.mode;
   safeStorageSet(THEME_KEY, theme);
-  const color = getComputedStyle(document.documentElement).getPropertyValue('--ui-bg-0').trim() || '#050b18';
+  const color = getComputedStyle(document.documentElement).getPropertyValue('--ui-bg-0').trim() || metadata.colors[0];
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', color);
   document.querySelectorAll('.neon-theme-option').forEach(button => {
     const selected = button.dataset.theme === theme;
@@ -48,12 +50,12 @@ function createThemePicker() {
   host.innerHTML = `
     <button class="neon-theme-trigger" type="button" aria-label="اختيار ثيم الألوان" aria-expanded="false" title="ثيمات الألوان">🎨</button>
     <div class="neon-theme-panel" role="dialog" aria-label="ثيمات ألوان المنصة">
-      <header><strong>ثيمات مريحة للعين</strong><small>يُحفظ اختيارك تلقائيًا</small></header>
+      <header><strong>ثيمات مريحة للعين</strong><small>الأزرار والنصوص بتباين واضح</small></header>
       <div class="neon-theme-grid">
         ${THEMES.map(theme => `
           <button class="neon-theme-option" type="button" data-theme="${theme.id}" aria-pressed="false">
             <span class="neon-theme-swatches">${theme.colors.map(color => `<i style="background:${color}"></i>`).join('')}</span>
-            <span><strong>${theme.name}</strong><small>${theme.note}</small></span>
+            <span><strong>${theme.name}${theme.id === DEFAULT_THEME ? ' • افتراضي' : ''}</strong><small>${theme.note}</small></span>
           </button>
         `).join('')}
       </div>
