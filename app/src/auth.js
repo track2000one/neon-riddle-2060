@@ -7,6 +7,7 @@ import { configureProgress, flushProgressQueue } from './progress-client.js';
 import './progress-integrations.js';
 
 const FIREBASE_VERSION = '12.16.0';
+let signOutCurrentUser = null;
 
 function readJson(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
@@ -59,12 +60,48 @@ function seedProfile(user) {
   return profile;
 }
 
+function installLogoutButton() {
+  const accountChip = document.getElementById('accountChip') || document.querySelector('.auth-user-chip,.account-chip');
+  if (!accountChip?.parentElement || document.getElementById('accountLogoutButton')) return;
+
+  const button = document.createElement('button');
+  button.id = 'accountLogoutButton';
+  button.className = 'account-logout-button';
+  button.type = 'button';
+  button.title = 'تسجيل الخروج من الحساب';
+  button.setAttribute('aria-label', 'تسجيل الخروج من الحساب');
+  button.innerHTML = '<span aria-hidden="true">⇥</span><b>تسجيل الخروج</b>';
+
+  button.addEventListener('click', async () => {
+    if (button.disabled || typeof signOutCurrentUser !== 'function') return;
+    const confirmed = window.confirm('هل تريد تسجيل الخروج من حساب NEON؟');
+    if (!confirmed) return;
+
+    button.disabled = true;
+    button.classList.add('is-loading');
+    button.querySelector('b').textContent = 'جارٍ الخروج…';
+    try {
+      await flushProgressQueue().catch(() => {});
+      await signOutCurrentUser();
+      location.replace('/legacy/auth.html');
+    } catch (error) {
+      console.error('NEON sign-out error:', error);
+      button.disabled = false;
+      button.classList.remove('is-loading');
+      button.querySelector('b').textContent = 'تسجيل الخروج';
+      window.alert('تعذر تسجيل الخروج مؤقتًا. أعد المحاولة.');
+    }
+  });
+
+  accountChip.insertAdjacentElement('afterend', button);
+}
+
 export async function ensureAuth() {
   const appUrl = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`;
   const authUrl = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`;
   const configUrl = new URL('/legacy/firebase-config.js', window.location.origin).href;
 
-  const [{ initializeApp, getApp, getApps }, { getAuth, onAuthStateChanged }, configModule] = await Promise.all([
+  const [{ initializeApp, getApp, getApps }, { getAuth, onAuthStateChanged, signOut }, configModule] = await Promise.all([
     runtimeImport(appUrl),
     runtimeImport(authUrl),
     runtimeImport(configUrl)
@@ -72,6 +109,7 @@ export async function ensureAuth() {
 
   const app = getApps().length ? getApp() : initializeApp(configModule.firebaseConfig);
   const auth = getAuth(app);
+  signOutCurrentUser = () => signOut(auth);
 
   return new Promise((resolve, reject) => {
     const unsubscribe = onAuthStateChanged(auth, user => {
@@ -99,4 +137,5 @@ export function renderAccount({ user, profile }) {
   document.getElementById('accountName')?.replaceChildren(document.createTextNode(name));
   document.getElementById('accountEmail')?.replaceChildren(document.createTextNode(email));
   document.getElementById('accountAvatar')?.replaceChildren(document.createTextNode(avatar));
+  installLogoutButton();
 }
