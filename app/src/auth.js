@@ -4,6 +4,7 @@ import './ui-preferences.js';
 import './surface-contrast.css';
 import './navigation-enhancements.js';
 import { configureProgress, flushProgressQueue } from './progress-client.js';
+import './progress-integrations.js';
 
 const FIREBASE_VERSION = '12.16.0';
 
