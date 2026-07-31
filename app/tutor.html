@@ -36,7 +36,7 @@
         <h1>المعلم الذكي المحلي</h1>
         <p>مساعد تعليمي يعمل داخل المنصة دون رسوم API: يشرح المفاهيم، ينشئ تدريبات، يبني خطة مذاكرة، يراجع الإجابات والأكواد، ويحفظ محادثاتك على جهازك.</p>
         <div class="tutor-badges">
-          <span>🔒 بيانات محلية</span><span>⚡ استجابة فورية</span><span>📚 متعدد التخصصات</span><span>🧠 متدرج حسب المستوى</span>
+          <span>🔒 بيانات محلية</span><span>⚡ استجابة فورية</span><span>📚 أكثر من 20 مادة</span><span>🧠 متدرج حسب المستوى</span>
         </div>
       </div>
       <div class="tutor-orb" aria-hidden="true"><span>🧠</span><small>LOCAL AI</small></div>
@@ -48,14 +48,39 @@
           <label for="tutorSubject">المادة</label>
           <select id="tutorSubject">
             <option value="general">تعلم عام</option>
-            <option value="math">الرياضيات</option>
-            <option value="physics">الفيزياء</option>
-            <option value="chemistry">الكيمياء</option>
-            <option value="biology">الأحياء</option>
-            <option value="arabic">اللغة العربية</option>
-            <option value="english">اللغة الإنجليزية</option>
-            <option value="qudurat">القدرات</option>
-            <option value="coding">البرمجة</option>
+            <optgroup label="العلوم والرياضيات">
+              <option value="math">الرياضيات</option>
+              <option value="physics">الفيزياء</option>
+              <option value="chemistry">الكيمياء</option>
+              <option value="biology">الأحياء</option>
+              <option value="earthScience">علوم الأرض والفضاء</option>
+              <option value="environment">العلوم البيئية</option>
+            </optgroup>
+            <optgroup label="اللغات">
+              <option value="arabic">اللغة العربية</option>
+              <option value="english">اللغة الإنجليزية</option>
+            </optgroup>
+            <optgroup label="الدراسات الإنسانية والاجتماعية">
+              <option value="geography">الجغرافيا</option>
+              <option value="history">التاريخ</option>
+              <option value="socialStudies">الدراسات الاجتماعية</option>
+              <option value="islamicStudies">الدراسات الإسلامية</option>
+              <option value="civics">المواطنة والأنظمة</option>
+            </optgroup>
+            <optgroup label="الاقتصاد والمهارات التطبيقية">
+              <option value="economics">الاقتصاد</option>
+              <option value="business">إدارة الأعمال وريادة الأعمال</option>
+              <option value="accounting">المحاسبة</option>
+              <option value="health">الصحة واللياقة</option>
+              <option value="digitalSkills">المهارات الرقمية والحاسب</option>
+              <option value="coding">البرمجة</option>
+              <option value="research">مهارات البحث العلمي</option>
+              <option value="criticalThinking">التفكير الناقد</option>
+            </optgroup>
+            <optgroup label="الاختبارات">
+              <option value="qudurat">القدرات</option>
+              <option value="tahsili">التحصيلي</option>
+            </optgroup>
           </select>
         </div>
         <div class="tutor-control-group">
