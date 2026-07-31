@@ -120,7 +120,12 @@ async function toggleFullscreen(frame, button) {
   button.title = active ? 'الخروج من ملء الشاشة' : 'ملء الشاشة';
 }
 function addReadingToolbar(frame) {
-  if (!(frame instanceof HTMLElement) || frame.dataset.readerEnhanced === 'true') return;
+  if (!(frame instanceof HTMLElement)) return;
+  if (frame.querySelector(':scope > .neon-reader-tools')) {
+    frame.dataset.readerEnhanced = 'true';
+    frame.classList.add('neon-reader-frame');
+    return;
+  }
   const hasReadableContent = frame.matches('.exam-runner,.step-practice-card,.step-modal-card') ||
     frame.querySelector('.exam-passage,.step-passage,.exam-question,.step-question,.ltr');
   if (!hasReadableContent) return;
@@ -167,6 +172,7 @@ function startReadingObserver() {
   scanReadingFrames();
   const observer = new MutationObserver(mutations => {
     for (const mutation of mutations) {
+      if (mutation.target instanceof HTMLElement) scanReadingFrames(mutation.target);
       mutation.addedNodes.forEach(node => {
         if (node instanceof HTMLElement) scanReadingFrames(node);
       });
