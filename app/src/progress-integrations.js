@@ -156,8 +156,8 @@ function synchronizeStep(previousValue, nextValue) {
   }
 }
 
-function tutorMessageFingerprint(item, index) {
-  return hashText(`${item?.role || ''}|${item?.time || ''}|${item?.text || ''}|${index}`);
+function tutorMessageFingerprint(item) {
+  return hashText(`${item?.role || ''}|${item?.time || ''}|${item?.text || ''}`);
 }
 
 function synchronizeTutor(previousValue, nextValue) {
@@ -166,13 +166,13 @@ function synchronizeTutor(previousValue, nextValue) {
   if (!Array.isArray(after) || after.length === 0) return;
 
   const previousFingerprints = new Set(
-    (Array.isArray(before) ? before : []).map((item, index) => tutorMessageFingerprint(item, index))
+    (Array.isArray(before) ? before : []).map(item => tutorMessageFingerprint(item))
   );
   const settings = readJson(TUTOR_SETTINGS_KEY, {});
 
   after.forEach((item, index) => {
     if (item?.role !== 'assistant') return;
-    const fingerprint = tutorMessageFingerprint(item, index);
+    const fingerprint = tutorMessageFingerprint(item);
     if (previousFingerprints.has(fingerprint)) return;
 
     let prompt = null;
