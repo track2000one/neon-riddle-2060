@@ -71,5 +71,12 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:4173/learning > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/tutor > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/manifest.json > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/api/tutor/status | grep -q '"configured":false'
+          TUTOR_HTTP=$(curl --silent --output /tmp/tutor-response.json --write-out '%{http_code}' \
+            --header 'Content-Type: application/json' \
+            --data '{"message":"أين تقع القاهرة؟","subject":"الجغرافيا","level":"تطبيقي","mode":"explain"}' \
+            http://127.0.0.1:4173/api/tutor)
+          test "$TUTOR_HTTP" = "503"
+          grep -q 'GEMINI_NOT_CONFIGURED' /tmp/tutor-response.json
           cat /tmp/neon-server.log
-          echo "Railway production server validated successfully."
+          echo "Railway production server and Gemini fallback validated successfully."
