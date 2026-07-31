@@ -1,5 +1,6 @@
 import './ui-preferences.js';
 import './surface-contrast.css';
+import './navigation-enhancements.js';
 
 const FIREBASE_VERSION = '12.16.0';
 
