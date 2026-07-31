@@ -1,3 +1,5 @@
+import './ui-preferences.js';
+
 const FIREBASE_VERSION = '12.16.0';
 
 function readJson(key, fallback) {
