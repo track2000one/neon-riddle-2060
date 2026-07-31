@@ -22,6 +22,14 @@ const centers = [
     icon: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 51h44M16 45V32h9v13M28 45V23h9v22M40 45V14h9v31M15 22l12-9 10 5 14-10"/><path d="m45 8 6 0 0 6"/></svg>'
   },
   {
+    id: 'tutor',
+    href: '/tutor',
+    title: 'المعلم الذكي المحلي',
+    subtitle: 'Local Smart Tutor',
+    description: 'شرح وتمارين وخطط ومراجعة إجابات وأكواد دون رسوم API.',
+    icon: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M20 16a12 12 0 0 1 24 0v4a10 10 0 0 1 7 9v9a10 10 0 0 1-10 10H23A10 10 0 0 1 13 38v-9a10 10 0 0 1 7-9v-4Z"/><path d="M24 33h.1M40 33h.1M25 41c4 3 10 3 14 0M32 10v8"/></svg>'
+  },
+  {
     id: 'coding',
     href: '/legacy/coding.html',
     title: 'تعليم البرمجة',
@@ -39,7 +47,7 @@ const centers = [
   },
   {
     id: 'learning',
-    href: '/legacy/learning.html',
+    href: '/learning',
     title: 'المعرفة والدروس',
     subtitle: 'Learning Library',
     description: 'مكتبة تعليمية متعددة التخصصات من التأسيس إلى الإتقان.',
@@ -53,6 +61,7 @@ function number(value) {
 
 function renderCards() {
   const grid = document.getElementById('centerGrid');
+  document.getElementById('heroCenterCount').textContent = number(centers.length);
   grid.innerHTML = centers.map(center => `
     <a class="center-card" data-center="${center.id}" href="${center.href}" aria-label="فتح ${center.title}">
       <div class="center-brand">NEON<small>ACADEMY 2060</small></div>
