@@ -24,9 +24,9 @@ const centers = [
   {
     id: 'tutor',
     href: '/tutor',
-    title: 'المعلم الذكي المحلي',
-    subtitle: 'Local Smart Tutor',
-    description: 'شرح وتمارين وخطط ومراجعة إجابات وأكواد دون رسوم API.',
+    title: 'المعلم الذكي Gemini',
+    subtitle: 'Gemini Smart Tutor',
+    description: 'إجابات مباشرة وشرح وتمارين وخطط ومراجعة عبر Gemini مع وضع محلي احتياطي.',
     icon: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M20 16a12 12 0 0 1 24 0v4a10 10 0 0 1 7 9v9a10 10 0 0 1-10 10H23A10 10 0 0 1 13 38v-9a10 10 0 0 1 7-9v-4Z"/><path d="M24 33h.1M40 33h.1M25 41c4 3 10 3 14 0M32 10v8"/></svg>'
   },
   {
