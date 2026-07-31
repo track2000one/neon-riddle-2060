@@ -9,6 +9,7 @@
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="stylesheet" href="/src/home-title-fix.css" />
   <link rel="stylesheet" href="/src/home-centers-six.css" />
+  <link rel="stylesheet" href="/src/progress-dashboard.css" />
 </head>
 <body class="portal-home">
   <div class="world-grid"></div>
@@ -79,6 +80,20 @@
       <article><span>🔥</span><div><small>سلسلة التعلم</small><strong id="metricStreak">0 يوم</strong></div></article>
       <article><span>🏅</span><div><small>الشهادات</small><strong id="metricCertificates">0</strong></div></article>
       <article><span>◎</span><div><small>نسبة الإتقان</small><strong id="metricMastery">0%</strong></div></article>
+    </section>
+
+    <section class="progress-overview section-shell" id="progressOverview" aria-labelledby="progressTitle">
+      <div class="progress-overview-head">
+        <div>
+          <span class="eyebrow">YOUR LEARNING JOURNEY</span>
+          <h2 id="progressTitle">تقدمك في المنصة</h2>
+          <p>متابعة ما أتممته وما تبقى عليك، محفوظة في حسابك ومتزامنة بين أجهزتك.</p>
+        </div>
+        <span class="progress-sync-state" id="progressSyncState" aria-live="polite">جارٍ مزامنة الحساب…</span>
+      </div>
+      <div class="progress-center-grid" id="progressCenterGrid">
+        <div class="progress-empty">جارٍ تحميل تقدمك…</div>
+      </div>
     </section>
 
     <section id="centers" class="centers-section section-shell">
