@@ -13,9 +13,7 @@ function copyStaticData() {
     name: 'copy-neon-static-data',
     closeBundle() {
       mkdirSync(outputDirectory, { recursive: true });
-      if (existsSync(legacySource)) {
-        cpSync(legacySource, `${outputDirectory}/legacy`, { recursive: true });
-      }
+      if (existsSync(legacySource)) cpSync(legacySource, `${outputDirectory}/legacy`, { recursive: true });
       if (existsSync(generatedExamSource)) {
         mkdirSync(`${outputDirectory}/data`, { recursive: true });
         cpSync(generatedExamSource, `${outputDirectory}/data/exams`, { recursive: true });
@@ -40,11 +38,10 @@ export default defineConfig({
         home: fileURLToPath(new URL('./app/index.html', import.meta.url)),
         step: fileURLToPath(new URL('./app/step.html', import.meta.url)),
         exams: fileURLToPath(new URL('./app/exams.html', import.meta.url)),
-        games: fileURLToPath(new URL('./app/games.html', import.meta.url))
+        games: fileURLToPath(new URL('./app/games.html', import.meta.url)),
+        learning: fileURLToPath(new URL('./app/learning.html', import.meta.url))
       }
     }
   },
-  server: {
-    fs: { allow: [projectRoot] }
-  }
+  server: { fs: { allow: [projectRoot] } }
 });
