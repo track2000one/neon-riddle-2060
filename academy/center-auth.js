@@ -91,7 +91,9 @@ onAuthStateChanged(auth, user => {
     return;
   }
   const profile = seedProfile(user);
+  window.NEON_FIREBASE_USER = user;
+  window.NEON_CONFIGURE_LEGACY_PROGRESS?.(user);
   updateUi(user, profile);
   resolveReady?.(user);
-  window.dispatchEvent(new CustomEvent('neon-center-auth-ready'));
+  window.dispatchEvent(new CustomEvent('neon-center-auth-ready', { detail: { uid: user.uid } }));
 });
