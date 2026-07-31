@@ -3,6 +3,7 @@ import './brand-runtime.js';
 import './ui-preferences.js';
 import './surface-contrast.css';
 import './navigation-enhancements.js';
+import { configureProgress, flushProgressQueue } from './progress-client.js';
 
 const FIREBASE_VERSION = '12.16.0';
 
@@ -81,8 +82,11 @@ export async function ensureAuth() {
         return;
       }
       const profile = seedProfile(user);
+      const session = { user, profile, auth };
       window.NEON_AUTH_USER = { uid: user.uid, email: user.email || '', displayName: profile.academy?.name || profile.name };
-      resolve({ user, profile, auth });
+      configureProgress(session);
+      flushProgressQueue().catch(() => {});
+      resolve(session);
     }, reject);
   });
 }
