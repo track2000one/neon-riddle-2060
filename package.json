@@ -8,8 +8,9 @@
   },
   "scripts": {
     "dev": "vite",
+    "check:themes": "node scripts/check-theme-contrast.mjs",
     "build:data": "node scripts/build-question-bank.mjs",
-    "build": "npm run build:data && vite build",
+    "build": "npm run check:themes && npm run build:data && vite build",
     "start": "node server.mjs",
     "preview": "vite preview"
   },
