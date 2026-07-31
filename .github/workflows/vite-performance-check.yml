@@ -10,6 +10,7 @@ on:
     paths:
       - 'app/**'
       - 'scripts/**'
+      - 'server/**'
       - 'academy/exam-*.js'
       - 'package.json'
       - 'package-lock.json'
@@ -17,6 +18,7 @@ on:
       - 'vercel.json'
       - 'railway.toml'
       - 'server.mjs'
+      - 'server-production.mjs'
 
 permissions:
   contents: read
@@ -72,11 +74,16 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:4173/tutor > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/manifest.json > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/api/tutor/status | grep -q '"configured":false'
+          curl --fail --silent --show-error http://127.0.0.1:4173/api/progress/status | grep -q '"configured":false'
           TUTOR_HTTP=$(curl --silent --output /tmp/tutor-response.json --write-out '%{http_code}' \
             --header 'Content-Type: application/json' \
             --data '{"message":"أين تقع القاهرة؟","subject":"الجغرافيا","level":"تطبيقي","mode":"explain"}' \
             http://127.0.0.1:4173/api/tutor)
           test "$TUTOR_HTTP" = "503"
           grep -q 'GEMINI_NOT_CONFIGURED' /tmp/tutor-response.json
+          PROGRESS_HTTP=$(curl --silent --output /tmp/progress-response.json --write-out '%{http_code}' \
+            http://127.0.0.1:4173/api/progress/me)
+          test "$PROGRESS_HTTP" = "401"
+          grep -q 'AUTH_REQUIRED' /tmp/progress-response.json
           cat /tmp/neon-server.log
-          echo "Railway production server and Gemini fallback validated successfully."
+          echo "Railway production server, Gemini fallback, and progress authentication validated successfully."
