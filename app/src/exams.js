@@ -20,6 +20,7 @@ let selectedSubject;
 let session;
 let timer;
 let visualsReady;
+let lastExamConfig;
 
 const subjectsElement = document.getElementById('examSubjects');
 const setupElement = document.getElementById('examSetup');
@@ -130,7 +131,7 @@ function renderSubjects() {
   }).join('');
 }
 
-function selectSubject(subject) {
+function selectSubject(subject, { scroll = true } = {}) {
   selectedSubject = subject;
   const meta = subjectMeta[subject] || { title: subject, description: '' };
   document.querySelectorAll('.exam-subject').forEach(card => card.classList.toggle('selected', card.dataset.subject === subject));
@@ -138,7 +139,7 @@ function selectSubject(subject) {
   document.getElementById('setupDescription').textContent = meta.description;
   document.getElementById('examLoadNote').textContent = `سيتم تحميل ملف ${meta.title} فقط عند بدء الاختبار.`;
   setupElement.hidden = false;
-  setupElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  if (scroll) setupElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 async function startExam() {
@@ -154,7 +155,21 @@ async function startExam() {
     const pool = allQuestions.filter(question => question.active !== false && (level === 'all' || question.level === level));
     if (!pool.length) throw new Error('لا توجد أسئلة مطابقة للمستوى المحدد.');
     const questions = shuffle(pool).slice(0, Math.min(requestedCount, pool.length));
-    session = { subject: selectedSubject, questions, index: 0, correct: 0, answers: [], remaining: minutes * 60, openTime: minutes === 0 };
+    lastExamConfig = { subject: selectedSubject, level, requestedCount, minutes };
+    session = {
+      subject: selectedSubject,
+      questions,
+      index: 0,
+      correct: 0,
+      answers: [],
+      remaining: minutes * 60,
+      openTime: minutes === 0,
+      startedAt: Date.now(),
+      level,
+      requestedCount,
+      minutes,
+      finished: false
+    };
     setupElement.hidden = true;
     runnerElement.hidden = false;
     startTimer();
@@ -172,6 +187,7 @@ function startTimer() {
   clearInterval(timer);
   if (session.openTime) return;
   timer = setInterval(() => {
+    if (!session || session.finished) return;
     session.remaining -= 1;
     updateTimer();
     if (session.remaining <= 0) finishExam();
@@ -185,9 +201,7 @@ function updateTimer() {
     element.textContent = 'وقت مفتوح';
     return;
   }
-  const minutes = Math.floor(session.remaining / 60);
-  const seconds = String(session.remaining % 60).padStart(2, '0');
-  element.textContent = `${minutes}:${seconds}`;
+  element.textContent = formatSeconds(session.remaining);
 }
 
 async function renderQuestionVisual(question) {
@@ -205,7 +219,8 @@ async function renderQuestionVisual(question) {
 }
 
 function renderQuestion() {
-  if (!session || session.index >= session.questions.length) return finishExam();
+  if (!session || session.finished) return;
+  if (session.index >= session.questions.length) return finishExam();
   const question = session.questions[session.index];
   const progress = Math.round((session.index / session.questions.length) * 100);
   runnerElement.innerHTML = `
@@ -225,11 +240,18 @@ function renderQuestion() {
 }
 
 function answerQuestion(choice) {
-  if (!session) return;
+  if (!session || session.finished) return;
   const question = session.questions[session.index];
   const correct = choice === question.answer;
   session.correct += correct ? 1 : 0;
-  session.answers.push({ id: question.id, subject: question.subject, correct });
+  session.answers.push({
+    questionIndex: session.index,
+    id: question.id,
+    subject: question.subject || session.subject,
+    selected: choice,
+    answer: question.answer,
+    correct
+  });
   runnerElement.querySelectorAll('[data-answer]').forEach((button, index) => {
     button.disabled = true;
     if (index === question.answer) button.classList.add('correct');
@@ -238,7 +260,7 @@ function answerQuestion(choice) {
   document.getElementById('examFeedback').innerHTML = `
     <div class="exam-feedback ${correct ? 'is-correct' : 'is-wrong'}">
       <strong>${correct ? 'إجابة صحيحة ✓' : 'الإجابة تحتاج مراجعة'}</strong>
-      <p>${escapeHtml(question.explain)}</p>
+      <p>${escapeHtml(question.explain || 'راجع القاعدة المرتبطة بهذا السؤال.')}</p>
       <button class="exam-primary" id="nextExamQuestion">${session.index + 1 === session.questions.length ? 'عرض النتيجة' : 'السؤال التالي'}</button>
     </div>
   `;
@@ -252,22 +274,163 @@ function saveResult(result) {
   localStorage.setItem(key, JSON.stringify(history.slice(-50)));
 }
 
-function finishExam() {
-  if (!session) return;
-  clearInterval(timer);
-  const total = session.questions.length;
-  const score = total ? Math.round((session.correct / total) * 100) : 0;
-  const result = { date: new Date().toISOString(), subject: session.subject, correct: session.correct, total, score, answers: session.answers };
-  saveResult(result);
+function completeAnswers(currentSession) {
+  const byQuestion = new Map(currentSession.answers.map(answer => [answer.questionIndex, answer]));
+  return currentSession.questions.map((question, questionIndex) => {
+    const answer = byQuestion.get(questionIndex);
+    return {
+      question,
+      questionIndex,
+      selected: answer?.selected ?? null,
+      correct: answer?.correct === true
+    };
+  });
+}
+
+function buildBreakdown(answers) {
+  const rows = new Map();
+  for (const item of answers) {
+    const subject = item.question.subject || selectedSubject || 'general';
+    const meta = subjectMeta[subject] || { title: subject, icon: '🎯' };
+    const row = rows.get(subject) || { subject, title: meta.title, icon: meta.icon, total: 0, correct: 0 };
+    row.total += 1;
+    if (item.correct) row.correct += 1;
+    rows.set(subject, row);
+  }
+  return [...rows.values()].map(row => ({ ...row, percent: row.total ? Math.round((row.correct / row.total) * 100) : 0 }));
+}
+
+function resultLabel(percent) {
+  if (percent >= 90) return 'ممتاز جدًا';
+  if (percent >= 80) return 'ممتاز';
+  if (percent >= 70) return 'جيد جدًا';
+  if (percent >= 60) return 'جيد';
+  return 'يحتاج إلى مراجعة منظمة';
+}
+
+function reviewVisual(question) {
+  if (!question.visualId) return '';
+  const svg = window.NEON_EXAM_VISUALS?.[question.visualId];
+  if (!svg) return '';
+  return `<figure class="report-question-visual" aria-label="${escapeHtml(question.imageAlt || 'الرسم المرافق للسؤال')}">${svg}</figure>`;
+}
+
+function reviewCard(item, index) {
+  const question = item.question;
+  const selectedText = item.selected === null ? 'لم تُجب' : question.options?.[item.selected] ?? 'لم تُجب';
+  const correctText = question.options?.[question.answer] ?? 'غير محددة';
+  const source = question.sourcePage
+    ? `<small class="report-source">${escapeHtml(subjectMeta[question.subject]?.title || '')} • صفحة الملف ${Number(question.sourcePage).toLocaleString('ar-SA')}</small>`
+    : question.source ? `<small class="report-source">${escapeHtml(question.source)}</small>` : '';
+  return `
+    <article class="exam-review-card ${item.selected === null ? 'is-unanswered' : ''}">
+      <div class="exam-review-question"><span>${(index + 1).toLocaleString('ar-SA')}</span><strong>${escapeHtml(question.q)}</strong></div>
+      ${reviewVisual(question)}
+      <p>إجابتك: <em>${escapeHtml(selectedText)}</em></p>
+      <p>الصحيحة: <b>${escapeHtml(correctText)}</b></p>
+      <small>${escapeHtml(question.explain || 'راجع القاعدة أو المهارة المرتبطة بهذا السؤال.')}</small>
+      ${source}
+    </article>
+  `;
+}
+
+function renderDetailedReport(currentSession, answers, score, elapsed) {
+  const total = currentSession.questions.length;
+  const breakdown = buildBreakdown(answers);
+  const wrong = answers.filter(item => !item.correct);
   runnerElement.innerHTML = `
-    <div class="exam-result">
-      <span class="eyebrow">EXAM COMPLETED</span>
-      <h2>${score}%</h2>
-      <p>${session.correct} إجابة صحيحة من ${total} في ${escapeHtml(subjectMeta[session.subject]?.title || session.subject)}.</p>
-      <div class="result-actions"><button class="exam-primary" id="retryExam">إعادة الاختبار</button><button id="chooseAnotherExam">اختيار مادة أخرى</button></div>
+    <div class="exam-report">
+      <span class="eyebrow">DETAILED PERFORMANCE REPORT</span>
+      <h2>تقرير الاختبار</h2>
+
+      <div class="exam-report-hero">
+        <strong>${score}%</strong>
+        <div>
+          <b>${resultLabel(score)}</b>
+          <small>${currentSession.correct} من ${total} • ${formatSeconds(elapsed)}</small>
+        </div>
+      </div>
+
+      <div class="exam-report-breakdown">
+        ${breakdown.map(item => `
+          <article>
+            <div><span>${escapeHtml(item.icon)} ${escapeHtml(item.title)}</span><strong>${item.percent}%</strong></div>
+            <small>${item.correct}/${item.total}</small>
+            <i><b style="width:${item.percent}%"></b></i>
+          </article>
+        `).join('')}
+      </div>
+
+      <section class="exam-review-section">
+        <h3>مراجعة الأخطاء (${wrong.length})</h3>
+        ${wrong.length ? wrong.map(reviewCard).join('') : '<div class="exam-perfect-result">🏆 جميع الإجابات صحيحة. أداء ممتاز.</div>'}
+      </section>
+
+      <div class="exam-report-actions">
+        <button class="exam-primary" id="retrySimilarExam">إعادة اختبار مشابه</button>
+        <button class="exam-secondary" id="returnToExamSubjects">العودة</button>
+      </div>
     </div>
   `;
+}
+
+function finishExam() {
+  if (!session || session.finished) return;
+  session.finished = true;
+  clearInterval(timer);
+  timer = null;
+
+  const currentSession = session;
+  const answers = completeAnswers(currentSession);
+  const total = currentSession.questions.length;
+  const score = total ? Math.round((currentSession.correct / total) * 100) : 0;
+  const elapsed = Math.max(1, Math.round((Date.now() - currentSession.startedAt) / 1000));
+  const result = {
+    date: new Date().toISOString(),
+    subject: currentSession.subject,
+    title: subjectMeta[currentSession.subject]?.title || currentSession.subject,
+    correct: currentSession.correct,
+    total,
+    score,
+    durationSeconds: elapsed,
+    level: currentSession.level,
+    wrongCount: total - currentSession.correct,
+    answers: answers.map(item => ({
+      id: item.question.id,
+      subject: item.question.subject || currentSession.subject,
+      selected: item.selected,
+      answer: item.question.answer,
+      correct: item.correct
+    }))
+  };
+  saveResult(result);
+  renderDetailedReport(currentSession, answers, score, elapsed);
   session = null;
+}
+
+async function retrySimilarExam() {
+  if (!lastExamConfig) return;
+  selectSubject(lastExamConfig.subject, { scroll: false });
+  document.getElementById('examLevel').value = lastExamConfig.level;
+  document.getElementById('examCount').value = String(lastExamConfig.requestedCount);
+  document.getElementById('examMinutes').value = String(lastExamConfig.minutes);
+  await startExam();
+}
+
+function returnToSubjects() {
+  clearInterval(timer);
+  timer = null;
+  session = null;
+  runnerElement.hidden = true;
+  setupElement.hidden = true;
+  subjectsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function formatSeconds(seconds) {
+  const safeSeconds = Math.max(0, Math.round(Number(seconds) || 0));
+  const minutes = Math.floor(safeSeconds / 60);
+  const remainder = String(safeSeconds % 60).padStart(2, '0');
+  return `${String(minutes).padStart(2, '0')}:${remainder}`;
 }
 
 async function boot() {
@@ -294,9 +457,12 @@ document.addEventListener('click', event => {
   if (event.target.id === 'startExamButton') startExam();
   const answer = event.target.closest('[data-answer]');
   if (answer) answerQuestion(Number(answer.dataset.answer));
-  if (event.target.id === 'nextExamQuestion') { session.index += 1; renderQuestion(); }
-  if (event.target.id === 'retryExam') { runnerElement.hidden = true; setupElement.hidden = false; setupElement.scrollIntoView({ behavior: 'smooth' }); }
-  if (event.target.id === 'chooseAnotherExam') { runnerElement.hidden = true; setupElement.hidden = true; subjectsElement.scrollIntoView({ behavior: 'smooth' }); }
+  if (event.target.id === 'nextExamQuestion' && session) {
+    session.index += 1;
+    renderQuestion();
+  }
+  if (event.target.id === 'retrySimilarExam') retrySimilarExam();
+  if (event.target.id === 'returnToExamSubjects') returnToSubjects();
 });
 
 boot();
