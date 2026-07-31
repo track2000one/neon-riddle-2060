@@ -1,6 +1,7 @@
 import './styles.css';
 import './home-shell.css';
 import { ensureAuth, renderAccount } from './auth.js';
+import { loadProgressSummary, migrateLegacyProgress } from './progress-client.js';
 
 const LAST_CENTER_KEY = 'neonAcademyLastCenterV1';
 
@@ -53,6 +54,15 @@ const centers = [
     description: 'مكتبة تعليمية متعددة التخصصات من التأسيس إلى الإتقان.',
     icon: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M8 13h18c5 0 8 3 8 8v32c0-5-3-8-8-8H8V13Zm48 0H38c-5 0-8 3-8 8v32c0-5 3-8 8-8h18V13Z"/><path d="M15 22h12M15 29h12M49 22H37M49 29H37"/></svg>'
   }
+];
+
+const progressCenters = [
+  { id: 'learning', title: 'المعرفة والدروس', icon: '📚', href: '/learning', total: 240, unit: 'درس' },
+  { id: 'step', title: 'اللغة الإنجليزية STEP', icon: '💬', href: '/step', total: 20, unit: 'درس وتدريب' },
+  { id: 'exams', title: 'التحصيلي والقدرات', icon: '📊', href: '/exams', unit: 'محاولة' },
+  { id: 'games', title: 'الألعاب والألغاز', icon: '🎮', href: '/games', total: 72, unit: 'نشاط' },
+  { id: 'coding', title: 'تعليم البرمجة', icon: '💻', href: '/legacy/coding.html', unit: 'درس' },
+  { id: 'tutor', title: 'المعلم الذكي', icon: '🧠', href: '/tutor', unit: 'جلسة' }
 ];
 
 function number(value) {
@@ -115,6 +125,63 @@ function renderStudentMetrics(profile = {}) {
   document.getElementById('metricMastery').textContent = `${number(mastery)}%`;
 }
 
+function centerPercentage(definition, progress) {
+  if (definition.total) return Math.min(100, Math.round((Number(progress.completed || 0) / definition.total) * 100));
+  if (Number(progress.mastery || 0) > 0) return Number(progress.mastery || 0);
+  return Number(progress.completed || 0) > 0 ? 100 : Number(progress.inProgress || 0) > 0 ? 25 : 0;
+}
+
+function renderProgressSummary(summary) {
+  const metrics = summary?.metrics || {};
+  document.getElementById('metricXp').textContent = number(metrics.xp);
+  document.getElementById('metricCompleted').textContent = number(metrics.completedItems);
+  document.getElementById('metricStreak').textContent = `${number(metrics.streak)} يوم`;
+  document.getElementById('metricCertificates').textContent = number(metrics.certificates);
+  document.getElementById('metricMastery').textContent = `${number(metrics.mastery)}%`;
+
+  const sync = document.getElementById('progressSyncState');
+  sync.textContent = 'متزامن مع حسابك';
+  sync.className = 'progress-sync-state online';
+
+  const byId = new Map((summary?.centers || []).map(item => [item.centerId, item]));
+  const grid = document.getElementById('progressCenterGrid');
+  grid.innerHTML = progressCenters.map(definition => {
+    const progress = byId.get(definition.id) || { completed: 0, inProgress: 0, mastery: 0, attempts: 0 };
+    const percent = centerPercentage(definition, progress);
+    const completedText = definition.total
+      ? `${number(progress.completed)} من ${number(definition.total)} ${definition.unit}`
+      : `${number(progress.completed)} مكتمل • ${number(progress.attempts)} ${definition.unit}`;
+    const secondary = progress.inProgress > 0
+      ? `${number(progress.inProgress)} قيد التقدم`
+      : progress.mastery > 0 ? `إتقان ${number(progress.mastery)}%` : 'لم يبدأ بعد';
+    return `
+      <a class="progress-center-card ${percent === 0 ? 'empty' : ''}" href="${definition.href}" data-progress-center="${definition.id}">
+        <header><strong>${definition.title}</strong><span>${definition.icon}</span></header>
+        <div class="progress-bar" aria-label="تقدم ${definition.title}: ${percent}%"><i style="width:${percent}%"></i></div>
+        <div class="progress-center-meta"><span>${completedText}</span><span>${secondary}</span></div>
+      </a>
+    `;
+  }).join('');
+
+  if (summary?.continue?.href) {
+    const button = document.getElementById('continueButton');
+    button.href = summary.continue.href;
+    button.title = summary.continue.title ? `متابعة: ${summary.continue.title}` : 'متابعة آخر نشاط';
+  }
+}
+
+function showProgressOffline() {
+  const sync = document.getElementById('progressSyncState');
+  if (sync) {
+    sync.textContent = 'حفظ محلي مؤقت';
+    sync.className = 'progress-sync-state offline';
+  }
+  const grid = document.getElementById('progressCenterGrid');
+  if (grid && !grid.querySelector('.progress-center-card')) {
+    grid.innerHTML = '<div class="progress-empty">سيتم مزامنة تقدمك تلقائيًا بعد ربط PostgreSQL أو عودة الاتصال.</div>';
+  }
+}
+
 async function loadQuestionCount() {
   try {
     const response = await fetch('/data/exams/manifest.json', { cache: 'force-cache' });
@@ -133,6 +200,19 @@ function prepareContinueButton() {
   button.href = valid ? saved : '/step';
 }
 
+async function synchronizeProgress() {
+  try {
+    const cached = await loadProgressSummary();
+    renderProgressSummary(cached);
+    await migrateLegacyProgress();
+    const fresh = await loadProgressSummary({ force: true });
+    renderProgressSummary(fresh);
+  } catch (error) {
+    console.warn('Progress synchronization is temporarily unavailable:', error?.code || error?.message);
+    showProgressOffline();
+  }
+}
+
 async function boot() {
   renderCards();
   prepareContinueButton();
@@ -142,11 +222,15 @@ async function boot() {
     const session = await ensureAuth();
     renderAccount(session);
     renderStudentMetrics(session.profile);
+    await synchronizeProgress();
   } catch (error) {
     if (error.message !== 'Authentication required') console.error(error);
   } finally {
     document.getElementById('bootOverlay')?.classList.add('hidden');
   }
 }
+
+window.addEventListener('neon-progress-summary', event => renderProgressSummary(event.detail));
+window.addEventListener('neon-progress-offline', showProgressOffline);
 
 boot();
