@@ -1,3 +1,5 @@
+import './tutor-gemini.css';
+
 const HISTORY_KEY = 'neonLocalTutorHistoryV3';
 const MAX_HISTORY = 80;
 const MAX_CONTEXT_MESSAGES = 12;
@@ -115,11 +117,50 @@ async function loadGeminiStatus() {
   setProviderBadge(geminiStatus);
 }
 
+function normalizeArabic(value) {
+  return String(value || '')
+    .replace(/[إأآ]/g, 'ا')
+    .replace(/ى/g, 'ي')
+    .replace(/ة/g, 'ه')
+    .replace(/[ؤ]/g, 'و')
+    .replace(/[ئ]/g, 'ي')
+    .replace(/[\u064B-\u065F\u0670]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function builtInLocalResponse(question) {
+  const normalized = normalizeArabic(question);
+  const mode = currentMode();
+  const subject = selectedText('tutorSubject') || 'التعلم العام';
+  const level = selectedText('tutorLevel') || 'تطبيقي';
+
+  if (normalized.includes('اين تقع') && normalized.includes('القاهره')) {
+    return 'تقع مدينة القاهرة في شمال شرقي جمهورية مصر العربية، على ضفتي نهر النيل قرب بداية دلتا النيل، وهي عاصمة مصر.';
+  }
+  if (normalized.includes('ما عاصمه') && normalized.includes('السعوديه')) {
+    return 'عاصمة المملكة العربية السعودية هي مدينة الرياض.';
+  }
+  if (mode === 'exercise') {
+    return `تمرين محلي احتياطي في ${subject} — مستوى ${level}:\n\nاكتب تعريفًا موجزًا للمفهوم الذي تسأل عنه، ثم مثالًا يوضحه، ثم سؤال تحقق واحدًا. أرسل إجابتك بعد ذلك في وضع «راجع إجابتي».`;
+  }
+  if (mode === 'plan') {
+    return `خطة محلية احتياطية لمادة ${subject}:\n\n1. 15 دقيقة لفهم المفهوم.\n2. 20 دقيقة لتطبيق مثالين.\n3. 10 دقائق لمراجعة الأخطاء.\n4. خمس دقائق لتلخيص ما تعلمته.\n\nكرر الخطة خمسة أيام، واجعل اليوم السادس اختبارًا قصيرًا واليوم السابع مراجعة للنقاط الضعيفة.`;
+  }
+  if (mode === 'review') {
+    return `مراجعة محلية أولية في ${subject}:\n\n• تأكد أن إجابتك بدأت بجواب مباشر.\n• أضف السبب أو القاعدة أو الدليل.\n• استخدم مثالًا مناسبًا.\n• اختم بطريقة تحقق من صحة الإجابة.\n\nتعذر الاتصال بـ Gemini، لذلك لا أستطيع إجراء تصحيح تفصيلي موثوق الآن.`;
+  }
+  if (mode === 'code') {
+    return 'تعذر الاتصال بـ Gemini. راجع محليًا: صحة الأقواس، أسماء المتغيرات، معالجة الأخطاء، التحقق من المدخلات، تجنب innerHTML وeval مع بيانات المستخدم، واختبار الكود على الجوال ولوحة المفاتيح.';
+  }
+  return `تعذر الاتصال بـ Gemini حاليًا. في مادة ${subject}، ابدأ بالإجابة المباشرة عن السؤال، ثم اذكر التعريف أو القاعدة، وبعدها مثالًا أو دليلًا، واختم بخطوة تحقق. أعد المحاولة بعد قليل للحصول على إجابة Gemini الكاملة.`;
+}
+
 function localFallback(question, reason = '') {
   const buildLocalResponse = window.NEON_LOCAL_TUTOR_BUILD_RESPONSE;
   const localText = typeof buildLocalResponse === 'function'
     ? buildLocalResponse(question)
-    : 'تعذر الوصول إلى Gemini، ولم تكتمل تهيئة المحرك المحلي. أعد تحميل الصفحة ثم حاول مرة أخرى.';
+    : builtInLocalResponse(question);
   const notice = reason
     ? `⚠️ تعذر استخدام Gemini (${reason})، لذلك تم تشغيل المعلم المحلي الاحتياطي.\n\n`
     : 'ℹ️ Gemini غير مفعّل بعد، لذلك تم تشغيل المعلم المحلي الاحتياطي.\n\n';
