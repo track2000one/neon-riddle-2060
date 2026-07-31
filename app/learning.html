@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07101f" />
+  <meta name="description" content="مركز المعرفة والدروس السريع في NEON Academy 2060" />
+  <title>المعرفة والدروس | NEON Academy 2060</title>
+</head>
+<body class="center-body learning-body">
+  <div class="page-glow glow-one"></div>
+  <div class="page-glow glow-two"></div>
+
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand-mark">N</span>
+      <span><strong>NEON ACADEMY 2060</strong><small>LEARNING LIBRARY</small></span>
+    </a>
+    <nav class="quick-nav" aria-label="التنقل">
+      <a href="/">المراكز</a>
+      <a href="/step">English STEP</a>
+      <a href="/exams">التحصيلي والقدرات</a>
+      <a href="/games">الألعاب والألغاز</a>
+      <a class="active" href="/learning">المعرفة والدروس</a>
+    </nav>
+    <div class="account-chip" id="accountChip" aria-live="polite">
+      <span class="account-avatar" id="accountAvatar">N</span>
+      <span><strong id="accountName">حساب الطالب</strong><small id="accountEmail">جارٍ التحقق…</small></span>
+    </div>
+  </header>
+
+  <main class="learning-main">
+    <section class="learning-hero">
+      <div>
+        <span class="eyebrow">FAST LEARNING LIBRARY</span>
+        <h1>المعرفة والدروس</h1>
+        <p>مكتبة تعليمية متدرجة من التأسيس إلى التطبيق ثم الإتقان، تعمل في صفحة مستقلة دون تحميل بقية المنصة.</p>
+      </div>
+      <div class="learning-stats">
+        <article><strong id="subjectCount">8</strong><small>تخصصات</small></article>
+        <article><strong id="lessonCount">240</strong><small>درسًا</small></article>
+        <article><strong id="completedCount">0</strong><small>مكتمل</small></article>
+        <article><strong id="masteryPercent">0%</strong><small>الإتقان</small></article>
+      </div>
+    </section>
+
+    <section class="learning-toolbar" aria-label="البحث والتصفية">
+      <label class="learning-search"><span>⌕</span><input id="lessonSearch" type="search" placeholder="ابحث عن درس أو موضوع…" /></label>
+      <select id="subjectFilter" aria-label="التخصص"><option value="all">كل التخصصات</option></select>
+      <select id="levelFilter" aria-label="المستوى">
+        <option value="all">كل المستويات</option>
+        <option value="foundation">تأسيسي</option>
+        <option value="practice">تطبيقي</option>
+        <option value="mastery">إتقان</option>
+      </select>
+      <button id="continueLesson" class="learning-primary">واصل آخر درس</button>
+    </section>
+
+    <section class="subject-section">
+      <div class="learning-section-heading">
+        <div><span class="eyebrow">CHOOSE A SUBJECT</span><h2>التخصصات التعليمية</h2><p>اختر تخصصًا لتصفية المكتبة وعرض مساره الكامل.</p></div>
+      </div>
+      <div class="subject-grid" id="subjectGrid"></div>
+    </section>
+
+    <section class="lesson-section" id="lessonSection">
+      <div class="learning-section-heading compact">
+        <div><span class="eyebrow">LESSON CATALOG</span><h2>الدروس والوحدات</h2><p id="lessonResultText">يتم عرض الدروس المطابقة للتصفية.</p></div>
+        <div class="result-count"><strong id="visibleLessonCount">0</strong><small>نتيجة</small></div>
+      </div>
+      <div class="lesson-grid" id="lessonGrid"></div>
+      <button class="load-more" id="loadMoreButton" hidden>عرض المزيد</button>
+    </section>
+  </main>
+
+  <div class="lesson-modal" id="lessonModal" hidden>
+    <div class="lesson-modal-backdrop" data-close-modal></div>
+    <article class="lesson-modal-card" role="dialog" aria-modal="true" aria-labelledby="lessonModalTitle">
+      <button class="lesson-modal-close" data-close-modal aria-label="إغلاق">×</button>
+      <div id="lessonModalContent"></div>
+    </article>
+  </div>
+
+  <footer>NEON ACADEMY 2060 • LEARN • UNDERSTAND • MASTER</footer>
+  <div class="boot-overlay" id="bootOverlay"><div class="loader"></div><p>جارٍ تجهيز مكتبة المعرفة…</p></div>
+  <script type="module" src="/src/learning.js"></script>
+</body>
+</html>
