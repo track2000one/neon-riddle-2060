@@ -176,10 +176,53 @@
     };
   }
 
+  function installWebRunBridge(){
+    document.addEventListener('click',event=>{
+      if(!event.target.closest('#runCodeButton')||!activeUser?.uid)return;
+      const language=activeLanguage();
+      if(!['html','css'].includes(language.id))return;
+
+      setTimeout(()=>{
+        const feedback=document.getElementById('codeFeedback');
+        const editor=document.getElementById('codeEditor');
+        const successful=Boolean(feedback?.classList.contains('success'));
+        const counterKey=`neonCodingWebRunsV1:${activeUser.uid}`;
+        const runNumber=Number(localStorage.getItem(counterKey)||0)+1;
+        safeSet(counterKey,String(runNumber));
+        const source=String(editor?.value||'');
+        record({
+          eventType:'activity',
+          eventKey:`coding:web-run:${runNumber}`,
+          centerId:'coding',
+          itemType:'code_run',
+          itemId:`web-run-${runNumber}`,
+          title:`تشغيل ${language.title}`,
+          status:'completed',
+          progressPercent:100,
+          masteryScore:successful?100:0,
+          score:successful?100:0,
+          subjectId:language.id,
+          correct:successful?1:0,
+          total:1,
+          href:'/legacy/coding.html#coding',
+          position:{language:language.id},
+          metadata:{
+            language:language.id,
+            successful,
+            characterCount:source.length,
+            lineCount:source?source.split('\n').length:0,
+            source:'coding-run-button'
+          }
+        });
+      },0);
+    });
+  }
+
   window.NEON_CONFIGURE_LEGACY_PROGRESS=user=>{
     activeUser=user||null;
     flush().catch(()=>{});
   };
   window.addEventListener('online',()=>flush().catch(()=>{}));
   installStorageBridge();
+  installWebRunBridge();
 })();
