@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#1B3C53" />
-  <meta name="description" content="المعلم الذكي المحلي في NEON Academy 2060 — شرح وتمارين وخطط ومراجعة دون API خارجي" />
-  <title>المعلم الذكي المحلي | NEON Academy 2060</title>
+  <meta name="description" content="المعلم الذكي Gemini في NEON Academy 2060 — شرح وتمارين وخطط ومراجعة مع وضع محلي احتياطي" />
+  <title>المعلم الذكي Gemini | NEON Academy 2060</title>
 </head>
 <body class="center-body tutor-body">
   <div class="page-glow glow-one"></div>
@@ -14,7 +14,7 @@
   <header class="topbar">
     <a class="brand" href="/">
       <span class="brand-mark">N</span>
-      <span><strong>NEON ACADEMY 2060</strong><small>LOCAL SMART TUTOR</small></span>
+      <span><strong>NEON ACADEMY 2060</strong><small>GEMINI SMART TUTOR</small></span>
     </a>
     <nav class="quick-nav" aria-label="التنقل">
       <a href="/">المراكز</a>
@@ -32,14 +32,14 @@
   <main class="tutor-main">
     <section class="tutor-hero">
       <div>
-        <span class="eyebrow">PRIVATE • LOCAL • LEARNING ASSISTANT</span>
-        <h1>المعلم الذكي المحلي</h1>
-        <p>مساعد تعليمي يعمل داخل المنصة دون رسوم API: يشرح المفاهيم، ينشئ تدريبات، يبني خطة مذاكرة، يراجع الإجابات والأكواد، ويحفظ محادثاتك على جهازك.</p>
+        <span class="eyebrow">GEMINI AI • SECURE SERVER • LOCAL BACKUP</span>
+        <h1>المعلم الذكي Gemini</h1>
+        <p>مساعد تعليمي متصل بـ Gemini من خلال خادم Railway الآمن: يجيب مباشرة، يشرح المفاهيم، ينشئ تدريبات وخطط مذاكرة، ويراجع الإجابات والأكواد. عند تعذر Gemini يعمل المحرك المحلي الاحتياطي تلقائيًا.</p>
         <div class="tutor-badges">
-          <span>🔒 بيانات محلية</span><span>⚡ استجابة فورية</span><span>📚 أكثر من 20 مادة</span><span>🧠 متدرج حسب المستوى</span>
+          <span>✨ Gemini AI</span><span>🔐 المفتاح محمي بالخادم</span><span>📚 أكثر من 20 مادة</span><span>🛟 وضع محلي احتياطي</span>
         </div>
       </div>
-      <div class="tutor-orb" aria-hidden="true"><span>🧠</span><small>LOCAL AI</small></div>
+      <div class="tutor-orb" aria-hidden="true"><span>✨</span><small>GEMINI AI</small></div>
     </section>
 
     <section class="tutor-workspace">
@@ -93,10 +93,10 @@
         </div>
 
         <div class="tutor-modes" id="tutorModes" aria-label="أوضاع المعلم">
-          <button class="active" data-mode="explain"><span>💡</span><strong>اشرح لي</strong><small>تبسيط وأمثلة وخطوات</small></button>
-          <button data-mode="exercise"><span>📝</span><strong>أنشئ تمرينًا</strong><small>سؤال وتلميح وحل</small></button>
+          <button class="active" data-mode="explain"><span>💡</span><strong>اشرح لي</strong><small>إجابة مباشرة ثم شرح</small></button>
+          <button data-mode="exercise"><span>📝</span><strong>أنشئ تمرينًا</strong><small>سؤال وتلميح وحل عند الطلب</small></button>
           <button data-mode="plan"><span>🗓️</span><strong>خطة مذاكرة</strong><small>خطة عملية قابلة للتنفيذ</small></button>
-          <button data-mode="review"><span>✅</span><strong>راجع إجابتي</strong><small>نقاط القوة والتحسين</small></button>
+          <button data-mode="review"><span>✅</span><strong>راجع إجابتي</strong><small>تصحيح وتغذية راجعة</small></button>
           <button data-mode="code"><span>⌨️</span><strong>راجع الكود</strong><small>أخطاء وتحسينات آمنة</small></button>
         </div>
 
@@ -108,8 +108,8 @@
 
       <section class="tutor-chat-shell" aria-label="محادثة المعلم الذكي">
         <header class="tutor-chat-head">
-          <div><span class="tutor-status-dot"></span><strong id="tutorModeTitle">وضع الشرح</strong><small id="tutorModeHint">اكتب المفهوم الذي تريد فهمه.</small></div>
-          <span class="tutor-local-label">LOCAL</span>
+          <div><span class="tutor-status-dot"></span><strong id="tutorModeTitle">وضع الشرح</strong><small id="tutorModeHint">اكتب سؤالك وسيجيب Gemini مباشرة ثم يشرح عند الحاجة.</small></div>
+          <span class="tutor-local-label" data-state="checking">CHECKING</span>
         </header>
 
         <div class="tutor-messages" id="tutorMessages" aria-live="polite"></div>
@@ -124,7 +124,7 @@
         <form class="tutor-composer" id="tutorForm">
           <textarea id="tutorInput" rows="3" maxlength="5000" placeholder="اكتب سؤالك أو الصق إجابتك أو الكود هنا…" required></textarea>
           <div class="tutor-composer-foot">
-            <small><span id="tutorCharCount">0</span> / 5000 • لا تُرسل بيانات شخصية</small>
+            <small><span id="tutorCharCount">0</span> / 5000 • عند تفعيل Gemini تُرسل الرسالة إلى Google عبر خادم Railway؛ لا ترسل بيانات شخصية</small>
             <button type="submit" id="sendTutorMessage">إرسال ↵</button>
           </div>
         </form>
@@ -132,9 +132,9 @@
     </section>
   </main>
 
-  <footer>NEON ACADEMY 2060 • LOCAL SMART TUTOR • LEARN RESPONSIBLY</footer>
-  <div class="boot-overlay" id="bootOverlay"><div class="loader"></div><p>جارٍ تجهيز المعلم الذكي المحلي…</p></div>
+  <footer>NEON ACADEMY 2060 • GEMINI SMART TUTOR • LOCAL BACKUP</footer>
+  <div class="boot-overlay" id="bootOverlay"><div class="loader"></div><p>جارٍ تجهيز المعلم الذكي…</p></div>
   <script type="module" src="/src/tutor.js"></script>
-  <script type="module" src="/src/tutor-direct-answer.js"></script>
+  <script type="module" src="/src/tutor-gemini.js"></script>
 </body>
 </html>
