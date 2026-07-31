@@ -46,6 +46,8 @@ jobs:
           test -f dist/step.html
           test -f dist/exams.html
           test -f dist/games.html
+          test -f dist/learning.html
+          test -f dist/tutor.html
           test -d dist/assets
           test -d dist/legacy
           test -f dist/data/exams/manifest.json
@@ -66,7 +68,8 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:4173/step > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/exams > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/games > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/learning > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/tutor > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/manifest.json > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/learning.html > /dev/null
           cat /tmp/neon-server.log
           echo "Railway production server validated successfully."
