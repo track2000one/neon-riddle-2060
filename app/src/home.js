@@ -64,12 +64,12 @@ function renderCards() {
   document.getElementById('heroCenterCount').textContent = number(centers.length);
   grid.innerHTML = centers.map(center => `
     <a class="center-card" data-center="${center.id}" href="${center.href}" aria-label="فتح ${center.title}">
-      <div class="center-brand">NEON<small>ACADEMY 2060</small></div>
+      <div class="center-brand">NEON<small>LEARN • PLAY • BUILD</small></div>
       <div class="center-icon">${center.icon}</div>
       <h2>${center.title}</h2>
       <div class="center-subtitle">${center.subtitle}</div>
       <p>${center.description}</p>
-      <div class="center-footer">NEON ACADEMY 2060</div>
+      <div class="center-footer">NEON</div>
     </a>
   `).join('');
 
