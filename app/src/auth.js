@@ -32,7 +32,7 @@ function seedProfile(user) {
       coins: 180,
       levels: {},
       stats: { answered: 0, correct: 0, hintsUsed: 0 },
-      theme: 'neon',
+      theme: 'academic',
       avatar: '🧠'
     };
   }
