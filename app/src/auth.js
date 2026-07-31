@@ -1,4 +1,5 @@
 import './brand.css';
+import './brand-runtime.js';
 import './ui-preferences.js';
 import './surface-contrast.css';
 import './navigation-enhancements.js';
