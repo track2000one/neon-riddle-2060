@@ -63,18 +63,20 @@ function waitForStepInterface(timeout = 10000) {
 
 async function boot() {
   try {
-    setProgress(10, 'جارٍ التحقق من حساب الطالب…');
+    setProgress(8, 'جارٍ التحقق من حساب الطالب…');
     const session = await ensureAuth();
     renderAccount(session);
 
-    setProgress(25, 'جارٍ تحميل الكتاب المرفوع ومسار الشرح…');
-    const bookDataPromise = loadScriptsInOrder([
+    setProgress(22, 'جارٍ تحميل مكتبة الشرح والتدريب…');
+    const masteryDataPromise = loadScriptsInOrder([
       '/legacy/step-book-kafayat-1-lessons.js',
       '/legacy/step-book-kafayat-1-models-1-2.js',
       '/legacy/step-book-kafayat-1-models-3-4.js',
       '/legacy/step-book-kafayat-1-models-5-6.js',
       '/legacy/step-book-kafayat-1-model-7.js',
-      '/legacy/step-book-kafayat-1-listening.js'
+      '/legacy/step-book-kafayat-1-listening.js',
+      '/legacy/step-mastery-lessons.js',
+      '/legacy/step-mastery-questions.js'
     ]);
 
     const dataPromise = loadClassicScript('/legacy/step-academy-data.js', {
@@ -82,31 +84,31 @@ async function boot() {
       timeout: 9000
     });
 
-    await bookDataPromise;
-    setProgress(48, 'اكتمل تجهيز 28 درسًا و7 نماذج من كتاب كفايات STEP…');
+    await masteryDataPromise;
+    setProgress(48, 'اكتمل تجهيز الدروس والمسارات والأسئلة الموحّدة…');
 
     await Promise.race([
       dataPromise,
       new Promise(resolve => setTimeout(() => resolve(false), 1400))
     ]);
 
-    setProgress(62, 'جارٍ إنشاء مركز STEP ودمج بنك الأسئلة…');
+    setProgress(63, 'جارٍ إنشاء مركز STEP ودمج بنك الأسئلة…');
     await loadClassicScript('/legacy/step-academy-runtime.js', { timeout: 10000 });
     await waitForStepInterface();
 
-    setProgress(78, 'جارٍ إنشاء واجهة الكتاب والتقارير التفصيلية…');
+    setProgress(80, 'جارٍ إنشاء مكتبة الإتقان والتقارير التكيفية…');
     await loadClassicScript('/legacy/step-book-kafayat-1-runtime.js', { timeout: 10000 });
 
-    setProgress(92, 'المسار جاهز. استكمال بنك STEP العام في الخلفية…');
+    setProgress(94, 'المسار جاهز. استكمال بنك STEP العام في الخلفية…');
     overlay?.classList.add('hidden');
     document.getElementById('stepIntro')?.remove();
 
     dataPromise.then(loaded => {
       if (loaded) {
         window.dispatchEvent(new CustomEvent('neon-step-data-loaded'));
-        setProgress(100, 'اكتمل تحميل مركز STEP وكتاب كفايات 1.');
+        setProgress(100, 'اكتمل تحميل مركز STEP ومكتبة الإتقان.');
       } else {
-        setProgress(100, 'كتاب كفايات 1 جاهز، مع بنك STEP الاحتياطي.');
+        setProgress(100, 'مكتبة الإتقان جاهزة مع بنك التدريب الاحتياطي.');
       }
     });
   } catch (error) {
