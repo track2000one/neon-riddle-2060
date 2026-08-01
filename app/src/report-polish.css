@@ -1,0 +1,151 @@
+/* Theme-safe training reports for native exams and injected mastery labs. */
+html[data-neon-theme] :is(.exam-report,.atl-runner,.bio-runner){
+  color:var(--ui-text)!important;
+}
+
+html[data-neon-theme] .exam-report>h2,
+html[data-neon-theme] :is(.exam-review-section,.atl-runner,.bio-runner)>h3{
+  color:var(--ui-text)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+
+html[data-neon-theme] :is(.exam-report-hero,.atl-report-hero,.bio-report-hero){
+  color:var(--ui-text)!important;
+  background:linear-gradient(135deg,
+    color-mix(in srgb,var(--ui-card) 84%,var(--ui-primary-bg) 16%),
+    color-mix(in srgb,var(--ui-card) 88%,var(--ui-secondary-bg) 12%))!important;
+  border:1px solid var(--ui-border)!important;
+  box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ui-text) 5%,transparent)!important;
+}
+html[data-neon-theme] :is(.exam-report-hero,.atl-report-hero,.bio-report-hero)>strong{
+  color:color-mix(in srgb,var(--ui-accent-1) 66%,var(--ui-text))!important;
+  -webkit-text-fill-color:currentColor!important;
+  text-shadow:none!important;
+}
+html[data-neon-theme] :is(.exam-report-hero,.atl-report-hero,.bio-report-hero) b{
+  color:var(--ui-text)!important;
+}
+html[data-neon-theme] :is(.exam-report-hero,.atl-report-hero,.bio-report-hero) small{
+  color:var(--ui-muted)!important;
+}
+
+html[data-neon-theme] :is(
+  .session-mastery-summary article,
+  .exam-report-breakdown article,
+  #advancedTahsiliLab .atl-progress,
+  #advancedTahsiliLab .atl-review,
+  #biologyMasteryLab .bio-progress-card,
+  #biologyMasteryLab .bio-breakdown article,
+  #biologyMasteryLab .bio-review
+){
+  color:var(--ui-text)!important;
+  background:var(--ui-card)!important;
+  border-color:var(--ui-border)!important;
+  box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ui-text) 4%,transparent)!important;
+}
+
+html[data-neon-theme] .session-mastery-summary strong,
+html[data-neon-theme] .exam-report-breakdown article>div strong,
+html[data-neon-theme] #advancedTahsiliLab .atl-progress strong,
+html[data-neon-theme] #biologyMasteryLab :is(.bio-progress-card,.bio-breakdown article) strong{
+  color:color-mix(in srgb,var(--ui-accent-1) 58%,var(--ui-text))!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html[data-neon-theme] .session-mastery-summary small,
+html[data-neon-theme] .exam-report-breakdown article>small,
+html[data-neon-theme] #advancedTahsiliLab .atl-progress small,
+html[data-neon-theme] #biologyMasteryLab :is(.bio-progress-card,.bio-breakdown article) small{
+  color:var(--ui-muted)!important;
+}
+html[data-neon-theme] .exam-report-breakdown article>div span,
+html[data-neon-theme] #advancedTahsiliLab .atl-progress span,
+html[data-neon-theme] #biologyMasteryLab :is(.bio-progress-card,.bio-breakdown article) span{
+  color:var(--ui-text)!important;
+}
+
+html[data-neon-theme] :is(.exam-report-breakdown i,#advancedTahsiliLab .atl-track,#biologyMasteryLab .bio-track,#biologyMasteryLab .bio-breakdown i){
+  background:color-mix(in srgb,var(--ui-text) 11%,transparent)!important;
+}
+html[data-neon-theme] :is(.exam-report-breakdown i b,#advancedTahsiliLab .atl-track b,#biologyMasteryLab .bio-track b,#biologyMasteryLab .bio-breakdown i b){
+  background:linear-gradient(90deg,var(--ui-primary-bg),var(--ui-secondary-bg))!important;
+}
+
+html[data-neon-theme] .exam-review-card{
+  color:var(--ui-text)!important;
+  background:var(--ui-card)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] .exam-review-question>strong,
+html[data-neon-theme] :is(.atl-review,.bio-review) :is(h4,strong){
+  color:var(--ui-text)!important;
+}
+html[data-neon-theme] .exam-review-card :is(p,>small),
+html[data-neon-theme] :is(.atl-review,.bio-review) :is(p,small){
+  color:var(--ui-muted)!important;
+}
+html[data-neon-theme] .exam-review-card p em,
+html[data-neon-theme] :is(.atl-review,.bio-review) em{
+  color:var(--ui-danger-text)!important;
+  background:color-mix(in srgb,var(--ui-danger-bg) 72%,transparent)!important;
+  border-radius:7px;
+  padding:2px 6px;
+}
+html[data-neon-theme] .exam-review-card p b,
+html[data-neon-theme] :is(.atl-review,.bio-review) b{
+  color:color-mix(in srgb,var(--ui-accent-1) 58%,var(--ui-text))!important;
+}
+html[data-neon-theme] .exam-review-question>span{
+  color:var(--ui-danger-text)!important;
+  background:color-mix(in srgb,var(--ui-danger-bg) 76%,transparent)!important;
+}
+
+html[data-neon-theme] .exam-perfect-result,
+html[data-neon-theme] :is(.atl-runner,.bio-runner)>.atl-card{
+  color:var(--ui-success-text)!important;
+  background:color-mix(in srgb,var(--ui-success-bg) 78%,transparent)!important;
+  border-color:color-mix(in srgb,var(--ui-success-text) 34%,transparent)!important;
+  font-weight:850;
+}
+
+html[data-neon-theme] .exam-report-actions :is(.exam-primary,.exam-secondary),
+html[data-neon-theme] #advancedTahsiliLab .atl-actions .atl-btn,
+html[data-neon-theme] #biologyMasteryLab .bio-actions .bio-btn{
+  opacity:1!important;
+  text-shadow:none!important;
+  box-shadow:none!important;
+}
+html[data-neon-theme] .exam-report-actions .exam-primary,
+html[data-neon-theme] #advancedTahsiliLab .atl-actions .atl-btn.primary,
+html[data-neon-theme] #biologyMasteryLab .bio-actions .bio-btn:not(.secondary){
+  color:var(--ui-primary-text)!important;
+  background:var(--ui-primary-bg)!important;
+  border:1px solid color-mix(in srgb,var(--ui-primary-text) 22%,transparent)!important;
+}
+html[data-neon-theme] .exam-report-actions .exam-secondary,
+html[data-neon-theme] #advancedTahsiliLab .atl-actions .atl-btn:not(.primary),
+html[data-neon-theme] #biologyMasteryLab .bio-actions .bio-btn.secondary{
+  color:var(--ui-secondary-text)!important;
+  background:var(--ui-secondary-bg)!important;
+  border:1px solid color-mix(in srgb,var(--ui-secondary-text) 22%,transparent)!important;
+}
+html[data-neon-theme] .exam-report-actions :is(.exam-primary,.exam-secondary):hover:not(:disabled){
+  filter:brightness(1.04);
+  transform:translateY(-1px);
+}
+html[data-neon-theme] .exam-report-actions :is(.exam-primary,.exam-secondary):disabled{
+  opacity:.68!important;
+  filter:saturate(.72);
+}
+
+/* Keep the reading toolbar compact when the runner is displaying a report. */
+html[data-neon-theme] .exam-runner:has(.exam-report)>.neon-reader-tools{
+  position:static!important;
+  margin-bottom:16px!important;
+  background:var(--ui-surface-2)!important;
+  border-color:var(--ui-border)!important;
+}
+
+@media(max-width:620px){
+  html[data-neon-theme] .exam-report-hero{flex-direction:column;align-items:flex-start}
+  html[data-neon-theme] .exam-report-actions{display:grid;grid-template-columns:1fr}
+}
