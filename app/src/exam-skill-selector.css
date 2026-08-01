@@ -1,0 +1,46 @@
+/* Skill and topic selector for the adaptive exam setup. */
+@media (min-width:1081px){
+  .setup-fields{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+
+.exam-skill-field{position:relative}
+.exam-skill-field select{font-weight:800}
+.exam-skill-hint{
+  display:block;
+  min-height:2.9em;
+  margin-top:2px;
+  color:var(--ui-muted,#aebbd6)!important;
+  font-size:10px;
+  font-weight:600;
+  line-height:1.55;
+}
+.exam-skill-hint strong{color:var(--ui-text,#fff)!important}
+.exam-skill-summary{
+  grid-column:1/-1;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:11px 13px;
+  border:1px solid var(--ui-border,rgba(255,255,255,.12));
+  border-radius:13px;
+  background:var(--ui-surface-soft,rgba(255,255,255,.045));
+  color:var(--ui-muted,#aebbd6);
+  font-size:12px;
+  line-height:1.7;
+}
+.exam-skill-summary strong{color:var(--ui-text,#fff)}
+.exam-skill-summary span:last-child{
+  flex:0 0 auto;
+  padding:5px 9px;
+  border-radius:999px;
+  background:color-mix(in srgb,var(--ui-primary-bg,#63dbe4) 16%,transparent);
+  border:1px solid color-mix(in srgb,var(--ui-primary-bg,#63dbe4) 42%,transparent);
+  color:var(--ui-text,#fff);
+  font-weight:900;
+}
+.exam-skill-field select:disabled{opacity:.72;cursor:not-allowed}
+
+@media(max-width:620px){
+  .exam-skill-summary{align-items:flex-start;flex-direction:column}
+}
