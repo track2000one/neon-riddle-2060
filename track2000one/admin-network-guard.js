@@ -45,4 +45,12 @@
     auditScript.dataset.contentAuditLoader = 'true';
     document.head.appendChild(auditScript);
   }
+
+  if (!document.querySelector('script[data-admin-reports-loader]')) {
+    const reportsScript = document.createElement('script');
+    reportsScript.src = 'admin-reports.js';
+    reportsScript.async = false;
+    reportsScript.dataset.adminReportsLoader = 'true';
+    document.head.appendChild(reportsScript);
+  }
 })();
