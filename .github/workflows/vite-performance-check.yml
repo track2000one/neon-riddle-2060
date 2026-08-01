@@ -14,6 +14,7 @@ on:
       - 'academy/exam-*.js'
       - 'academy/step-*.js'
       - 'academy/biology-*.js'
+      - 'academy/tahsili-*.js'
       - 'package.json'
       - 'package-lock.json'
       - 'vite.config.js'
@@ -60,9 +61,19 @@ jobs:
           test -f dist/legacy/biology-mastery-lessons.js
           test -f dist/legacy/biology-mastery-runtime.js
           test -f dist/legacy/exam-bank-uploaded-biology-mastery-2026.js
+          test -f dist/legacy/tahsili-advanced-lessons-2026.js
+          test -f dist/legacy/tahsili-advanced-runtime-2026.js
+          test -f dist/legacy/exam-bank-uploaded-tahsili-math-advanced-model8-2026.js
+          test -f dist/legacy/exam-bank-uploaded-tahsili-physics-advanced-model8-2026.js
+          test -f dist/legacy/exam-bank-uploaded-tahsili-chemistry-advanced-model8-2026.js
+          test -f dist/legacy/exam-bank-uploaded-tahsili-biology-advanced-model8-2026.js
           test -f dist/data/exams/manifest.json
+          test -f dist/data/exams/tahsili-math.json
+          test -f dist/data/exams/tahsili-physics.json
+          test -f dist/data/exams/tahsili-chemistry.json
           test -f dist/data/exams/tahsili-biology.json
           node -e "const m=require('./dist/data/exams/manifest.json'); if(!m.totalQuestions) process.exit(1); if(Object.keys(m.subjects).length!==6) process.exit(1); if((m.subjects['tahsili-biology']?.count||0)<100) process.exit(1); console.log('Compiled questions:',m.totalQuestions,'Biology:',m.subjects['tahsili-biology'].count,'Subjects:',Object.keys(m.subjects).length)"
+          node -e "const fs=require('fs'); const expected={'tahsili-math':30,'tahsili-physics':30,'tahsili-chemistry':51,'tahsili-biology':40}; for(const [subject,count] of Object.entries(expected)){const rows=JSON.parse(fs.readFileSync('./dist/data/exams/'+subject+'.json','utf8')); const advanced=rows.filter(row=>String(row.id||'').startsWith('adv8-')); if(advanced.length!==count) throw new Error(subject+': expected '+count+' advanced questions, found '+advanced.length); if(!advanced.every(row=>row.explain&&row.category&&row.level)) throw new Error(subject+': incomplete advanced explanation metadata'); console.log(subject,'advanced questions:',advanced.length)}"
           node -e "const fs=require('fs'); const path=require('path'); const forbidden=new Set(['source','sourcePage','sourceQuestion','sourcePages','sourceFile','sourceTitle','book','bookId','bookTitle','author','writer','page','pageNo','pageNumber','pdf','pdfPage','documentName','documentTitle']); for(const file of fs.readdirSync('dist/data/exams').filter(x=>x.endsWith('.json')&&x!=='manifest.json')){const rows=JSON.parse(fs.readFileSync(path.join('dist/data/exams',file),'utf8')); for(const row of rows){for(const key of Object.keys(row)){if(forbidden.has(key)) throw new Error(file+': forbidden metadata '+key)}}} console.log('Exam source identity and page metadata removed.')"
           node --check dist/legacy/step-mastery-lessons.js
           node --check dist/legacy/step-mastery-questions.js
@@ -70,6 +81,12 @@ jobs:
           node --check dist/legacy/biology-mastery-lessons.js
           node --check dist/legacy/biology-mastery-runtime.js
           node --check dist/legacy/exam-bank-uploaded-biology-mastery-2026.js
+          node --check dist/legacy/tahsili-advanced-lessons-2026.js
+          node --check dist/legacy/tahsili-advanced-runtime-2026.js
+          node --check dist/legacy/exam-bank-uploaded-tahsili-math-advanced-model8-2026.js
+          node --check dist/legacy/exam-bank-uploaded-tahsili-physics-advanced-model8-2026.js
+          node --check dist/legacy/exam-bank-uploaded-tahsili-chemistry-advanced-model8-2026.js
+          node --check dist/legacy/exam-bank-uploaded-tahsili-biology-advanced-model8-2026.js
 
       - name: Test Railway production server
         env:
@@ -94,6 +111,15 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:4173/legacy/biology-mastery-lessons.js > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/legacy/biology-mastery-runtime.js > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/legacy/exam-bank-uploaded-biology-mastery-2026.js > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/tahsili-advanced-lessons-2026.js > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/tahsili-advanced-runtime-2026.js > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/exam-bank-uploaded-tahsili-math-advanced-model8-2026.js > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/exam-bank-uploaded-tahsili-physics-advanced-model8-2026.js > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/exam-bank-uploaded-tahsili-chemistry-advanced-model8-2026.js > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/exam-bank-uploaded-tahsili-biology-advanced-model8-2026.js > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/tahsili-math.json > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/tahsili-physics.json > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/tahsili-chemistry.json > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/tahsili-biology.json > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/manifest.json > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/api/tutor/status | grep -q '"configured":false'
@@ -109,4 +135,4 @@ jobs:
           test "$PROGRESS_HTTP" = "401"
           grep -q 'AUTH_REQUIRED' /tmp/progress-response.json
           cat /tmp/neon-server.log
-          echo "Railway production server, STEP and biology mastery assets, source privacy, Gemini fallback, and progress authentication validated successfully."
+          echo "Railway production server, advanced tahsili and biology mastery assets, source privacy, Gemini fallback, and progress authentication validated successfully."
