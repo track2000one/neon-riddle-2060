@@ -53,4 +53,12 @@
     reportsScript.dataset.adminReportsLoader = 'true';
     document.head.appendChild(reportsScript);
   }
+
+  if (!document.querySelector('script[data-firebase-delete-loader]')) {
+    const deleteScript = document.createElement('script');
+    deleteScript.src = 'firebase-delete-confirm.js';
+    deleteScript.async = false;
+    deleteScript.dataset.firebaseDeleteLoader = 'true';
+    document.head.appendChild(deleteScript);
+  }
 })();
