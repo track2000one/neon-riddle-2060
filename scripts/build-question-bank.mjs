@@ -52,7 +52,7 @@ function cleanQuestion(question, index) {
   const answer = Number(question.answer ?? question.correct ?? question.correctIndex);
   if (!q || options.length < 2 || !Number.isInteger(answer) || answer < 0 || answer >= options.length) return null;
 
-  return {
+  const cleaned = {
     ...question,
     id: String(question.id || `generated-${index + 1}`),
     area: question.area || 'exams',
@@ -63,6 +63,14 @@ function cleanQuestion(question, index) {
     explain: String(question.explain || question.explanation || 'راجع القاعدة المرتبطة بالسؤال.').trim(),
     level: question.level || 'practice'
   };
+
+  for (const key of [
+    'source', 'sourcePage', 'sourceQuestion', 'sourcePages', 'sourceFile', 'sourceTitle',
+    'book', 'bookId', 'bookTitle', 'author', 'writer', 'page', 'pageNo', 'pageNumber',
+    'pdf', 'pdfPage', 'documentName', 'documentTitle'
+  ]) delete cleaned[key];
+
+  return cleaned;
 }
 
 function createSandbox() {
