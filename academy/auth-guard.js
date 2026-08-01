@@ -4,39 +4,250 @@ import { firebaseConfig } from './firebase-config.js';
 
 const PROFILE_KEY = 'neonRiddleGrandProfilesV4';
 const SETTINGS_KEY = 'neonRiddleGrandSettingsV4';
+const AI_LOAD_TIMEOUT_MS = 15000;
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 let academyLoaded = false;
+let academyBootFinished = false;
+
 const ACADEMY_SCRIPTS = [
-  'academy-i18n-dict-1.js','academy-i18n-dict-2.js','academy-i18n-dict-3.js','academy-i18n-dict-4.js','academy-i18n.js','step-nav-bootstrap.js','portal-cards.js',
-  'exam-practice-tah-math.js','exam-practice-tah-physics.js','exam-practice-tah-chemistry.js','exam-practice-tah-biology.js','exam-practice-qud-verbal.js','exam-practice-qud-quant.js',
-  'exam-bank-tahsili-math.js','exam-bank-tahsili-physics.js','exam-bank-tahsili-chemistry-1.js','exam-bank-tahsili-chemistry-2.js','exam-bank-tahsili-biology.js','exam-bank-qudurat-verbal.js','exam-bank-qudurat-quant.js',
-  'exam-bank-curated-tahsili-math-2026.js','exam-bank-curated-tahsili-physics-2026.js','exam-bank-curated-tahsili-chemistry-2026.js','exam-bank-curated-tahsili-biology-2026.js','exam-bank-curated-qudurat-verbal-2026.js','exam-bank-curated-qudurat-quant-2026.js','exam-bank-uploaded-video-verbal-bank1-2026.js','exam-bank-uploaded-video-quant-2026-02.js','exam-bank-uploaded-video-tahsili-math-model8-2026.js','exam-bank-uploaded-video-tahsili-math-model12-2026.js',
-  'exam-visuals.js','exam-visuals-page06-07.js','exam-visuals-page08-09.js','exam-visuals-page10-11.js','exam-visuals-page18-23.js','exam-visuals-page24-29.js','exam-visuals-page30-41.js','exam-visuals-page42-49.js','exam-visuals-video-bank.js','exam-visuals-video-compilations-2026.js','exam-visuals-uploaded-tahsili-math-model8-2026.js','exam-visuals-uploaded-tahsili-math-model12-2026.js',
-  'exam-bank-imported-quant-a.js','exam-bank-imported-quant-b.js','exam-bank-imported-quant-c.js','exam-bank-imported-verbal-a.js','exam-bank-imported-verbal-b.js','exam-bank-imported-reading.js','exam-bank-imported-noon-quant.js','exam-bank-imported-noon-verbal-a.js','exam-bank-imported-noon-verbal-b.js','exam-bank-imported-visual-quant.js','exam-bank-imported-visual-quant-page06-07.js','exam-bank-imported-visual-quant-page08-09.js','exam-bank-imported-visual-quant-page10-11.js','exam-bank-imported-visual-quant-page18-23.js','exam-bank-imported-visual-quant-page24-29.js','exam-bank-imported-visual-quant-page30-35.js','exam-bank-imported-visual-quant-page36-41.js','exam-bank-imported-visual-quant-page42-45.js','exam-bank-imported-visual-quant-page46-49.js','exam-bank-imported-video-quant-a.js','exam-bank-imported-video-quant-b.js','exam-bank-imported-video-compilations-2026-a.js','exam-bank-imported-video-compilations-2026-b.js','exam-bank-imported-2026.js',
-  'exam-bank-uploaded-pdf-tahsili-mock001-math-2026.js','exam-bank-uploaded-pdf-tahsili-mock001-physics-2026.js','exam-bank-uploaded-pdf-tahsili-mock001-chemistry-2026.js','exam-bank-uploaded-pdf-tahsili-mock001-biology-2026.js',
-  'exam-bank-uploaded-images-tahsili-talo-math-2026.js','exam-bank-uploaded-images-tahsili-talo-physics-2026.js','exam-bank-uploaded-images-tahsili-talo-chemistry-2026.js','exam-bank-uploaded-images-tahsili-talo-biology-2026.js',
-  'exam-bank-uploaded-images-daily-physics-2026.js','exam-bank-uploaded-images-daily-chemistry-2026.js',
-  'exam-bank-uploaded-pdf-qudurat-43-44-verbal-2026.js','exam-bank-uploaded-pdf-qudurat-43-44-quant-2026.js',
-  'step-academy-data.js','step-academy-runtime.js',
-  'exam-bank.js','exam-bank-curated-meta-2026.js','exam-bank-bilingual-practice.js','academy-performance-bootstrap.js','exam-dedupe-enhanced.js','exam-center-ui.js','exam-center-source-patch.js','exam-source-visibility-policy.js','exam-bilingual-runtime.js','academy.js','academy-performance-guard.js','academy-ai-render-throttle.js'
+  'academy-i18n-dict-1.js', 'academy-i18n-dict-2.js', 'academy-i18n-dict-3.js', 'academy-i18n-dict-4.js', 'academy-i18n.js', 'step-nav-bootstrap.js', 'portal-cards.js',
+  'exam-practice-tah-math.js', 'exam-practice-tah-physics.js', 'exam-practice-tah-chemistry.js', 'exam-practice-tah-biology.js', 'exam-practice-qud-verbal.js', 'exam-practice-qud-quant.js',
+  'exam-bank-tahsili-math.js', 'exam-bank-tahsili-physics.js', 'exam-bank-tahsili-chemistry-1.js', 'exam-bank-tahsili-chemistry-2.js', 'exam-bank-tahsili-biology.js', 'exam-bank-qudurat-verbal.js', 'exam-bank-qudurat-quant.js',
+  'exam-bank-curated-tahsili-math-2026.js', 'exam-bank-curated-tahsili-physics-2026.js', 'exam-bank-curated-tahsili-chemistry-2026.js', 'exam-bank-curated-tahsili-biology-2026.js', 'exam-bank-curated-qudurat-verbal-2026.js', 'exam-bank-curated-qudurat-quant-2026.js', 'exam-bank-uploaded-video-verbal-bank1-2026.js', 'exam-bank-uploaded-video-quant-2026-02.js', 'exam-bank-uploaded-video-tahsili-math-model8-2026.js', 'exam-bank-uploaded-video-tahsili-math-model12-2026.js',
+  'exam-visuals.js', 'exam-visuals-page06-07.js', 'exam-visuals-page08-09.js', 'exam-visuals-page10-11.js', 'exam-visuals-page18-23.js', 'exam-visuals-page24-29.js', 'exam-visuals-page30-41.js', 'exam-visuals-page42-49.js', 'exam-visuals-video-bank.js', 'exam-visuals-video-compilations-2026.js', 'exam-visuals-uploaded-tahsili-math-model8-2026.js', 'exam-visuals-uploaded-tahsili-math-model12-2026.js',
+  'exam-bank-imported-quant-a.js', 'exam-bank-imported-quant-b.js', 'exam-bank-imported-quant-c.js', 'exam-bank-imported-verbal-a.js', 'exam-bank-imported-verbal-b.js', 'exam-bank-imported-reading.js', 'exam-bank-imported-noon-quant.js', 'exam-bank-imported-noon-verbal-a.js', 'exam-bank-imported-noon-verbal-b.js', 'exam-bank-imported-visual-quant.js', 'exam-bank-imported-visual-quant-page06-07.js', 'exam-bank-imported-visual-quant-page08-09.js', 'exam-bank-imported-visual-quant-page10-11.js', 'exam-bank-imported-visual-quant-page18-23.js', 'exam-bank-imported-visual-quant-page24-29.js', 'exam-bank-imported-visual-quant-page30-35.js', 'exam-bank-imported-visual-quant-page36-41.js', 'exam-bank-imported-visual-quant-page42-45.js', 'exam-bank-imported-visual-quant-page46-49.js', 'exam-bank-imported-video-quant-a.js', 'exam-bank-imported-video-quant-b.js', 'exam-bank-imported-video-compilations-2026-a.js', 'exam-bank-imported-video-compilations-2026-b.js', 'exam-bank-imported-2026.js',
+  'exam-bank-uploaded-pdf-tahsili-mock001-math-2026.js', 'exam-bank-uploaded-pdf-tahsili-mock001-physics-2026.js', 'exam-bank-uploaded-pdf-tahsili-mock001-chemistry-2026.js', 'exam-bank-uploaded-pdf-tahsili-mock001-biology-2026.js',
+  'exam-bank-uploaded-images-tahsili-talo-math-2026.js', 'exam-bank-uploaded-images-tahsili-talo-physics-2026.js', 'exam-bank-uploaded-images-tahsili-talo-chemistry-2026.js', 'exam-bank-uploaded-images-tahsili-talo-biology-2026.js',
+  'exam-bank-uploaded-images-daily-physics-2026.js', 'exam-bank-uploaded-images-daily-chemistry-2026.js',
+  'exam-bank-uploaded-pdf-qudurat-43-44-verbal-2026.js', 'exam-bank-uploaded-pdf-qudurat-43-44-quant-2026.js',
+  'step-academy-data.js', 'step-academy-runtime.js',
+  'exam-bank.js', 'exam-bank-curated-meta-2026.js', 'exam-bank-bilingual-practice.js', 'academy-performance-bootstrap.js', 'exam-dedupe-enhanced.js', 'exam-center-ui.js', 'exam-center-source-patch.js', 'exam-source-visibility-policy.js', 'exam-bilingual-runtime.js', 'academy.js', 'academy-performance-guard.js', 'academy-ai-render-throttle.js'
 ];
-function tr(ar,en){return window.NEON_I18N?.pick?.(ar,en)||ar}
-function readJson(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
-function clone(value){try{return structuredClone(value)}catch{return JSON.parse(JSON.stringify(value))}}
-function seedAuthenticatedProfile(user){
-  const profiles=readJson(PROFILE_KEY,{}),settings=readJson(SETTINGS_KEY,{}),previousId=settings.activeId,previousProfile=previousId&&profiles[previousId]?profiles[previousId]:null,name=user.displayName?.trim()||user.email?.split('@')[0]||'طالب';
-  if(!profiles[user.uid])profiles[user.uid]=previousProfile?clone(previousProfile):{id:user.uid,name,score:0,coins:180,levels:{},stats:{answered:0,correct:0,hintsUsed:0},theme:'neon',avatar:'🧠'};
-  const profile=profiles[user.uid];
-  profile.id=user.uid;profile.firebaseUid=user.uid;profile.name=profile.name&&profile.name!=='طالب جديد'?profile.name:name;profile.email=user.email||'';profile.accountCreatedAt||=user.metadata?.creationTime||new Date().toISOString();profile.lastAuthenticatedAt=new Date().toISOString();profile.academy??={};profile.academy.name=profile.academy.name&&profile.academy.name!=='طالب جديد'?profile.academy.name:name;profile.academy.email=user.email||'';
-  settings.activeId=user.uid;localStorage.setItem(PROFILE_KEY,JSON.stringify(profiles));localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));window.NEON_AUTH_USER={uid:user.uid,email:user.email||'',displayName:name,emailVerified:user.emailVerified};
+
+function tr(ar, en) {
+  return window.NEON_I18N?.pick?.(ar, en) || ar;
 }
-function updateAccountUi(user){const name=user.displayName?.trim()||user.email?.split('@')[0]||'الطالب',accountName=document.getElementById('accountName'),accountEmail=document.getElementById('accountEmail'),avatar=document.getElementById('accountAvatar');if(accountName)accountName.textContent=name;if(accountEmail)accountEmail.textContent=user.email||'';if(avatar)avatar.textContent=name.charAt(0).toUpperCase()}
-function finishAcademyLoading(){document.body.classList.remove('auth-pending');document.getElementById('authBoot')?.classList.add('hidden')}
-function preloadAcademyAssets(){const classic=new Set([...document.querySelectorAll('link[rel="preload"][as="script"]')].map(link=>link.href)),fragment=document.createDocumentFragment();ACADEMY_SCRIPTS.forEach(src=>{const href=new URL(src,document.baseURI).href;if(classic.has(href))return;const link=document.createElement('link');link.rel='preload';link.as='script';link.href=href;fragment.appendChild(link);classic.add(href)});const aiHref=new URL('real-ai-teacher-bilingual.js',document.baseURI).href;if(![...document.querySelectorAll('link[rel="modulepreload"]')].some(link=>link.href===aiHref)){const link=document.createElement('link');link.rel='modulepreload';link.href=aiHref;fragment.appendChild(link)}if(fragment.childNodes.length)document.head.appendChild(fragment)}
-function loadClassicScript(src){return new Promise((resolve,reject)=>{const absolute=new URL(src,document.baseURI).href,existing=[...document.scripts].find(script=>script.src===absolute);if(existing?.dataset.loaded==='true')return resolve();if(existing){existing.addEventListener('load',resolve,{once:true});existing.addEventListener('error',()=>reject(new Error(`Could not load ${src}`)),{once:true});return}const script=document.createElement('script');script.src=src;script.async=false;script.onload=()=>{script.dataset.loaded='true';resolve()};script.onerror=()=>reject(new Error(`Could not load ${src}`));document.body.appendChild(script)})}
-function loadRealAiTeacher(){const button=document.getElementById('askTeacherButton');if(button){button.disabled=true;button.textContent=tr('جارٍ تشغيل المعلم الذكي...','Starting AI tutor...')}const script=document.createElement('script');script.type='module';script.src='real-ai-teacher-bilingual.js';script.onload=finishAcademyLoading;script.onerror=()=>{finishAcademyLoading();if(button){button.disabled=false;button.textContent=tr('إعادة تحميل المعلم الذكي','Reload AI tutor');button.addEventListener('click',()=>location.reload(),{once:true})}const response=document.getElementById('teacherResponse');if(response)response.innerHTML=`<div class="response-placeholder"><span>!</span><h3>${tr('تعذر تحميل وحدة الذكاء الاصطناعي','Could not load the AI module')}</h3><p>${tr('حدّث الصفحة وتأكد من اتصال الإنترنت.','Refresh the page and check your internet connection.')}</p></div>`};document.body.appendChild(script)}
-async function loadAcademy(){if(academyLoaded)return;academyLoaded=true;preloadAcademyAssets();try{for(const src of ACADEMY_SCRIPTS)await loadClassicScript(src);loadRealAiTeacher()}catch(error){academyLoaded=false;console.error('Academy loading error:',error);const boot=document.querySelector('#authBoot p');if(boot)boot.textContent=tr('تعذر تحميل الأكاديمية أو مركز الاختبارات. حدّث الصفحة وحاول مجددًا.','The academy or test center could not load. Refresh and try again.')}}
-document.getElementById('studentLogoutButton')?.addEventListener('click',async()=>{await signOut(auth);location.replace('auth.html')});
-document.getElementById('authAccountButton')?.addEventListener('click',()=>document.getElementById('student')?.scrollIntoView({behavior:'smooth',block:'start'}));
-onAuthStateChanged(auth,user=>{if(!user){const next=encodeURIComponent(`${location.pathname}${location.search}${location.hash}`);location.replace(`auth.html?next=${next}`);return}seedAuthenticatedProfile(user);updateAccountUi(user);loadAcademy()});
+
+function readJson(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key)) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function clone(value) {
+  try {
+    return structuredClone(value);
+  } catch {
+    return JSON.parse(JSON.stringify(value));
+  }
+}
+
+function seedAuthenticatedProfile(user) {
+  const profiles = readJson(PROFILE_KEY, {});
+  const settings = readJson(SETTINGS_KEY, {});
+  const previousId = settings.activeId;
+  const previousProfile = previousId && profiles[previousId] ? profiles[previousId] : null;
+  const name = user.displayName?.trim() || user.email?.split('@')[0] || 'طالب';
+
+  if (!profiles[user.uid]) {
+    profiles[user.uid] = previousProfile
+      ? clone(previousProfile)
+      : {
+          id: user.uid,
+          name,
+          score: 0,
+          coins: 180,
+          levels: {},
+          stats: { answered: 0, correct: 0, hintsUsed: 0 },
+          theme: 'neon',
+          avatar: '🧠'
+        };
+  }
+
+  const profile = profiles[user.uid];
+  profile.id = user.uid;
+  profile.firebaseUid = user.uid;
+  profile.name = profile.name && profile.name !== 'طالب جديد' ? profile.name : name;
+  profile.email = user.email || '';
+  profile.accountCreatedAt ||= user.metadata?.creationTime || new Date().toISOString();
+  profile.lastAuthenticatedAt = new Date().toISOString();
+  profile.academy ??= {};
+  profile.academy.name = profile.academy.name && profile.academy.name !== 'طالب جديد'
+    ? profile.academy.name
+    : name;
+  profile.academy.email = user.email || '';
+
+  settings.activeId = user.uid;
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(profiles));
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  window.NEON_AUTH_USER = {
+    uid: user.uid,
+    email: user.email || '',
+    displayName: name,
+    emailVerified: user.emailVerified
+  };
+}
+
+function updateAccountUi(user) {
+  const name = user.displayName?.trim() || user.email?.split('@')[0] || 'الطالب';
+  const accountName = document.getElementById('accountName');
+  const accountEmail = document.getElementById('accountEmail');
+  const avatar = document.getElementById('accountAvatar');
+
+  if (accountName) accountName.textContent = name;
+  if (accountEmail) accountEmail.textContent = user.email || '';
+  if (avatar) avatar.textContent = name.charAt(0).toUpperCase();
+}
+
+function finishAcademyLoading() {
+  if (academyBootFinished) return;
+  academyBootFinished = true;
+  document.body.classList.remove('auth-pending');
+  document.getElementById('authBoot')?.classList.add('hidden');
+}
+
+function preloadAcademyAssets() {
+  const classic = new Set(
+    [...document.querySelectorAll('link[rel="preload"][as="script"]')].map(link => link.href)
+  );
+  const fragment = document.createDocumentFragment();
+
+  ACADEMY_SCRIPTS.forEach(src => {
+    const href = new URL(src, document.baseURI).href;
+    if (classic.has(href)) return;
+
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'script';
+    link.href = href;
+    fragment.appendChild(link);
+    classic.add(href);
+  });
+
+  const aiHref = new URL('real-ai-teacher-bilingual.js', document.baseURI).href;
+  if (![...document.querySelectorAll('link[rel="modulepreload"]')].some(link => link.href === aiHref)) {
+    const link = document.createElement('link');
+    link.rel = 'modulepreload';
+    link.href = aiHref;
+    fragment.appendChild(link);
+  }
+
+  if (fragment.childNodes.length) document.head.appendChild(fragment);
+}
+
+function loadClassicScript(src) {
+  return new Promise((resolve, reject) => {
+    const absolute = new URL(src, document.baseURI).href;
+    const existing = [...document.scripts].find(script => script.src === absolute);
+
+    if (existing?.dataset.loaded === 'true') return resolve();
+
+    if (existing) {
+      existing.addEventListener('load', resolve, { once: true });
+      existing.addEventListener('error', () => reject(new Error(`Could not load ${src}`)), { once: true });
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = src;
+    script.async = false;
+    script.onload = () => {
+      script.dataset.loaded = 'true';
+      resolve();
+    };
+    script.onerror = () => reject(new Error(`Could not load ${src}`));
+    document.body.appendChild(script);
+  });
+}
+
+function loadRealAiTeacher() {
+  const button = document.getElementById('askTeacherButton');
+  const response = document.getElementById('teacherResponse');
+  let settled = false;
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = tr('جارٍ تشغيل المعلم الذكي...', 'Starting AI tutor...');
+  }
+
+  const script = document.createElement('script');
+  script.type = 'module';
+  script.src = 'real-ai-teacher-bilingual.js';
+
+  const showAiLoadError = () => {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timeoutId);
+    script.remove();
+
+    if (button) {
+      button.disabled = false;
+      button.textContent = tr('إعادة تحميل المعلم الذكي', 'Reload AI tutor');
+      button.addEventListener('click', () => location.reload(), { once: true });
+    }
+
+    if (response) {
+      response.innerHTML = `<div class="response-placeholder"><span>!</span><h3>${tr('تعذر تحميل وحدة الذكاء الاصطناعي', 'Could not load the AI module')}</h3><p>${tr('يمكنك متابعة استخدام بقية الأكاديمية، ثم تحديث الصفحة لإعادة المحاولة.', 'You can continue using the rest of the academy, then refresh the page to retry.')}</p></div>`;
+    }
+  };
+
+  const timeoutId = setTimeout(showAiLoadError, AI_LOAD_TIMEOUT_MS);
+  script.onload = () => {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timeoutId);
+  };
+  script.onerror = showAiLoadError;
+  document.body.appendChild(script);
+}
+
+async function loadAcademy() {
+  if (academyLoaded) return;
+  academyLoaded = true;
+  preloadAcademyAssets();
+
+  try {
+    for (const src of ACADEMY_SCRIPTS) {
+      await loadClassicScript(src);
+    }
+
+    // The core academy is ready here. The AI tutor is an enhancement and must
+    // never keep the entire interface hidden when its external module is slow.
+    finishAcademyLoading();
+    loadRealAiTeacher();
+  } catch (error) {
+    academyLoaded = false;
+    console.error('Academy loading error:', error);
+    const boot = document.querySelector('#authBoot p');
+    if (boot) {
+      boot.textContent = tr(
+        'تعذر تحميل الأكاديمية أو مركز الاختبارات. حدّث الصفحة وحاول مجددًا.',
+        'The academy or test center could not load. Refresh and try again.'
+      );
+    }
+  }
+}
+
+document.getElementById('studentLogoutButton')?.addEventListener('click', async () => {
+  await signOut(auth);
+  location.replace('auth.html');
+});
+
+document.getElementById('authAccountButton')?.addEventListener('click', () => {
+  document.getElementById('student')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+onAuthStateChanged(auth, user => {
+  if (!user) {
+    const next = encodeURIComponent(`${location.pathname}${location.search}${location.hash}`);
+    location.replace(`auth.html?next=${next}`);
+    return;
+  }
+
+  seedAuthenticatedProfile(user);
+  updateAccountUi(user);
+  loadAcademy();
+});
