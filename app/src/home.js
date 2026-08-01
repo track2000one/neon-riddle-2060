@@ -69,9 +69,16 @@ function number(value) {
   return Number(value || 0).toLocaleString('ar-SA');
 }
 
+function setText(id, value) {
+  const element = document.getElementById(id);
+  if (element) element.textContent = String(value ?? '');
+}
+
 function renderCards() {
   const grid = document.getElementById('centerGrid');
-  document.getElementById('heroCenterCount').textContent = number(centers.length);
+  setText('heroCenterCount', number(centers.length));
+  if (!grid) return;
+
   grid.innerHTML = centers.map(center => `
     <a class="center-card" data-center="${center.id}" href="${center.href}" aria-label="فتح ${center.title}">
       <div class="center-brand">NEON<small>LEARN • PLAY • BUILD</small></div>
@@ -98,6 +105,7 @@ function prefetchOnIntent() {
     link.href = href;
     document.head.appendChild(link);
   };
+
   document.querySelectorAll('.center-card').forEach(card => {
     const href = card.getAttribute('href');
     card.addEventListener('pointerenter', () => prefetch(href), { once: true });
@@ -118,11 +126,11 @@ function renderStudentMetrics(profile = {}) {
   const score = Number(academy.score ?? profile.score ?? academy.xp ?? profile.xp ?? 0);
   const streak = Number(academy.streak ?? profile.streak ?? 0);
 
-  document.getElementById('metricXp').textContent = number(score);
-  document.getElementById('metricCompleted').textContent = number(completed);
-  document.getElementById('metricStreak').textContent = `${number(streak)} يوم`;
-  document.getElementById('metricCertificates').textContent = number(Array.isArray(certificates) ? certificates.length : certificates);
-  document.getElementById('metricMastery').textContent = `${number(mastery)}%`;
+  setText('metricXp', number(score));
+  setText('metricCompleted', number(completed));
+  setText('metricStreak', `${number(streak)} يوم`);
+  setText('metricCertificates', number(Array.isArray(certificates) ? certificates.length : certificates));
+  setText('metricMastery', `${number(mastery)}%`);
 }
 
 function centerPercentage(definition, progress) {
@@ -133,38 +141,42 @@ function centerPercentage(definition, progress) {
 
 function renderProgressSummary(summary) {
   const metrics = summary?.metrics || {};
-  document.getElementById('metricXp').textContent = number(metrics.xp);
-  document.getElementById('metricCompleted').textContent = number(metrics.completedItems);
-  document.getElementById('metricStreak').textContent = `${number(metrics.streak)} يوم`;
-  document.getElementById('metricCertificates').textContent = number(metrics.certificates);
-  document.getElementById('metricMastery').textContent = `${number(metrics.mastery)}%`;
+  setText('metricXp', number(metrics.xp));
+  setText('metricCompleted', number(metrics.completedItems));
+  setText('metricStreak', `${number(metrics.streak)} يوم`);
+  setText('metricCertificates', number(metrics.certificates));
+  setText('metricMastery', `${number(metrics.mastery)}%`);
 
   const sync = document.getElementById('progressSyncState');
-  sync.textContent = 'متزامن مع حسابك';
-  sync.className = 'progress-sync-state online';
+  if (sync) {
+    sync.textContent = 'متزامن مع حسابك';
+    sync.className = 'progress-sync-state online';
+  }
 
-  const byId = new Map((summary?.centers || []).map(item => [item.centerId, item]));
   const grid = document.getElementById('progressCenterGrid');
-  grid.innerHTML = progressCenters.map(definition => {
-    const progress = byId.get(definition.id) || { completed: 0, inProgress: 0, mastery: 0, attempts: 0 };
-    const percent = centerPercentage(definition, progress);
-    const completedText = definition.total
-      ? `${number(progress.completed)} من ${number(definition.total)} ${definition.unit}`
-      : `${number(progress.completed)} مكتمل • ${number(progress.attempts)} ${definition.unit}`;
-    const secondary = progress.inProgress > 0
-      ? `${number(progress.inProgress)} قيد التقدم`
-      : progress.mastery > 0 ? `إتقان ${number(progress.mastery)}%` : 'لم يبدأ بعد';
-    return `
-      <a class="progress-center-card ${percent === 0 ? 'empty' : ''}" href="${definition.href}" data-progress-center="${definition.id}">
-        <header><strong>${definition.title}</strong><span>${definition.icon}</span></header>
-        <div class="progress-bar" aria-label="تقدم ${definition.title}: ${percent}%"><i style="width:${percent}%"></i></div>
-        <div class="progress-center-meta"><span>${completedText}</span><span>${secondary}</span></div>
-      </a>
-    `;
-  }).join('');
+  if (grid) {
+    const byId = new Map((summary?.centers || []).map(item => [item.centerId, item]));
+    grid.innerHTML = progressCenters.map(definition => {
+      const progress = byId.get(definition.id) || { completed: 0, inProgress: 0, mastery: 0, attempts: 0 };
+      const percent = centerPercentage(definition, progress);
+      const completedText = definition.total
+        ? `${number(progress.completed)} من ${number(definition.total)} ${definition.unit}`
+        : `${number(progress.completed)} مكتمل • ${number(progress.attempts)} ${definition.unit}`;
+      const secondary = progress.inProgress > 0
+        ? `${number(progress.inProgress)} قيد التقدم`
+        : progress.mastery > 0 ? `إتقان ${number(progress.mastery)}%` : 'لم يبدأ بعد';
+      return `
+        <a class="progress-center-card ${percent === 0 ? 'empty' : ''}" href="${definition.href}" data-progress-center="${definition.id}">
+          <header><strong>${definition.title}</strong><span>${definition.icon}</span></header>
+          <div class="progress-bar" aria-label="تقدم ${definition.title}: ${percent}%"><i style="width:${percent}%"></i></div>
+          <div class="progress-center-meta"><span>${completedText}</span><span>${secondary}</span></div>
+        </a>
+      `;
+    }).join('');
+  }
 
-  if (summary?.continue?.href) {
-    const button = document.getElementById('continueButton');
+  const button = document.getElementById('continueButton');
+  if (button && summary?.continue?.href) {
     button.href = summary.continue.href;
     button.title = summary.continue.title ? `متابعة: ${summary.continue.title}` : 'متابعة آخر نشاط';
   }
@@ -183,20 +195,23 @@ function showProgressOffline() {
 }
 
 async function loadQuestionCount() {
+  const target = document.getElementById('heroQuestionCount');
+  if (!target) return;
   try {
     const response = await fetch('/data/exams/manifest.json', { cache: 'force-cache' });
     if (!response.ok) return;
     const manifest = await response.json();
-    document.getElementById('heroQuestionCount').textContent = number(manifest.totalQuestions);
+    target.textContent = number(manifest.totalQuestions);
   } catch {
-    document.getElementById('heroQuestionCount').textContent = '١٬١٢٢';
+    target.textContent = '١٬٥٤٨';
   }
 }
 
 function prepareContinueButton() {
+  const button = document.getElementById('continueButton');
+  if (!button) return;
   const saved = localStorage.getItem(LAST_CENTER_KEY);
   const valid = centers.some(center => center.href === saved);
-  const button = document.getElementById('continueButton');
   button.href = valid ? saved : '/step';
 }
 
@@ -214,17 +229,18 @@ async function synchronizeProgress() {
 }
 
 async function boot() {
-  renderCards();
-  prepareContinueButton();
-  prefetchOnIntent();
-  loadQuestionCount();
   try {
+    renderCards();
+    prepareContinueButton();
+    prefetchOnIntent();
+    loadQuestionCount().catch(error => console.warn('Question count unavailable:', error?.message));
+
     const session = await ensureAuth();
     renderAccount(session);
     renderStudentMetrics(session.profile);
     await synchronizeProgress();
   } catch (error) {
-    if (error.message !== 'Authentication required') console.error(error);
+    if (error?.message !== 'Authentication required') console.error('NEON home boot error:', error);
   } finally {
     document.getElementById('bootOverlay')?.classList.add('hidden');
   }
