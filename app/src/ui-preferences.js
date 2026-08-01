@@ -1,4 +1,5 @@
 import './ui-preferences.css';
+import './theme-complete-compat.css';
 
 const THEME_KEY = 'neonAcademyThemeV3';
 const READER_SCALE_KEY = 'neonAcademyReaderScaleV1';
@@ -41,15 +42,40 @@ function applyTheme(themeId, announce = false) {
 
 applyTheme(safeStorageGet(THEME_KEY, DEFAULT_THEME));
 
+function createHeaderTools(header, host) {
+  const actions = header.querySelector('.header-actions');
+  if (actions) {
+    actions.classList.add('neon-header-tools');
+    actions.insertBefore(host, actions.firstChild);
+    return actions;
+  }
+
+  let tools = header.querySelector(':scope > .neon-header-tools');
+  if (!tools) {
+    tools = document.createElement('div');
+    tools.className = 'neon-header-tools';
+    const account = header.querySelector(':scope > .account-chip,:scope > .auth-user-chip');
+    if (account) {
+      header.insertBefore(tools, account);
+      tools.appendChild(account);
+    } else {
+      header.appendChild(tools);
+    }
+  }
+  tools.insertBefore(host, tools.firstChild);
+  return tools;
+}
+
 function createThemePicker() {
   if (document.querySelector('.neon-theme-host')) return;
-  const header = document.querySelector('.site-header,.topbar');
+  const header = document.querySelector('.site-header,.topbar,.trust-header');
   if (!header) return;
+
   const host = document.createElement('div');
   host.className = 'neon-theme-host';
   host.innerHTML = `
-    <button class="neon-theme-trigger" type="button" aria-label="اختيار ثيم الألوان" aria-expanded="false" title="ثيمات الألوان">🎨</button>
-    <div class="neon-theme-panel" role="dialog" aria-label="ثيمات ألوان المنصة">
+    <button class="neon-theme-trigger" type="button" aria-label="اختيار ثيم الألوان" aria-expanded="false" aria-controls="neonThemePanel" title="ثيمات الألوان">🎨</button>
+    <div class="neon-theme-panel" id="neonThemePanel" role="dialog" aria-label="ثيمات ألوان المنصة">
       <header><strong>ثيمات مريحة للعين</strong><small>الأزرار والنصوص بتباين واضح</small></header>
       <div class="neon-theme-grid">
         ${THEMES.map(theme => `
@@ -61,36 +87,34 @@ function createThemePicker() {
       </div>
     </div>`;
 
-  const account = header.querySelector('.account-chip,.auth-user-chip');
-  const actions = header.querySelector('.header-actions');
-  if (actions) actions.insertBefore(host, actions.firstChild);
-  else if (account) header.insertBefore(host, account);
-  else header.appendChild(host);
+  createHeaderTools(header, host);
 
   const trigger = host.querySelector('.neon-theme-trigger');
+  const setOpen = open => {
+    host.classList.toggle('open', open);
+    trigger.setAttribute('aria-expanded', String(open));
+    document.documentElement.classList.toggle('neon-theme-picker-open', open);
+  };
+
   trigger.addEventListener('click', event => {
     event.stopPropagation();
-    const open = host.classList.toggle('open');
-    trigger.setAttribute('aria-expanded', String(open));
+    setOpen(!host.classList.contains('open'));
   });
   host.querySelectorAll('.neon-theme-option').forEach(button => {
     button.addEventListener('click', () => {
       applyTheme(button.dataset.theme, true);
-      host.classList.remove('open');
-      trigger.setAttribute('aria-expanded', 'false');
+      setOpen(false);
+      trigger.focus({ preventScroll:true });
     });
   });
   document.addEventListener('click', event => {
-    if (!host.contains(event.target)) {
-      host.classList.remove('open');
-      trigger.setAttribute('aria-expanded', 'false');
-    }
+    if (!host.contains(event.target)) setOpen(false);
   });
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') {
-      host.classList.remove('open');
-      trigger.setAttribute('aria-expanded', 'false');
-    }
+    if (event.key === 'Escape') setOpen(false);
+  });
+  window.addEventListener('resize', () => {
+    if (window.innerWidth < 360) setOpen(false);
   });
   applyTheme(safeStorageGet(THEME_KEY, DEFAULT_THEME));
 }
