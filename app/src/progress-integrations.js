@@ -132,23 +132,22 @@ function synchronizeStep(previousValue, nextValue) {
 
   for (const lessonId of Array.isArray(after.completedLessons) ? after.completedLessons : []) {
     if (beforeLessons.has(lessonId)) continue;
-    const isBookLesson = String(lessonId).startsWith('kb1-');
+    const isMasteryLesson = String(lessonId).startsWith('kb1-') || String(lessonId).startsWith('ms-');
     emit({
       eventType: 'lesson_complete',
       eventKey: `step:lesson:${lessonId}:complete`,
       centerId: 'step',
       itemType: 'lesson',
       itemId: lessonId,
-      title: stepLessonTitles[lessonId] || `درس STEP ${lessonId}`,
+      title: window.NEON_STEP_LESSON_TITLES?.[lessonId] || stepLessonTitles[lessonId] || 'درس STEP',
       status: 'completed',
       progressPercent: 100,
       masteryScore: 100,
-      href: isBookLesson ? '/step#stepBookKafayat1' : '/step#stepAcademy',
-      position: { section: isBookLesson ? 'kafayat-book-lessons' : 'lessons', lessonId },
+      href: isMasteryLesson ? '/step#stepBookKafayat1' : '/step#stepAcademy',
+      position: { section: isMasteryLesson ? 'mastery-lessons' : 'lessons', lessonId },
       metadata: {
         skillPath: lessonId.charAt(0),
-        source: isBookLesson ? 'kafayat-step-1' : STEP_KEY,
-        bookId: isBookLesson ? 'kafayat-step-1' : null
+        source: isMasteryLesson ? 'step-mastery-library' : STEP_KEY
       }
     });
   }
@@ -164,7 +163,8 @@ function synchronizeStep(previousValue, nextValue) {
     const correct = Math.max(0, Number(attempt?.correct || 0));
     const score = Math.max(0, Math.min(100, Number(attempt?.score || (total ? Math.round((correct / total) * 100) : 0))));
     const occurredAt = attempt?.date || new Date().toISOString();
-    const isBookAttempt = attempt?.source === 'kafayat-step-1';
+    const modelId = String(attempt?.modelId || '');
+    const isMasteryAttempt = modelId.startsWith('mastery-') || modelId.startsWith('kb1-') || modelId.startsWith('custom-') || attempt?.source === 'kafayat-step-1';
     const attemptTitle = String(attempt?.title || '').trim() || `تدريب STEP — ${total || 'عدة'} سؤالًا`;
     emit({
       eventType: 'step_training_complete',
@@ -172,7 +172,7 @@ function synchronizeStep(previousValue, nextValue) {
       centerId: 'step',
       itemType: 'assessment',
       itemId: attempt?.modelId || `attempt-${fingerprint}`,
-      title: isBookAttempt ? `كتاب كفايات 1 — ${attemptTitle}` : attemptTitle,
+      title: attemptTitle,
       status: 'completed',
       progressPercent: 100,
       masteryScore: score,
@@ -180,9 +180,9 @@ function synchronizeStep(previousValue, nextValue) {
       subjectId: 'english-step',
       correct,
       total,
-      href: isBookAttempt ? '/step#stepBookKafayat1' : '/step#stepAcademy',
+      href: isMasteryAttempt ? '/step#stepBookKafayat1' : '/step#stepAcademy',
       position: {
-        section: isBookAttempt ? 'kafayat-book-progress' : 'progress',
+        section: isMasteryAttempt ? 'mastery-progress' : 'progress',
         modelId: attempt?.modelId || null,
         mode: attempt?.mode || 'practice'
       },
@@ -190,7 +190,7 @@ function synchronizeStep(previousValue, nextValue) {
         occurredAt,
         targetScore: Number(after.target || 75),
         skillSummary: stepSkillSummary(attempt?.answers),
-        source: attempt?.source || STEP_KEY,
+        source: isMasteryAttempt ? 'step-mastery-library' : (attempt?.source || STEP_KEY),
         modelId: attempt?.modelId || null,
         mode: attempt?.mode || 'practice',
         elapsed: Number(attempt?.elapsed || 0)
