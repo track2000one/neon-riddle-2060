@@ -1,5 +1,5 @@
 const LAST_CENTER_KEY = 'neonAcademyLastCenterV1';
-const KIDS_HREF = '/legacy/kids-games.html';
+const KIDS_HREF = '/kids-games';
 
 const kidsCardMarkup = `
   <div class="center-brand">NEON<small>LEARN • PLAY • BUILD</small></div>
