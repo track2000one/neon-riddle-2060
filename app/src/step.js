@@ -12,7 +12,10 @@ function setProgress(percent, message) {
 
 function loadClassicScript(src, { optional = false, timeout = 12000 } = {}) {
   return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
+    const existing = [...document.scripts].find(script => script.src === new URL(src, document.baseURI).href);
+    if (existing?.dataset.loaded === 'true') return resolve(true);
+
+    const script = existing || document.createElement('script');
     const timer = setTimeout(() => {
       if (optional) resolve(false);
       else reject(new Error(`انتهت مهلة تحميل ${src}`));
@@ -22,6 +25,7 @@ function loadClassicScript(src, { optional = false, timeout = 12000 } = {}) {
     script.async = false;
     script.onload = () => {
       clearTimeout(timer);
+      script.dataset.loaded = 'true';
       resolve(true);
     };
     script.onerror = () => {
@@ -29,8 +33,12 @@ function loadClassicScript(src, { optional = false, timeout = 12000 } = {}) {
       if (optional) resolve(false);
       else reject(new Error(`تعذر تحميل ${src}`));
     };
-    document.body.appendChild(script);
+    if (!existing) document.body.appendChild(script);
   });
+}
+
+async function loadScriptsInOrder(files) {
+  for (const file of files) await loadClassicScript(file, { timeout: 12000 });
 }
 
 function waitForStepInterface(timeout = 10000) {
@@ -55,33 +63,50 @@ function waitForStepInterface(timeout = 10000) {
 
 async function boot() {
   try {
-    setProgress(12, 'جارٍ التحقق من حساب الطالب…');
+    setProgress(10, 'جارٍ التحقق من حساب الطالب…');
     const session = await ensureAuth();
     renderAccount(session);
-    setProgress(35, 'تم التحقق. جارٍ تحميل محرك STEP…');
+
+    setProgress(25, 'جارٍ تحميل الكتاب المرفوع ومسار الشرح…');
+    const bookDataPromise = loadScriptsInOrder([
+      '/legacy/step-book-kafayat-1-lessons.js',
+      '/legacy/step-book-kafayat-1-models-1-2.js',
+      '/legacy/step-book-kafayat-1-models-3-4.js',
+      '/legacy/step-book-kafayat-1-models-5-6.js',
+      '/legacy/step-book-kafayat-1-model-7.js',
+      '/legacy/step-book-kafayat-1-listening.js'
+    ]);
 
     const dataPromise = loadClassicScript('/legacy/step-academy-data.js', {
       optional: true,
-      timeout: 7000
+      timeout: 9000
     });
+
+    await bookDataPromise;
+    setProgress(48, 'اكتمل تجهيز 28 درسًا و7 نماذج من كتاب كفايات STEP…');
 
     await Promise.race([
       dataPromise,
-      new Promise(resolve => setTimeout(() => resolve(false), 1600))
+      new Promise(resolve => setTimeout(() => resolve(false), 1400))
     ]);
 
-    setProgress(58, 'جارٍ إنشاء الدروس والتدريب…');
-    await loadClassicScript('/legacy/step-academy-runtime.js', { timeout: 9000 });
+    setProgress(62, 'جارٍ إنشاء مركز STEP ودمج بنك الأسئلة…');
+    await loadClassicScript('/legacy/step-academy-runtime.js', { timeout: 10000 });
     await waitForStepInterface();
 
-    setProgress(84, 'واجهة STEP جاهزة. استكمال بنك الأسئلة في الخلفية…');
+    setProgress(78, 'جارٍ إنشاء واجهة الكتاب والتقارير التفصيلية…');
+    await loadClassicScript('/legacy/step-book-kafayat-1-runtime.js', { timeout: 10000 });
+
+    setProgress(92, 'المسار جاهز. استكمال بنك STEP العام في الخلفية…');
     overlay?.classList.add('hidden');
     document.getElementById('stepIntro')?.remove();
 
     dataPromise.then(loaded => {
       if (loaded) {
         window.dispatchEvent(new CustomEvent('neon-step-data-loaded'));
-        setProgress(100, 'اكتمل تحميل بنك STEP.');
+        setProgress(100, 'اكتمل تحميل مركز STEP وكتاب كفايات 1.');
+      } else {
+        setProgress(100, 'كتاب كفايات 1 جاهز، مع بنك STEP الاحتياطي.');
       }
     });
   } catch (error) {
@@ -89,7 +114,7 @@ async function boot() {
     overlay?.classList.add('hidden');
     setProgress(100, 'تعذر فتح المسار بالكامل.');
     const root = document.getElementById('stepRoot');
-    root.insertAdjacentHTML('beforeend', `
+    root?.insertAdjacentHTML('beforeend', `
       <section class="center-intro">
         <h2>تعذر تحميل مركز STEP</h2>
         <p>${String(error.message || error)}</p>
