@@ -148,6 +148,254 @@ html[data-neon-theme] :is(.exam-feedback.is-wrong,.game-feedback.is-wrong) :is(s
   color:inherit!important;
 }
 
+/* Header controls also follow the selected light or dark palette. */
+html[data-neon-theme] .brand small,
+html[data-neon-theme] .brand small::before{
+  color:var(--ui-muted)!important;
+}
+html[data-neon-theme] .account-chip{
+  color:var(--ui-text)!important;
+  background:var(--ui-surface-soft)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] .account-logout-button{
+  color:var(--ui-secondary-text)!important;
+  background:var(--ui-secondary-bg)!important;
+  border-color:color-mix(in srgb,var(--ui-secondary-text) 24%,transparent)!important;
+  text-shadow:none!important;
+}
+html[data-neon-theme] .account-logout-button:hover,
+html[data-neon-theme] .account-logout-button:focus-visible{
+  color:var(--ui-primary-text)!important;
+  background:var(--ui-primary-bg)!important;
+  border-color:color-mix(in srgb,var(--ui-primary-text) 30%,transparent)!important;
+}
+
+/* STEP mastery library: replace the runtime's fixed navy palette with theme tokens. */
+html[data-neon-theme] #stepBookKafayat1,
+html[data-neon-theme] #stepBookKafayat1 .ms-shell{
+  color:var(--ui-text)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-shell{
+  background:
+    radial-gradient(circle at 8% 8%,color-mix(in srgb,var(--ui-accent-1) 16%,transparent),transparent 31%),
+    radial-gradient(circle at 92% 12%,color-mix(in srgb,var(--ui-accent-2) 15%,transparent),transparent 33%),
+    linear-gradient(145deg,color-mix(in srgb,var(--ui-surface) 98%,transparent),color-mix(in srgb,var(--ui-surface-strong) 94%,transparent))!important;
+  border-color:var(--ui-border)!important;
+  box-shadow:0 28px 82px color-mix(in srgb,#000 24%,transparent)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 :is(h2,h3,h4,strong,th,.ms-question){
+  color:var(--ui-text)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html[data-neon-theme] #stepBookKafayat1 :is(p,small,.ms-empty,.ms-review p){
+  color:var(--ui-muted)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-badge{
+  color:color-mix(in srgb,var(--ui-accent-1) 58%,var(--ui-text))!important;
+  background:var(--ui-surface-soft)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 :is(
+  .ms-stat,.ms-card,.ms-lesson,.ms-model,.ms-progress-card,.ms-mini,.ms-best,
+  .ms-runner,.ms-passage,.ms-feedback,.ms-breakdown article,.ms-review
+){
+  color:var(--ui-text)!important;
+  background:color-mix(in srgb,var(--ui-surface-soft) 88%,transparent)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 :is(.ms-stat small,.ms-progress-card small){
+  color:var(--ui-muted)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-note{
+  color:var(--ui-success-text)!important;
+  background:color-mix(in srgb,var(--ui-success-bg) 82%,transparent)!important;
+  border-color:color-mix(in srgb,var(--ui-success-text) 36%,transparent)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-btn{
+  color:var(--ui-primary-text)!important;
+  background:var(--ui-primary-bg)!important;
+  border:1px solid color-mix(in srgb,var(--ui-primary-text) 22%,transparent)!important;
+  text-shadow:none!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-btn.secondary{
+  color:var(--ui-secondary-text)!important;
+  background:var(--ui-secondary-bg)!important;
+  border-color:color-mix(in srgb,var(--ui-secondary-text) 22%,transparent)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-btn.warning{
+  color:var(--ui-danger-text)!important;
+  background:var(--ui-danger-bg)!important;
+  border-color:color-mix(in srgb,var(--ui-danger-text) 26%,transparent)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 :is(.ms-tab,.ms-filter){
+  color:var(--ui-ghost-text)!important;
+  background:var(--ui-ghost-bg)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 :is(.ms-tab.active,.ms-filter.active){
+  color:var(--ui-primary-text)!important;
+  background:var(--ui-primary-bg)!important;
+  border-color:color-mix(in srgb,var(--ui-primary-text) 25%,transparent)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-toolbar :is(input,select){
+  color:var(--ui-option-text)!important;
+  background:var(--ui-option-bg)!important;
+  border-color:var(--ui-border)!important;
+  caret-color:var(--ui-option-text)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-toolbar input::placeholder{
+  color:var(--ui-muted)!important;
+  opacity:.9;
+}
+html[data-neon-theme] #stepBookKafayat1 :is(.ms-lesson small,.ms-model-meta,.ms-history th){
+  color:color-mix(in srgb,var(--ui-accent-1) 58%,var(--ui-text))!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-lesson h4{
+  color:var(--ui-text)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-lesson.done{
+  color:var(--ui-success-text)!important;
+  background:color-mix(in srgb,var(--ui-success-bg) 76%,transparent)!important;
+  border-color:color-mix(in srgb,var(--ui-success-text) 35%,transparent)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-lesson.done :is(h3,h4,p,small,strong){
+  color:var(--ui-success-text)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-track{
+  background:color-mix(in srgb,var(--ui-text) 10%,transparent)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-track b,
+html[data-neon-theme] #stepBookKafayat1 .ms-breakdown i b{
+  background:linear-gradient(90deg,var(--ui-primary-bg),var(--ui-secondary-bg))!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-breakdown i{
+  background:color-mix(in srgb,var(--ui-text) 11%,transparent)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-timer{
+  color:var(--ui-primary-text)!important;
+  background:var(--ui-primary-bg)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 :is(.ms-mini-options button,.ms-option){
+  color:var(--ui-option-text)!important;
+  background:var(--ui-option-bg)!important;
+  border-color:var(--ui-border)!important;
+  text-shadow:none!important;
+}
+html[data-neon-theme] #stepBookKafayat1 :is(.ms-mini-options button,.ms-option):hover:not(:disabled),
+html[data-neon-theme] #stepBookKafayat1 :is(.ms-mini-options button,.ms-option):focus-visible{
+  color:var(--ui-option-hover-text)!important;
+  background:var(--ui-option-hover-bg)!important;
+  border-color:var(--ui-option-hover-text)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-option b{
+  color:inherit!important;
+  background:color-mix(in srgb,currentColor 10%,transparent)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-option.selected{
+  color:var(--ui-primary-text)!important;
+  background:var(--ui-primary-bg)!important;
+  border-color:var(--ui-primary-text)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-option.correct{
+  color:var(--ui-success-text)!important;
+  background:var(--ui-success-bg)!important;
+  border-color:var(--ui-success-text)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-option.wrong{
+  color:var(--ui-danger-text)!important;
+  background:var(--ui-danger-bg)!important;
+  border-color:var(--ui-danger-text)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-rule{
+  color:var(--ui-text)!important;
+  background:color-mix(in srgb,var(--ui-accent-1) 10%,var(--ui-surface-strong))!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-traps{
+  color:var(--ui-danger-text)!important;
+  background:color-mix(in srgb,var(--ui-danger-bg) 76%,transparent)!important;
+  border-color:color-mix(in srgb,var(--ui-danger-text) 30%,transparent)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-traps :is(h3,p,li,strong){
+  color:var(--ui-danger-text)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-report-hero{
+  color:var(--ui-text)!important;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--ui-primary-bg) 17%,transparent),color-mix(in srgb,var(--ui-secondary-bg) 17%,transparent))!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-report-hero>strong{
+  color:color-mix(in srgb,var(--ui-secondary-bg) 55%,var(--ui-text))!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-review em{
+  color:var(--ui-danger-text)!important;
+  background:color-mix(in srgb,var(--ui-danger-bg) 65%,transparent)!important;
+  border-radius:6px;
+  padding:1px 4px;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-review b{
+  color:color-mix(in srgb,var(--ui-accent-1) 58%,var(--ui-text))!important;
+}
+html[data-neon-theme] #stepBookKafayat1 .ms-history :is(th,td){
+  border-color:var(--ui-border)!important;
+}
+
+/* Mastery dialogs are created outside the STEP section, so they need global theme rules. */
+html[data-neon-theme] .ms-modal{
+  background:color-mix(in srgb,var(--ui-bg-0) 78%,#000 22%)!important;
+}
+html[data-neon-theme] .ms-modal-card{
+  color:var(--ui-text)!important;
+  background:linear-gradient(150deg,var(--ui-surface),var(--ui-surface-strong))!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] .ms-modal-card :is(h2,h3,h4,strong,.ms-question){
+  color:var(--ui-text)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html[data-neon-theme] .ms-modal-card :is(p,small,li){
+  color:var(--ui-muted)!important;
+}
+html[data-neon-theme] .ms-close{
+  color:var(--ui-secondary-text)!important;
+  background:var(--ui-secondary-bg)!important;
+  border:1px solid color-mix(in srgb,var(--ui-secondary-text) 24%,transparent)!important;
+}
+html[data-neon-theme] .ms-modal-card :is(.ms-mini,.ms-runner,.ms-passage,.ms-feedback,.ms-review,.ms-breakdown article){
+  color:var(--ui-text)!important;
+  background:var(--ui-surface-soft)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] .ms-modal-card :is(.ms-mini-options button,.ms-option){
+  color:var(--ui-option-text)!important;
+  background:var(--ui-option-bg)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] .ms-modal-card .ms-option.correct{
+  color:var(--ui-success-text)!important;
+  background:var(--ui-success-bg)!important;
+  border-color:var(--ui-success-text)!important;
+}
+html[data-neon-theme] .ms-modal-card .ms-option.wrong{
+  color:var(--ui-danger-text)!important;
+  background:var(--ui-danger-bg)!important;
+  border-color:var(--ui-danger-text)!important;
+}
+html[data-neon-theme] .ms-modal-card .ms-rule{
+  color:var(--ui-text)!important;
+  background:color-mix(in srgb,var(--ui-accent-1) 10%,var(--ui-surface-strong))!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] .ms-modal-card .ms-traps{
+  color:var(--ui-danger-text)!important;
+  background:var(--ui-danger-bg)!important;
+  border-color:var(--ui-danger-text)!important;
+}
+html[data-neon-theme] .ms-modal-card .ms-traps :is(h3,p,li,strong){
+  color:var(--ui-danger-text)!important;
+}
+
 @media(max-width:620px){
   html[data-neon-theme] .exam-total{min-width:0}
 }
