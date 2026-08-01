@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 import { closeProgressDatabase, handleProgressApi } from './server/progress.mjs';
+import { closeQuestionMasteryDatabase, handleQuestionMasteryApi } from './server/question-mastery.mjs';
 import { geminiRuntimeInfo, handleTutorApi } from './server/gemini.mjs';
 import { handleStatic } from './server/static.mjs';
 
@@ -35,6 +36,7 @@ function readJsonBody(req) {
 const server = createServer(async (req, res) => {
   try {
     const requestPath = decodeURIComponent(String(req.url || '/').split('?')[0]);
+    if (await handleQuestionMasteryApi(req, res, requestPath, readJsonBody)) return;
     if (await handleProgressApi(req, res, requestPath, readJsonBody)) return;
     if (await handleTutorApi(req, res, requestPath, readJsonBody)) return;
     handleStatic(req, res, requestPath);
@@ -48,8 +50,14 @@ const server = createServer(async (req, res) => {
 async function shutdown(signal) {
   console.log(`Received ${signal}; closing NEON server.`);
   server.close(async () => {
-    try { await closeProgressDatabase(); }
-    finally { process.exit(0); }
+    try {
+      await Promise.allSettled([
+        closeProgressDatabase(),
+        closeQuestionMasteryDatabase()
+      ]);
+    } finally {
+      process.exit(0);
+    }
   });
   setTimeout(() => process.exit(1), 10_000).unref();
 }
