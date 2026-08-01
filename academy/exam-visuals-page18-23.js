@@ -48,15 +48,22 @@
   }
 
   function horizontalBars({title,labels,values,max}){
-    const left=210, top=95, width=650, row=62;
+    const barLeft=90, top=96, barWidth=590, row=62;
+    const labelPanelLeft=735, labelRight=910, separatorX=710;
     const topValue=max || Math.max(...values)*1.15;
     let body=text(480,55,title,30,900);
+    body+=`<line x1="${separatorX}" y1="88" x2="${separatorX}" y2="470" stroke="${grid}" stroke-width="2"/>`;
+    body+=`<text x="${labelRight}" y="84" text-anchor="end" font-family="${font}" font-size="15" font-weight="800" fill="${muted}">المنصة</text>`;
     values.forEach((value,index)=>{
       const y=top+index*row;
-      body+=text(left-20,y+29,labels[index],20,700,ink,'end');
-      body+=`<rect x="${left}" y="${y}" width="${width}" height="34" rx="8" fill="#edf1f4"/>`;
-      body+=`<rect x="${left}" y="${y}" width="${Math.max(3,value/topValue*width)}" height="34" rx="8" fill="${index%2?green:orange}"/>`;
-      body+=text(left+value/topValue*width+14,y+27,value,18,800,ink,'start');
+      const fillWidth=Math.max(3,value/topValue*barWidth);
+      const valueX=Math.min(barLeft+fillWidth+14,barLeft+barWidth-8);
+      const valueAnchor=valueX>=barLeft+barWidth-10?'end':'start';
+      body+=`<rect x="${labelPanelLeft}" y="${y-2}" width="190" height="40" rx="10" fill="${index%2?'#f8fafb':'#f3f7f9'}"/>`;
+      body+=`<text x="${labelRight}" y="${y+25}" text-anchor="end" font-family="${font}" font-size="20" font-weight="800" fill="${ink}">${esc(labels[index])}</text>`;
+      body+=`<rect x="${barLeft}" y="${y}" width="${barWidth}" height="34" rx="8" fill="#edf1f4"/>`;
+      body+=`<rect x="${barLeft}" y="${y}" width="${fillWidth}" height="34" rx="8" fill="${index%2?green:orange}"/>`;
+      body+=`<text x="${valueX}" y="${y+25}" text-anchor="${valueAnchor}" font-family="${font}" font-size="18" font-weight="900" fill="${ink}">${value}</text>`;
     });
     return frame(body,title);
   }
