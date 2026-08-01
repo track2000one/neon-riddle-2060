@@ -2,6 +2,7 @@ import './brand.css';
 import './brand-runtime.js';
 import './ui-preferences.js';
 import './surface-contrast.css';
+import './platform-theme-compat.css';
 import './navigation-enhancements.js';
 import { configureProgress, flushProgressQueue } from './progress-client.js';
 import './progress-integrations.js';
