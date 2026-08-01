@@ -39,6 +39,7 @@ export default defineConfig({
         step: fileURLToPath(new URL('./app/step.html', import.meta.url)),
         exams: fileURLToPath(new URL('./app/exams.html', import.meta.url)),
         games: fileURLToPath(new URL('./app/games.html', import.meta.url)),
+        kidsGames: fileURLToPath(new URL('./app/kids-games.html', import.meta.url)),
         learning: fileURLToPath(new URL('./app/learning.html', import.meta.url)),
         tutor: fileURLToPath(new URL('./app/tutor.html', import.meta.url))
       }
