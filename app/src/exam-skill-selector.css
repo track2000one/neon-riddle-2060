@@ -1,26 +1,54 @@
 /* Skill and topic selector for the adaptive exam setup. */
+.setup-fields{
+  align-items:start!important;
+}
+.setup-fields>label{
+  align-self:start;
+  min-width:0;
+}
+.setup-fields>label select{
+  min-height:44px;
+}
+.setup-fields>.exam-primary{
+  align-self:end;
+  min-height:44px;
+}
+
 @media (min-width:1081px){
   .setup-fields{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 }
 
-.exam-skill-field{position:relative}
-.exam-skill-field select{font-weight:800}
-.exam-skill-hint{
-  display:block;
-  min-height:2.9em;
-  margin-top:2px;
-  color:var(--ui-muted,#aebbd6)!important;
-  font-size:10px;
-  font-weight:600;
-  line-height:1.55;
+.exam-skill-field{
+  position:relative;
+  display:grid!important;
+  gap:8px!important;
 }
-.exam-skill-hint strong{color:var(--ui-text,#fff)!important}
+.exam-skill-field select{
+  width:100%;
+  font-weight:800;
+}
+
+/* The priority explanation is repeated in the full-width summary below.
+   Keep this copy available to assistive technology without changing row height. */
+.exam-skill-hint{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+
 .exam-skill-summary{
   grid-column:1/-1;
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:12px;
+  margin-top:0;
   padding:11px 13px;
   border:1px solid var(--ui-border,rgba(255,255,255,.12));
   border-radius:13px;
@@ -41,6 +69,10 @@
 }
 .exam-skill-field select:disabled{opacity:.72;cursor:not-allowed}
 
+@media(max-width:1080px){
+  .setup-fields>.exam-primary{align-self:stretch}
+}
 @media(max-width:620px){
   .exam-skill-summary{align-items:flex-start;flex-direction:column}
+  .setup-fields>label select,.setup-fields>.exam-primary{min-height:46px}
 }
