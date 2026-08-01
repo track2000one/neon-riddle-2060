@@ -22,7 +22,35 @@ const stepLessonTitles = {
   r3: 'Inference',
   r4: 'Reference & Purpose',
   l1: 'Listening for Gist',
-  l2: 'Listening for Details'
+  l2: 'Listening for Details',
+  'kb1-b01': 'فعل الكينونة وصوره المختصرة',
+  'kb1-b02': 'Let وLet’s وضمائر الوصل',
+  'kb1-b03': 'تكوين السؤال المباشر',
+  'kb1-b04': 'الأسئلة الذيلية',
+  'kb1-b05': 'المضارع البسيط',
+  'kb1-b06': 'المبني للمجهول في المضارع',
+  'kb1-b07': 'المضارع المستمر',
+  'kb1-b08': 'المضارع التام',
+  'kb1-b09': 'المضارع التام المبني للمجهول والمستمر',
+  'kb1-b10': 'الماضي البسيط وUsed to',
+  'kb1-b11': 'الماضي المستمر',
+  'kb1-b12': 'الماضي التام',
+  'kb1-b13': 'صيغ المستقبل',
+  'kb1-b14': 'المبني للمجهول مستقبلًا وHave something done',
+  'kb1-b15': 'المعدود وغير المعدود والضمائر الانعكاسية',
+  'kb1-b16': 'المقارنة والتفضيل',
+  'kb1-b17': 'الجمل الشرطية',
+  'kb1-b18': 'الأفعال المتبوعة بـ-ing أو المصدر',
+  'kb1-b19': 'الملكية والجمع وربط الجمل',
+  'kb1-b20': 'الكلام المنقول',
+  'kb1-b21': 'أدوات الربط والغرض وSupposed to',
+  'kb1-b22': 'علامات الترقيم',
+  'kb1-b23': 'الحروف الكبيرة',
+  'kb1-b24': 'اشتقاق الكلمات وتقسيم المقاطع',
+  'kb1-b25': 'تحديد الجزء الخطأ',
+  'kb1-b26': 'الفكرة الرئيسة والعنوان',
+  'kb1-b27': 'التفاصيل والمفردات في السياق',
+  'kb1-b28': 'استراتيجيات الاستماع'
 };
 
 const tutorModeTitles = {
@@ -77,6 +105,8 @@ function emit(event) {
 function attemptFingerprint(attempt) {
   return hashText([
     attempt?.date || '',
+    attempt?.source || '',
+    attempt?.modelId || '',
     attempt?.score ?? '',
     attempt?.correct ?? '',
     attempt?.total ?? '',
@@ -102,6 +132,7 @@ function synchronizeStep(previousValue, nextValue) {
 
   for (const lessonId of Array.isArray(after.completedLessons) ? after.completedLessons : []) {
     if (beforeLessons.has(lessonId)) continue;
+    const isBookLesson = String(lessonId).startsWith('kb1-');
     emit({
       eventType: 'lesson_complete',
       eventKey: `step:lesson:${lessonId}:complete`,
@@ -112,9 +143,13 @@ function synchronizeStep(previousValue, nextValue) {
       status: 'completed',
       progressPercent: 100,
       masteryScore: 100,
-      href: '/step#stepAcademy',
-      position: { section: 'lessons', lessonId },
-      metadata: { skillPath: lessonId.charAt(0), source: STEP_KEY }
+      href: isBookLesson ? '/step#stepBookKafayat1' : '/step#stepAcademy',
+      position: { section: isBookLesson ? 'kafayat-book-lessons' : 'lessons', lessonId },
+      metadata: {
+        skillPath: lessonId.charAt(0),
+        source: isBookLesson ? 'kafayat-step-1' : STEP_KEY,
+        bookId: isBookLesson ? 'kafayat-step-1' : null
+      }
     });
   }
 
@@ -129,13 +164,15 @@ function synchronizeStep(previousValue, nextValue) {
     const correct = Math.max(0, Number(attempt?.correct || 0));
     const score = Math.max(0, Math.min(100, Number(attempt?.score || (total ? Math.round((correct / total) * 100) : 0))));
     const occurredAt = attempt?.date || new Date().toISOString();
+    const isBookAttempt = attempt?.source === 'kafayat-step-1';
+    const attemptTitle = String(attempt?.title || '').trim() || `تدريب STEP — ${total || 'عدة'} سؤالًا`;
     emit({
       eventType: 'step_training_complete',
       eventKey: `step:attempt:${fingerprint}`,
       centerId: 'step',
       itemType: 'assessment',
-      itemId: `attempt-${fingerprint}`,
-      title: `تدريب STEP — ${total || 'عدة'} سؤالًا`,
+      itemId: attempt?.modelId || `attempt-${fingerprint}`,
+      title: isBookAttempt ? `كتاب كفايات 1 — ${attemptTitle}` : attemptTitle,
       status: 'completed',
       progressPercent: 100,
       masteryScore: score,
@@ -143,15 +180,22 @@ function synchronizeStep(previousValue, nextValue) {
       subjectId: 'english-step',
       correct,
       total,
-      href: '/step#stepAcademy',
-      position: { section: 'progress' },
+      href: isBookAttempt ? '/step#stepBookKafayat1' : '/step#stepAcademy',
+      position: {
+        section: isBookAttempt ? 'kafayat-book-progress' : 'progress',
+        modelId: attempt?.modelId || null,
+        mode: attempt?.mode || 'practice'
+      },
       metadata: {
         occurredAt,
         targetScore: Number(after.target || 75),
         skillSummary: stepSkillSummary(attempt?.answers),
-        source: STEP_KEY
+        source: attempt?.source || STEP_KEY,
+        modelId: attempt?.modelId || null,
+        mode: attempt?.mode || 'practice',
+        elapsed: Number(attempt?.elapsed || 0)
       },
-      details: { answers: Array.isArray(attempt?.answers) ? attempt.answers.slice(0, 120) : [] }
+      details: { answers: Array.isArray(attempt?.answers) ? attempt.answers.slice(0, 175) : [] }
     });
   }
 }
