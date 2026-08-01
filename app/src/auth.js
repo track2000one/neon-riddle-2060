@@ -7,6 +7,7 @@ import './step-core-theme-compat.css';
 import './navigation-enhancements.js';
 import './student-success-bootstrap.js';
 import './exam-experience.js';
+import './diagnostic-experience.js';
 import { configureProgress, flushProgressQueue } from './progress-client.js';
 import './progress-integrations.js';
 
