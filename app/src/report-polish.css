@@ -79,7 +79,8 @@ html[data-neon-theme] .exam-review-question>strong,
 html[data-neon-theme] :is(.atl-review,.bio-review) :is(h4,strong){
   color:var(--ui-text)!important;
 }
-html[data-neon-theme] .exam-review-card :is(p,>small),
+html[data-neon-theme] .exam-review-card p,
+html[data-neon-theme] .exam-review-card>small,
 html[data-neon-theme] :is(.atl-review,.bio-review) :is(p,small){
   color:var(--ui-muted)!important;
 }
