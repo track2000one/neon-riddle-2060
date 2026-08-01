@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import { closeProgressDatabase, handleProgressApi } from './server/progress.mjs';
 import { closeQuestionMasteryDatabase, handleQuestionMasteryApi } from './server/question-mastery.mjs';
+import { closeStudentSuccessDatabase, handleStudentSuccessApi } from './server/student-success.mjs';
 import { geminiRuntimeInfo, handleTutorApi } from './server/gemini.mjs';
 import { handleStatic } from './server/static.mjs';
 
@@ -36,6 +37,7 @@ function readJsonBody(req) {
 const server = createServer(async (req, res) => {
   try {
     const requestPath = decodeURIComponent(String(req.url || '/').split('?')[0]);
+    if (await handleStudentSuccessApi(req, res, requestPath, readJsonBody)) return;
     if (await handleQuestionMasteryApi(req, res, requestPath, readJsonBody)) return;
     if (await handleProgressApi(req, res, requestPath, readJsonBody)) return;
     if (await handleTutorApi(req, res, requestPath, readJsonBody)) return;
@@ -53,7 +55,8 @@ async function shutdown(signal) {
     try {
       await Promise.allSettled([
         closeProgressDatabase(),
-        closeQuestionMasteryDatabase()
+        closeQuestionMasteryDatabase(),
+        closeStudentSuccessDatabase()
       ]);
     } finally {
       process.exit(0);
@@ -68,5 +71,5 @@ process.once('SIGINT', () => shutdown('SIGINT'));
 server.listen(port, host, () => {
   const database = process.env.DATABASE_URL || process.env.PROGRESS_DATABASE_URL ? 'postgresql' : 'local queue';
   const gemini = geminiRuntimeInfo.configured ? geminiRuntimeInfo.model : 'local fallback';
-  console.log(`NEON listening on http://${host}:${port} | Gemini: ${gemini} | Progress: ${database}`);
+  console.log(`NEON listening on http://${host}:${port} | Gemini: ${gemini} | Progress: ${database} | Success dashboard: enabled`);
 });
