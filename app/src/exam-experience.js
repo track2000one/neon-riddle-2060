@@ -92,12 +92,13 @@ function installHistoryBridge() {
 }
 
 function ensureTools() {
-  if (document.getElementById('examSuccessTools')) return;
+  const subjectGrid = document.getElementById('examSubjects');
+  if (!subjectGrid || document.getElementById('examSuccessTools')) return;
   const tools = document.createElement('section');
   tools.id = 'examSuccessTools';
   tools.className = 'exam-success-tools';
   tools.innerHTML = '<div><h2>دفتر الأخطاء والمراجعة الذكية</h2><p>كل خطأ يُحفظ تلقائيًا مع الإجابة الصحيحة والشرح وموعد المراجعة.</p></div><div class="exam-success-actions"><span class="exam-notebook-count" id="examNotebookCount">0</span><button class="exam-notebook-button" id="openExamNotebook">فتح دفتر الأخطاء</button></div>';
-  document.getElementById('examSubjects')?.insertAdjacentElement('afterend', tools);
+  subjectGrid.insertAdjacentElement('afterend', tools);
 
   document.body.insertAdjacentHTML('beforeend', `
     <div class="exam-tool-modal" id="examNotebookModal"><div class="exam-tool-card"><div class="exam-tool-head"><div><h2>دفتر الأخطاء</h2><p>ابدأ بالأسئلة المستحقة للمراجعة ثم عد إلى التدريب الذكي.</p></div><button class="exam-tool-close" data-close-exam-tool="examNotebookModal">×</button></div><div class="exam-notebook-list" id="examNotebookList"></div></div></div>
@@ -124,6 +125,7 @@ function closeTool(id) {
 
 function renderNotebook() {
   const list = document.getElementById('examNotebookList');
+  if (!list) return;
   const rows = safeJson(NOTEBOOK_KEY, []).sort((a,b) => new Date(a.nextReviewAt || 0) - new Date(b.nextReviewAt || 0));
   if (!rows.length) {
     list.innerHTML = '<div class="exam-tool-empty">لا توجد أخطاء محفوظة بعد. عند أول إجابة خاطئة سيُضاف السؤال هنا تلقائيًا.</div>';
@@ -175,7 +177,8 @@ function openReport(questionText) {
     questionId:match?.questionId || '',
     subjectId:match?.subject || ''
   };
-  document.getElementById('questionReportContext').textContent = questionText;
+  const context = document.getElementById('questionReportContext');
+  if (context) context.textContent = questionText;
   openTool('questionReportModal');
 }
 
@@ -220,17 +223,18 @@ function installEvents() {
   });
 }
 
-installHistoryBridge();
-const observer = new MutationObserver(() => { ensureTools(); injectReportButtons(); });
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    ensureTools();
-    installEvents();
-    observer.observe(document.body, { childList:true, subtree:true });
-    if (location.hash === '#notebook') { renderNotebook(); openTool('examNotebookModal'); }
-  }, { once:true });
-} else {
+function initializeExamExperience() {
+  if (!document.getElementById('examSubjects')) return;
+  installHistoryBridge();
   ensureTools();
   installEvents();
+  const observer = new MutationObserver(() => injectReportButtons());
   observer.observe(document.body, { childList:true, subtree:true });
+  if (location.hash === '#notebook') {
+    renderNotebook();
+    openTool('examNotebookModal');
+  }
 }
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initializeExamExperience, { once:true });
+else initializeExamExperience();
