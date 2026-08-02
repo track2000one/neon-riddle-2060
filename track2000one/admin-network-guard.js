@@ -64,7 +64,7 @@
 
   if (!document.querySelector('script[data-masar-neon-brand-loader]')) {
     const brandScript = document.createElement('script');
-    brandScript.src = 'admin-masar-neon-brand.js?v=20260803-1';
+    brandScript.src = 'admin-masar-neon-brand.js?v=20260803-2';
     brandScript.async = false;
     brandScript.dataset.masarNeonBrandLoader = 'true';
     document.head.appendChild(brandScript);
