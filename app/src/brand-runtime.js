@@ -64,10 +64,23 @@ function replaceBrandAttributes(root = document) {
   });
 }
 
+function replaceCompactMarks(root = document) {
+  const marks = [];
+  if (root instanceof Element && root.matches('.brand-mark,.center-brand-mark')) marks.push(root);
+  if (root?.querySelectorAll) marks.push(...root.querySelectorAll('.brand-mark,.center-brand-mark'));
+  marks.forEach(mark => {
+    if (mark.textContent?.trim() === 'N') {
+      mark.textContent = 'MN';
+      mark.setAttribute('aria-label', BRAND_EN);
+    }
+  });
+}
+
 function applyBrand(root = document) {
   document.title = replaceBrandValue(document.title);
   replaceBrandText(root === document ? document.body : root);
   replaceBrandAttributes(root);
+  replaceCompactMarks(root);
   document.documentElement.dataset.brand = 'masar-neon';
 }
 
