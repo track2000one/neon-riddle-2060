@@ -62,6 +62,14 @@
     document.head.appendChild(publicAuditScript);
   }
 
+  if (!document.querySelector('script[data-masar-neon-brand-loader]')) {
+    const brandScript = document.createElement('script');
+    brandScript.src = 'admin-masar-neon-brand.js?v=20260803-1';
+    brandScript.async = false;
+    brandScript.dataset.masarNeonBrandLoader = 'true';
+    document.head.appendChild(brandScript);
+  }
+
   if (!document.querySelector('script[data-firebase-delete-loader]')) {
     const deleteScript = document.createElement('script');
     deleteScript.src = 'firebase-delete-confirm.js';
