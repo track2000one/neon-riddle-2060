@@ -23,14 +23,6 @@ const centers = [
     icon: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 51h44M16 45V32h9v13M28 45V23h9v22M40 45V14h9v31M15 22l12-9 10 5 14-10"/><path d="m45 8 6 0 0 6"/></svg>'
   },
   {
-    id: 'tutor',
-    href: '/tutor',
-    title: 'المعلم الذكي Gemini',
-    subtitle: 'Gemini Smart Tutor',
-    description: 'إجابات مباشرة وشرح وتمارين وخطط ومراجعة عبر Gemini مع وضع محلي احتياطي.',
-    icon: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M20 16a12 12 0 0 1 24 0v4a10 10 0 0 1 7 9v9a10 10 0 0 1-10 10H23A10 10 0 0 1 13 38v-9a10 10 0 0 1 7-9v-4Z"/><path d="M24 33h.1M40 33h.1M25 41c4 3 10 3 14 0M32 10v8"/></svg>'
-  },
-  {
     id: 'coding',
     href: '/legacy/coding.html',
     title: 'تعليم البرمجة',
@@ -61,8 +53,7 @@ const progressCenters = [
   { id: 'step', title: 'اللغة الإنجليزية STEP', icon: '💬', href: '/step', total: 20, unit: 'درس وتدريب' },
   { id: 'exams', title: 'التحصيلي والقدرات', icon: '📊', href: '/exams', unit: 'محاولة' },
   { id: 'games', title: 'الألعاب والألغاز', icon: '🎮', href: '/games', total: 72, unit: 'نشاط' },
-  { id: 'coding', title: 'تعليم البرمجة', icon: '💻', href: '/legacy/coding.html', unit: 'درس' },
-  { id: 'tutor', title: 'المعلم الذكي', icon: '🧠', href: '/tutor', unit: 'جلسة' }
+  { id: 'coding', title: 'تعليم البرمجة', icon: '💻', href: '/legacy/coding.html', unit: 'درس' }
 ];
 
 function number(value) {
@@ -190,7 +181,7 @@ function showProgressOffline() {
   }
   const grid = document.getElementById('progressCenterGrid');
   if (grid && !grid.querySelector('.progress-center-card')) {
-    grid.innerHTML = '<div class="progress-empty">سيتم مزامنة تقدمك تلقائيًا بعد ربط PostgreSQL أو عودة الاتصال.</div>';
+    grid.innerHTML = '<div class="progress-empty">سيتم مزامنة تقدمك تلقائيًا عند عودة الاتصال.</div>';
   }
 }
 
