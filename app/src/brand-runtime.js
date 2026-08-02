@@ -1,5 +1,5 @@
 const BRAND_AR = 'مسار نيون';
-const BRAND_EN = 'MASAR NEON';
+const BRAND_EN = 'MSAR NEON';
 
 const exactTextReplacements = new Map([
   ['NEON', BRAND_AR],
@@ -15,6 +15,7 @@ const exactTextReplacements = new Map([
 ]);
 
 const phraseReplacements = new Map([
+  ['MASAR NEON', BRAND_EN],
   ['NEON ACADEMY 2060', BRAND_EN],
   ['NEON Academy 2060', BRAND_EN],
   ['NEON ACADEMY', BRAND_EN],
@@ -26,8 +27,8 @@ function replaceStandaloneNeon(value) {
   const hasArabic = /[\u0600-\u06ff]/.test(value);
   const replacement = hasArabic ? BRAND_AR : BRAND_EN;
   return value.replace(/\bNEON\b/g, (match, offset, source) => {
-    const prefix = source.slice(Math.max(0, offset - 6), offset).toUpperCase();
-    return prefix === 'MASAR ' ? match : replacement;
+    const prefix = source.slice(Math.max(0, offset - 7), offset).toUpperCase();
+    return /(?:MASAR|MSAR) $/.test(prefix) ? match : replacement;
   });
 }
 
@@ -81,7 +82,7 @@ function applyBrand(root = document) {
   replaceBrandText(root === document ? document.body : root);
   replaceBrandAttributes(root);
   replaceCompactMarks(root);
-  document.documentElement.dataset.brand = 'masar-neon';
+  document.documentElement.dataset.brand = 'msar-neon';
 }
 
 applyBrand();
