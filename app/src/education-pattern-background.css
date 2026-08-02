@@ -1,8 +1,8 @@
 /* Transparent educational motif inspired by the approved learning pattern. */
 :root{
   --education-pattern-size:520px;
-  --education-pattern-opacity:.065;
-  --education-pattern-filter:none;
+  --education-pattern-opacity:.11;
+  --education-pattern-filter:contrast(1.04) saturate(1.04);
 }
 
 body{
@@ -19,9 +19,9 @@ body::before{
   opacity:var(--education-pattern-opacity);
   background:
     linear-gradient(135deg,
-      color-mix(in srgb,var(--ui-accent-1,#63e7ff) 82%,var(--ui-text,#17243a)),
-      color-mix(in srgb,var(--ui-accent-2,#ff70cf) 76%,var(--ui-text,#17243a)) 52%,
-      color-mix(in srgb,var(--ui-accent-3,#f59e0b) 72%,var(--ui-text,#17243a)));
+      color-mix(in srgb,var(--ui-accent-1,#63e7ff) 88%,var(--ui-text,#17243a)),
+      color-mix(in srgb,var(--ui-accent-2,#ff70cf) 84%,var(--ui-text,#17243a)) 52%,
+      color-mix(in srgb,var(--ui-accent-3,#f59e0b) 80%,var(--ui-text,#17243a)));
   -webkit-mask-image:url('../education-pattern.svg');
   mask-image:url('../education-pattern.svg');
   -webkit-mask-repeat:repeat;
@@ -36,20 +36,32 @@ body::before{
 
 html[data-neon-theme='academic'],
 html[data-neon-theme='deep-blue']{
-  --education-pattern-opacity:.085;
-  --education-pattern-filter:drop-shadow(0 0 8px color-mix(in srgb,var(--ui-accent-1,#63e7ff) 20%,transparent));
+  --education-pattern-opacity:.14;
+  --education-pattern-filter:contrast(1.08) saturate(1.1) drop-shadow(0 0 9px color-mix(in srgb,var(--ui-accent-1,#63e7ff) 25%,transparent));
 }
 
 html[data-neon-theme='soft-beige'],
 html[data-neon-theme='pastel-study'],
 html[data-neon-theme='mint-calm'],
 html[data-neon-theme='summer-fresh']{
-  --education-pattern-opacity:.052;
-  --education-pattern-filter:saturate(.78) contrast(.92);
+  --education-pattern-opacity:.09;
+  --education-pattern-filter:saturate(.9) contrast(1.06);
 }
 
 body.portal-home::before{
-  --education-pattern-opacity:.075;
+  --education-pattern-opacity:.12;
+}
+
+html[data-neon-theme='academic'] body.portal-home::before,
+html[data-neon-theme='deep-blue'] body.portal-home::before{
+  --education-pattern-opacity:.15;
+}
+
+html[data-neon-theme='soft-beige'] body.portal-home::before,
+html[data-neon-theme='pastel-study'] body.portal-home::before,
+html[data-neon-theme='mint-calm'] body.portal-home::before,
+html[data-neon-theme='summer-fresh'] body.portal-home::before{
+  --education-pattern-opacity:.10;
 }
 
 :is(.exam-runner,.step-practice-card,.learning-modal,.lesson-modal,[role='dialog']){
@@ -58,12 +70,13 @@ body.portal-home::before{
 
 body.neon-reader-lock::before,
 body:has(.success-modal.is-open)::before{
-  opacity:.025;
+  opacity:.035;
 }
 
 @media (max-width:760px){
-  :root{--education-pattern-size:360px;--education-pattern-opacity:.045}
-  html[data-neon-theme='academic'],html[data-neon-theme='deep-blue']{--education-pattern-opacity:.06}
+  :root{--education-pattern-size:360px;--education-pattern-opacity:.075}
+  html[data-neon-theme='academic'],html[data-neon-theme='deep-blue']{--education-pattern-opacity:.10}
+  html[data-neon-theme='soft-beige'],html[data-neon-theme='pastel-study'],html[data-neon-theme='mint-calm'],html[data-neon-theme='summer-fresh']{--education-pattern-opacity:.065}
 }
 
 @media (prefers-reduced-motion:reduce){
