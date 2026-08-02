@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="NEON">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="MASAR NEON">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5be7ff"/><stop offset="0.52" stop-color="#8d75ff"/><stop offset="1" stop-color="#ff67ce"/></linearGradient>
     <radialGradient id="p" cx="25%" cy="20%" r="95%"><stop offset="0" stop-color="#154c88"/><stop offset="0.55" stop-color="#211b69"/><stop offset="1" stop-color="#4b105b"/></radialGradient>
   </defs>
   <rect x="3" y="3" width="58" height="58" rx="15" fill="#07153b" stroke="url(#g)" stroke-width="3"/>
   <rect x="11" y="12" width="42" height="40" rx="11" fill="url(#p)" stroke="url(#g)" stroke-width="2"/>
-  <text x="32" y="37" text-anchor="middle" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="900" letter-spacing="0.5">NEON</text>
+  <text x="32" y="38" text-anchor="middle" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="900" letter-spacing="0.5">MN</text>
 </svg>
