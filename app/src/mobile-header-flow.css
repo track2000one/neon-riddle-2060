@@ -9,7 +9,6 @@
   .site-header,
   .topbar{
     position:relative!important;
-    position:-webkit-relative!important;
     top:auto!important;
     right:auto!important;
     bottom:auto!important;
@@ -19,10 +18,7 @@
     will-change:auto!important;
   }
 
-  .site-header{
-    z-index:20!important;
-  }
-
+  .site-header,
   .topbar{
     z-index:20!important;
   }
@@ -45,13 +41,6 @@
   .site-header,
   .topbar{
     min-height:auto!important;
-  }
-
-  .site-header{
-    padding-top:max(10px,env(safe-area-inset-top))!important;
-  }
-
-  .topbar{
     padding-top:max(10px,env(safe-area-inset-top))!important;
   }
 }
