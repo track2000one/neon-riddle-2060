@@ -1,23 +1,24 @@
 (() => {
   'use strict';
 
-  if (window.__MASAR_NEON_ADMIN_BRAND__) return;
-  window.__MASAR_NEON_ADMIN_BRAND__ = true;
+  if (window.__MSAR_NEON_ADMIN_BRAND__) return;
+  window.__MSAR_NEON_ADMIN_BRAND__ = true;
 
   const BRAND_AR = 'مسار نيون';
-  const BRAND_EN = 'MASAR NEON';
+  const BRAND_EN = 'MSAR NEON';
 
   function replaceStandaloneNeon(value) {
     const hasArabic = /[\u0600-\u06ff]/.test(value);
     const replacement = hasArabic ? BRAND_AR : BRAND_EN;
     return value.replace(/\bNEON\b/g, (match, offset, source) => {
-      const prefix = source.slice(Math.max(0, offset - 6), offset).toUpperCase();
-      return prefix === 'MASAR ' ? match : replacement;
+      const prefix = source.slice(Math.max(0, offset - 7), offset).toUpperCase();
+      return /(?:MASAR|MSAR) $/.test(prefix) ? match : replacement;
     });
   }
 
   function replaceValue(input) {
     let value = String(input ?? '')
+      .replaceAll('MASAR NEON', BRAND_EN)
       .replaceAll('NEON RIDDLE 2060', BRAND_EN)
       .replaceAll('NEON ACADEMY 2060', BRAND_EN)
       .replaceAll('NEON Academy 2060', BRAND_EN)
@@ -68,9 +69,9 @@
   }
 
   function injectBrandStyles() {
-    if (document.getElementById('masarNeonAdminBrandStyles')) return;
+    if (document.getElementById('msarNeonAdminBrandStyles')) return;
     const style = document.createElement('style');
-    style.id = 'masarNeonAdminBrandStyles';
+    style.id = 'msarNeonAdminBrandStyles';
     style.textContent = `
       .admin-brand strong{letter-spacing:.05em!important;white-space:nowrap}
       .admin-brand small{letter-spacing:.12em!important}
