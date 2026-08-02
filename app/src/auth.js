@@ -5,6 +5,7 @@ import './surface-contrast.css';
 import './platform-theme-compat.css';
 import './step-core-theme-compat.css';
 import './navigation-enhancements.js';
+import './tutor-retirement.js';
 import './student-success-bootstrap.js';
 import './success-diagnostic-routing.js';
 import './exam-experience.js';
