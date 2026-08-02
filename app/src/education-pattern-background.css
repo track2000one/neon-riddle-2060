@@ -1,0 +1,74 @@
+/* Transparent educational motif inspired by the approved learning pattern. */
+:root{
+  --education-pattern-size:520px;
+  --education-pattern-opacity:.065;
+  --education-pattern-filter:none;
+}
+
+body{
+  position:relative;
+  isolation:isolate;
+}
+
+.education-pattern-layer{
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  opacity:var(--education-pattern-opacity);
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb,var(--ui-accent-1,#63e7ff) 82%,var(--ui-text,#17243a)),
+      color-mix(in srgb,var(--ui-accent-2,#ff70cf) 76%,var(--ui-text,#17243a)) 52%,
+      color-mix(in srgb,var(--ui-accent-3,#f59e0b) 72%,var(--ui-text,#17243a)));
+  -webkit-mask-image:url('../education-pattern.svg');
+  mask-image:url('../education-pattern.svg');
+  -webkit-mask-repeat:repeat;
+  mask-repeat:repeat;
+  -webkit-mask-size:var(--education-pattern-size) var(--education-pattern-size);
+  mask-size:var(--education-pattern-size) var(--education-pattern-size);
+  -webkit-mask-position:center top;
+  mask-position:center top;
+  filter:var(--education-pattern-filter);
+  transition:opacity .28s ease,filter .28s ease,background .28s ease;
+}
+
+html[data-neon-theme='academic'],
+html[data-neon-theme='deep-blue']{
+  --education-pattern-opacity:.085;
+  --education-pattern-filter:drop-shadow(0 0 8px color-mix(in srgb,var(--ui-accent-1,#63e7ff) 20%,transparent));
+}
+
+html[data-neon-theme='soft-beige'],
+html[data-neon-theme='pastel-study'],
+html[data-neon-theme='mint-calm'],
+html[data-neon-theme='summer-fresh']{
+  --education-pattern-opacity:.052;
+  --education-pattern-filter:saturate(.78) contrast(.92);
+}
+
+.portal-home .education-pattern-layer{
+  --education-pattern-opacity:.075;
+}
+
+:is(.exam-runner,.step-practice-card,.learning-modal,.lesson-modal,[role='dialog']){
+  backdrop-filter:blur(2px);
+}
+
+body.neon-reader-lock .education-pattern-layer,
+body:has(.success-modal.is-open) .education-pattern-layer{
+  opacity:.025;
+}
+
+@media (max-width:760px){
+  :root{--education-pattern-size:360px;--education-pattern-opacity:.045}
+  html[data-neon-theme='academic'],html[data-neon-theme='deep-blue']{--education-pattern-opacity:.06}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .education-pattern-layer{transition:none}
+}
+
+@media print{
+  .education-pattern-layer{display:none!important}
+}
