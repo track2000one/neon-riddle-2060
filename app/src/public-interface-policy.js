@@ -14,6 +14,9 @@ const INTERNAL_NOTE_PATTERNS = [
   /سجل التطوير/i
 ];
 
+const INTERNAL_SELECTORS = '[data-admin-only],.internal-note,.maintenance-note,.developer-note,.source-note,.ms-note';
+const ERROR_SELECTORS = '[role="alert"],.form-message,.exam-load-note,.center-intro p,.error-message,.status-message';
+
 function hasInternalNote(text) {
   return INTERNAL_NOTE_PATTERNS.some(pattern => pattern.test(String(text || '')));
 }
@@ -22,19 +25,22 @@ function hasTechnicalError(text) {
   return TECHNICAL_ERROR_PATTERNS.some(pattern => pattern.test(String(text || '')));
 }
 
-function removeInternalNotes(root = document) {
-  if (!root?.querySelectorAll) return;
+function matchingElements(root, selector) {
+  const elements = [];
+  if (root instanceof Element && root.matches(selector)) elements.push(root);
+  if (root?.querySelectorAll) elements.push(...root.querySelectorAll(selector));
+  return elements;
+}
 
-  root.querySelectorAll('[data-admin-only],.internal-note,.maintenance-note,.developer-note,.source-note,.ms-note').forEach(element => {
+function removeInternalNotes(root = document) {
+  matchingElements(root, INTERNAL_SELECTORS).forEach(element => {
     const text = element.textContent || '';
     if (element.hasAttribute('data-admin-only') || hasInternalNote(text)) element.remove();
   });
 }
 
 function sanitizeTechnicalErrors(root = document) {
-  if (!root?.querySelectorAll) return;
-
-  root.querySelectorAll('[role="alert"],.form-message,.exam-load-note,.center-intro p,.error-message,.status-message').forEach(element => {
+  matchingElements(root, ERROR_SELECTORS).forEach(element => {
     const text = element.textContent || '';
     if (!hasTechnicalError(text)) return;
     element.textContent = 'تعذر إكمال العملية حاليًا. أعد المحاولة بعد قليل.';
@@ -52,7 +58,7 @@ function startPolicy() {
   const observer = new MutationObserver(mutations => {
     mutations.forEach(mutation => {
       mutation.addedNodes.forEach(node => {
-        if (node instanceof HTMLElement) applyPublicInterfacePolicy(node);
+        if (node instanceof Element) applyPublicInterfacePolicy(node);
       });
     });
   });
