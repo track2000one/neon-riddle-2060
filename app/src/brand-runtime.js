@@ -2,21 +2,24 @@ const BRAND_AR = 'مسار نيون';
 const BRAND_EN = 'MASAR NEON';
 
 const exactTextReplacements = new Map([
-  ['NEON ACADEMY 2060', BRAND_EN],
-  ['NEON Academy 2060', BRAND_EN],
-  ['NEON ACADEMY', BRAND_EN],
-  ['NEON Academy', BRAND_EN],
-  ['NEON RIDDLE 2060', BRAND_EN],
-  ['ACADEMY 2060', BRAND_EN],
-  ['ACADEMY', BRAND_EN],
-  ['LEARN • PLAY • BUILD', `${BRAND_EN} • LEARN • PLAY • BUILD`],
+  ['NEON', BRAND_AR],
   ['NEON • LEARN • PLAY • BUILD', `${BRAND_EN} • LEARN • PLAY • BUILD`],
+  ['LEARN • PLAY • BUILD', 'LEARN • PLAY • BUILD'],
+  ['ACADEMY 2060', BRAND_EN],
   ['الغرفة 2060', `غرفة ${BRAND_AR}`],
   ['غرفة NEON', `غرفة ${BRAND_AR}`],
   ['بطولة 2060', `بطولة ${BRAND_AR}`],
   ['بطولة NEON', `بطولة ${BRAND_AR}`],
   ['جارٍ تجهيز NEON…', `جارٍ تجهيز ${BRAND_AR}…`],
   ['جارٍ تجهيز NEON...', `جارٍ تجهيز ${BRAND_AR}...`]
+]);
+
+const phraseReplacements = new Map([
+  ['NEON ACADEMY 2060', BRAND_EN],
+  ['NEON Academy 2060', BRAND_EN],
+  ['NEON ACADEMY', BRAND_EN],
+  ['NEON Academy', BRAND_EN],
+  ['NEON RIDDLE 2060', BRAND_EN]
 ]);
 
 function replaceStandaloneNeon(value) {
@@ -30,10 +33,8 @@ function replaceStandaloneNeon(value) {
 
 function replaceBrandValue(input) {
   let value = String(input ?? '');
-  for (const [from, to] of exactTextReplacements) {
-    if (value === from) return to;
-    value = value.replaceAll(from, to);
-  }
+  if (exactTextReplacements.has(value)) return exactTextReplacements.get(value);
+  for (const [from, to] of phraseReplacements) value = value.replaceAll(from, to);
   return replaceStandaloneNeon(value);
 }
 
@@ -64,16 +65,10 @@ function replaceBrandAttributes(root = document) {
 }
 
 function applyBrand(root = document) {
-  document.title = replaceBrandValue(document.title)
-    .replace(/^MASAR NEON\s*[|—-]\s*/i, `${BRAND_AR} | `)
-    .replace(/^NEON\s*[|—-]\s*/i, `${BRAND_AR} | `);
-
+  document.title = replaceBrandValue(document.title);
   replaceBrandText(root === document ? document.body : root);
   replaceBrandAttributes(root);
-
   document.documentElement.dataset.brand = 'masar-neon';
-  document.documentElement.style.setProperty('--brand-name-ar', `'${BRAND_AR}'`);
-  document.documentElement.style.setProperty('--brand-name-en', `'${BRAND_EN}'`);
 }
 
 applyBrand();
