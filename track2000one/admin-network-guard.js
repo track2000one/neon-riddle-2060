@@ -54,6 +54,14 @@
     document.head.appendChild(reportsScript);
   }
 
+  if (!document.querySelector('script[data-public-interface-audit-loader]')) {
+    const publicAuditScript = document.createElement('script');
+    publicAuditScript.src = 'admin-public-interface-audit.js';
+    publicAuditScript.async = false;
+    publicAuditScript.dataset.publicInterfaceAuditLoader = 'true';
+    document.head.appendChild(publicAuditScript);
+  }
+
   if (!document.querySelector('script[data-firebase-delete-loader]')) {
     const deleteScript = document.createElement('script');
     deleteScript.src = 'firebase-delete-confirm.js';
