@@ -11,6 +11,14 @@ const SUBJECT_LABELS = {
   tahsili: 'التحصيلي العلمي'
 };
 
+const SUBJECT_ID_PATTERN = new RegExp(
+  Object.keys(SUBJECT_LABELS)
+    .sort((first, second) => second.length - first.length)
+    .map(value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|'),
+  'gi'
+);
+
 function profileForCurrentUser() {
   const uid = window.NEON_AUTH_SESSION?.user?.uid;
   if (!uid) return null;
@@ -26,11 +34,11 @@ function routeForTrack(track) {
 }
 
 function normalizeTaskTitle(title) {
-  let value = String(title || '').trim();
-  for (const [key, label] of Object.entries(SUBJECT_LABELS)) {
-    value = value.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), label);
-  }
-  return value.replace(/\s{2,}/g, ' ').trim();
+  return String(title || '')
+    .trim()
+    .replace(SUBJECT_ID_PATTERN, identifier => SUBJECT_LABELS[identifier.toLowerCase()] || identifier)
+    .replace(/\s{2,}/g, ' ')
+    .trim();
 }
 
 function routeFromTaskText(text) {
