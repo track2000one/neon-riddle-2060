@@ -13,11 +13,15 @@
     ['بطولة NEON',`بطولة ${BRAND_AR}`]
   ]);
 
+  function setText(element,value){if(element&&element.textContent!==value)element.textContent=value;}
+
   function ensureHead(){
-    document.title=document.title.replaceAll('MASAR NEON',BRAND_EN).replaceAll('NEON Academy 2060',BRAND_AR).replaceAll('NEON ACADEMY 2060',BRAND_EN).replaceAll(' | NEON',` | ${BRAND_AR}`);
+    const nextTitle=document.title.replaceAll('MASAR NEON',BRAND_EN).replaceAll('NEON Academy 2060',BRAND_AR).replaceAll('NEON ACADEMY 2060',BRAND_EN).replaceAll(' | NEON',` | ${BRAND_AR}`);
+    if(document.title!==nextTitle)document.title=nextTitle;
     const description=document.querySelector('meta[name="description"]');
     if(description){
-      description.content=description.content.replaceAll('MASAR NEON',BRAND_EN).replaceAll('NEON Academy 2060',BRAND_AR).replaceAll('NEON ACADEMY 2060',BRAND_EN).replaceAll('NEON',BRAND_AR);
+      const nextDescription=description.content.replaceAll('MASAR NEON',BRAND_EN).replaceAll('NEON Academy 2060',BRAND_AR).replaceAll('NEON ACADEMY 2060',BRAND_EN).replaceAll('NEON',BRAND_AR);
+      if(description.content!==nextDescription)description.content=nextDescription;
     }
     if(!document.querySelector('link[data-neon-favicon]')){
       const icon=document.createElement('link');icon.rel='icon';icon.type='image/svg+xml';icon.href='favicon.svg';icon.dataset.neonFavicon='true';document.head.appendChild(icon);
@@ -43,14 +47,14 @@
     ensureHead();replaceText(document.body);
     document.querySelectorAll('.brand,.auth-brand').forEach(brand=>{
       const mark=brand.querySelector('.brand-mark');if(mark&&!brand.querySelector('.neon-brand-img'))mark.replaceWith(logoImage());
-      const strong=brand.querySelector('strong');if(strong)strong.textContent=BRAND_AR;
-      const small=brand.querySelector('small');if(small)small.textContent=`${BRAND_EN} • LEARN • PLAY • BUILD`;
+      setText(brand.querySelector('strong'),BRAND_AR);
+      setText(brand.querySelector('small'),`${BRAND_EN} • LEARN • PLAY • BUILD`);
     });
     document.querySelectorAll('.academy-core').forEach(core=>{if(!core.querySelector('.neon-core-logo'))core.replaceChildren(logoImage('neon-core-logo'));});
     document.querySelectorAll('.showcase-orbit .orbit-core').forEach(core=>{if(!core.querySelector('.neon-core-logo'))core.replaceChildren(logoImage('neon-core-logo'));});
     document.querySelectorAll('.mobile-brand').forEach(brand=>{
       const first=brand.firstElementChild;if(first&&!first.classList.contains('neon-brand-img'))first.replaceWith(logoImage());
-      const strong=brand.querySelector('strong');if(strong)strong.textContent=BRAND_AR;
+      setText(brand.querySelector('strong'),BRAND_AR);
     });
   }
 
