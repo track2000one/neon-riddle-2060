@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="none">
+  <defs>
+    <style>.i{stroke:#000;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;fill:none}</style>
+    <g id="book" class="i"><path d="M8 12c22-9 43-5 56 5v55c-14-9-35-12-56-4zM120 12c-22-9-43-5-56 5v55c14-9 35-12 56-4zM64 17v55"/><path d="M16 25c15-5 28-3 39 3M73 28c11-6 24-8 39-3"/></g>
+    <g id="cap" class="i"><path d="m8 28 54-22 54 22-54 22zM28 38v27c21 16 48 16 69 0V38M116 28v38"/><path d="M116 66c-7 7-7 14 0 20 7-6 7-13 0-20z"/></g>
+    <g id="notebook" class="i"><rect x="18" y="8" width="84" height="104" rx="7"/><path d="M18 23H7M18 42H7M18 61H7M18 80H7M18 99H7M39 34h42M39 49h32"/></g>
+    <g id="pencil" class="i"><path d="m18 100 13-4 62-62-9-9-62 62zM84 25l9-9 9 9-9 9M18 100l4-13 9 9z"/></g>
+    <g id="lamp" class="i"><path d="M60 10c-24 0-42 18-42 41 0 17 9 27 20 36 5 4 8 10 8 16h28c0-6 3-12 8-16 11-9 20-19 20-36 0-23-18-41-42-41zM45 114h30M49 103h22M50 52l10 10 12-20M60 62v25"/></g>
+    <g id="globe" class="i"><circle cx="60" cy="54" r="42"/><path d="M18 54h84M60 12c-18 12-25 26-25 42s7 30 25 42M60 12c18 12 25 26 25 42s-7 30-25 42M60 96v15M36 111h48"/></g>
+    <g id="microscope" class="i"><path d="M44 16h23l-4 16H40zM52 32l-8 29c-4 15 8 28 23 28h11M66 20l19 10M87 27l-8 15-17-9M83 88h20M25 108h78M34 108c2-17 14-25 30-25"/><rect x="75" y="68" width="22" height="10" rx="3"/></g>
+    <g id="laptop" class="i"><rect x="16" y="12" width="88" height="72" rx="6"/><path d="M7 98h106l-9 12H16zM60 30v36M38 42c12-9 32-9 44 0M38 55c12 9 32 9 44 0"/></g>
+    <g id="atom" class="i"><ellipse cx="60" cy="58" rx="47" ry="18"/><ellipse cx="60" cy="58" rx="47" ry="18" transform="rotate(60 60 58)"/><ellipse cx="60" cy="58" rx="47" ry="18" transform="rotate(120 60 58)"/><circle cx="60" cy="58" r="5"/></g>
+    <g id="ruler" class="i"><rect x="9" y="42" width="104" height="28" rx="4"/><path d="M24 42v13M40 42v9M56 42v13M72 42v9M88 42v13"/></g>
+  </defs>
+  <g opacity=".95">
+    <g transform="translate(18 14) scale(.62)"><use href="#book"/></g>
+    <g transform="translate(175 22) scale(.52)"><use href="#pencil"/></g>
+    <g transform="translate(315 14) scale(.58)"><use href="#laptop"/></g>
+    <g transform="translate(500 18) scale(.54)"><use href="#lamp"/></g>
+    <g transform="translate(78 145) scale(.58)"><use href="#notebook"/></g>
+    <g transform="translate(235 142) scale(.58)"><use href="#cap"/></g>
+    <g transform="translate(430 144) scale(.6)"><use href="#globe"/></g>
+    <g transform="translate(20 295) scale(.58)"><use href="#atom"/></g>
+    <g transform="translate(170 286) scale(.6)"><use href="#microscope"/></g>
+    <g transform="translate(350 292) scale(.56)"><use href="#book"/></g>
+    <g transform="translate(515 286) scale(.55)"><use href="#notebook"/></g>
+    <g transform="translate(48 450) scale(.62)"><use href="#ruler"/></g>
+    <g transform="translate(205 445) scale(.54)"><use href="#lamp"/></g>
+    <g transform="translate(370 448) scale(.57)"><use href="#laptop"/></g>
+    <g transform="translate(522 450) scale(.52)"><use href="#pencil"/></g>
+  </g>
+</svg>
