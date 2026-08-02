@@ -18,7 +18,7 @@ function loadClassicScript(src, { optional = false, timeout = 12000 } = {}) {
     const script = existing || document.createElement('script');
     const timer = setTimeout(() => {
       if (optional) resolve(false);
-      else reject(new Error(`انتهت مهلة تحميل ${src}`));
+      else reject(new Error(`STEP_LOAD_TIMEOUT:${src}`));
     }, timeout);
 
     script.src = src;
@@ -31,7 +31,7 @@ function loadClassicScript(src, { optional = false, timeout = 12000 } = {}) {
     script.onerror = () => {
       clearTimeout(timer);
       if (optional) resolve(false);
-      else reject(new Error(`تعذر تحميل ${src}`));
+      else reject(new Error(`STEP_LOAD_FAILED:${src}`));
     };
     if (!existing) document.body.appendChild(script);
   });
@@ -56,7 +56,7 @@ function waitForStepInterface(timeout = 10000) {
 
     setTimeout(() => {
       observer.disconnect();
-      reject(new Error('لم تُنشأ واجهة STEP خلال المهلة المحددة'));
+      reject(new Error('STEP_INTERFACE_TIMEOUT'));
     }, timeout);
   });
 }
@@ -67,7 +67,7 @@ async function boot() {
     const session = await ensureAuth();
     renderAccount(session);
 
-    setProgress(22, 'جارٍ تحميل مكتبة الشرح والتدريب…');
+    setProgress(22, 'جارٍ تجهيز الدروس والتدريبات…');
     const masteryDataPromise = loadScriptsInOrder([
       '/legacy/step-book-kafayat-1-lessons.js',
       '/legacy/step-book-kafayat-1-models-1-2.js',
@@ -85,41 +85,39 @@ async function boot() {
     });
 
     await masteryDataPromise;
-    setProgress(48, 'اكتمل تجهيز الدروس والمسارات والأسئلة الموحّدة…');
+    setProgress(48, 'اكتمل تجهيز المحتوى الأساسي…');
 
     await Promise.race([
       dataPromise,
       new Promise(resolve => setTimeout(() => resolve(false), 1400))
     ]);
 
-    setProgress(63, 'جارٍ إنشاء مركز STEP ودمج بنك الأسئلة…');
+    setProgress(63, 'جارٍ إعداد مسار STEP…');
     await loadClassicScript('/legacy/step-academy-runtime.js', { timeout: 10000 });
     await waitForStepInterface();
 
-    setProgress(80, 'جارٍ إنشاء مكتبة الإتقان والتقارير التكيفية…');
+    setProgress(80, 'جارٍ إعداد مكتبة الإتقان…');
     await loadClassicScript('/legacy/step-book-kafayat-1-runtime.js', { timeout: 10000 });
 
-    setProgress(94, 'المسار جاهز. استكمال بنك STEP العام في الخلفية…');
+    setProgress(94, 'المسار جاهز للاستخدام…');
     overlay?.classList.add('hidden');
     document.getElementById('stepIntro')?.remove();
 
     dataPromise.then(loaded => {
       if (loaded) {
         window.dispatchEvent(new CustomEvent('neon-step-data-loaded'));
-        setProgress(100, 'اكتمل تحميل مركز STEP ومكتبة الإتقان.');
-      } else {
-        setProgress(100, 'مكتبة الإتقان جاهزة مع بنك التدريب الاحتياطي.');
       }
+      setProgress(100, 'اكتمل تجهيز مركز STEP.');
     });
   } catch (error) {
-    console.error(error);
+    console.error('NEON STEP boot error:', error);
     overlay?.classList.add('hidden');
     setProgress(100, 'تعذر فتح المسار بالكامل.');
     const root = document.getElementById('stepRoot');
     root?.insertAdjacentHTML('beforeend', `
       <section class="center-intro">
         <h2>تعذر تحميل مركز STEP</h2>
-        <p>${String(error.message || error)}</p>
+        <p>تعذر إكمال تجهيز المسار حاليًا. أعد المحاولة بعد قليل.</p>
         <p><button onclick="location.reload()">إعادة المحاولة</button> أو <a href="/">العودة إلى المراكز</a>.</p>
       </section>
     `);
