@@ -56,7 +56,7 @@
 
   if (!document.querySelector('script[data-public-interface-audit-loader]')) {
     const publicAuditScript = document.createElement('script');
-    publicAuditScript.src = 'admin-public-interface-audit.js';
+    publicAuditScript.src = 'admin-public-interface-audit.js?v=20260802-2';
     publicAuditScript.async = false;
     publicAuditScript.dataset.publicInterfaceAuditLoader = 'true';
     document.head.appendChild(publicAuditScript);
