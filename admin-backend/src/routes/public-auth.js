@@ -105,6 +105,7 @@ router.get('/email-status', async (_req, res) => {
     configured: status.configured,
     reachable: status.reachable,
     provider: status.provider,
+    senderActive: status.senderActive ?? null,
     errorCode: status.errorCode,
     responseCode: status.responseCode,
     checkedAt: new Date().toISOString()
