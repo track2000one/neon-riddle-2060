@@ -1,14 +1,26 @@
 import nodemailer from 'nodemailer';
 
-const brevoApiKey = String(process.env.BREVO_API_KEY || '').trim();
+function normalizeSecret(value) {
+  const trimmed = String(value || '').trim();
+  if (trimmed.length >= 2) {
+    const first = trimmed[0];
+    const last = trimmed[trimmed.length - 1];
+    if ((first === '"' && last === '"') || (first === "'" && last === "'")) {
+      return trimmed.slice(1, -1).trim();
+    }
+  }
+  return trimmed;
+}
+
+const brevoApiKey = normalizeSecret(process.env.BREVO_API_KEY);
 const brevoApiBaseUrl = 'https://api.brevo.com/v3';
 const smtpHost = String(process.env.SMTP_HOST || 'smtp-relay.brevo.com').trim();
 const smtpPort = Number.parseInt(process.env.SMTP_PORT || '587', 10);
 const smtpUser = String(process.env.SMTP_USER || '').trim();
-const smtpPass = String(process.env.SMTP_PASS || '').trim();
-const fromEmail = String(process.env.EMAIL_FROM || '').trim();
+const smtpPass = normalizeSecret(process.env.SMTP_PASS);
+const fromEmail = String(process.env.EMAIL_FROM || '').trim().toLowerCase();
 const fromName = String(process.env.EMAIL_FROM_NAME || 'NEON Academy 2060').trim();
-const replyTo = String(process.env.EMAIL_REPLY_TO || '').trim();
+const replyTo = String(process.env.EMAIL_REPLY_TO || '').trim().toLowerCase();
 const smtpSecure = String(process.env.SMTP_SECURE || '').trim()
   ? String(process.env.SMTP_SECURE).toLowerCase() === 'true'
   : smtpPort === 465;
@@ -71,36 +83,112 @@ function createDeliveryError(message, code, responseCode = null) {
   return error;
 }
 
+function brevoErrorCode(result, status) {
+  const rawCode = String(result?.code || '').trim();
+  if (!rawCode) return `BREVO_API_${status}`;
+  return `BREVO_API_${rawCode.toUpperCase().replace(/[^A-Z0-9]+/g, '_')}`;
+}
+
+async function brevoRequest(path, { method = 'GET', body, timeoutMs = 12_000 } = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(`${brevoApiBaseUrl}${path}`, {
+      method,
+      headers: {
+        accept: 'application/json',
+        'api-key': brevoApiKey,
+        ...(body ? { 'content-type': 'application/json' } : {})
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      signal: controller.signal
+    });
+
+    const result = await readJsonSafely(response);
+    return { response, result };
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw createDeliveryError('Brevo API request timed out.', 'BREVO_API_TIMEOUT');
+    }
+    if (error instanceof TypeError) {
+      throw createDeliveryError('Brevo API network request failed.', 'BREVO_API_NETWORK_ERROR');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export function isEmailDeliveryConfigured() {
   return isBrevoApiConfigured() || isSmtpConfigured();
 }
 
 export async function verifyEmailDelivery() {
   if (isBrevoApiConfigured()) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 12_000);
-
     try {
-      const response = await fetch(`${brevoApiBaseUrl}/account`, {
-        method: 'GET',
-        headers: {
-          accept: 'application/json',
-          'api-key': brevoApiKey
-        },
-        signal: controller.signal
-      });
+      const accountCheck = await brevoRequest('/account');
+      if (!accountCheck.response.ok) {
+        return {
+          configured: true,
+          reachable: false,
+          provider: 'firebase-default',
+          senderActive: false,
+          errorCode: `BREVO_API_${accountCheck.response.status}`,
+          responseCode: accountCheck.response.status
+        };
+      }
+
+      const senderCheck = await brevoRequest('/senders');
+      if (!senderCheck.response.ok) {
+        return {
+          configured: true,
+          reachable: false,
+          provider: 'firebase-default',
+          senderActive: false,
+          errorCode: `BREVO_SENDERS_${senderCheck.response.status}`,
+          responseCode: senderCheck.response.status
+        };
+      }
+
+      const senders = Array.isArray(senderCheck.result?.senders) ? senderCheck.result.senders : [];
+      const configuredSender = senders.find(sender =>
+        String(sender?.email || '').trim().toLowerCase() === fromEmail
+      );
+
+      if (!configuredSender) {
+        return {
+          configured: true,
+          reachable: false,
+          provider: 'firebase-default',
+          senderActive: false,
+          errorCode: 'BREVO_SENDER_NOT_FOUND',
+          responseCode: 200
+        };
+      }
+
+      if (configuredSender.active !== true) {
+        return {
+          configured: true,
+          reachable: false,
+          provider: 'firebase-default',
+          senderActive: false,
+          errorCode: 'BREVO_SENDER_INACTIVE',
+          responseCode: 200
+        };
+      }
 
       return {
         configured: true,
-        reachable: response.ok,
-        provider: response.ok ? 'brevo-api' : 'firebase-default',
-        errorCode: response.ok ? null : `BREVO_API_${response.status}`,
-        responseCode: response.status
+        reachable: true,
+        provider: 'brevo-api',
+        senderActive: true,
+        errorCode: null,
+        responseCode: 200
       };
     } catch (error) {
-      const timedOut = error?.name === 'AbortError';
       console.error('Brevo API verification failed.', {
-        code: timedOut ? 'BREVO_API_TIMEOUT' : (error?.code || 'BREVO_API_NETWORK_ERROR'),
+        code: error?.code || 'BREVO_API_NETWORK_ERROR',
         timestamp: new Date().toISOString()
       });
 
@@ -108,11 +196,10 @@ export async function verifyEmailDelivery() {
         configured: true,
         reachable: false,
         provider: 'firebase-default',
-        errorCode: timedOut ? 'BREVO_API_TIMEOUT' : 'BREVO_API_NETWORK_ERROR',
-        responseCode: null
+        senderActive: false,
+        errorCode: error?.code || 'BREVO_API_NETWORK_ERROR',
+        responseCode: error?.responseCode || null
       };
-    } finally {
-      clearTimeout(timer);
     }
   }
 
@@ -123,6 +210,7 @@ export async function verifyEmailDelivery() {
         configured: true,
         reachable: true,
         provider: 'smtp',
+        senderActive: true,
         errorCode: null,
         responseCode: null
       };
@@ -138,6 +226,7 @@ export async function verifyEmailDelivery() {
         configured: true,
         reachable: false,
         provider: 'firebase-default',
+        senderActive: false,
         errorCode: String(error?.code || 'SMTP_VERIFY_FAILED'),
         responseCode: Number.isInteger(error?.responseCode) ? error.responseCode : null
       };
@@ -148,98 +237,84 @@ export async function verifyEmailDelivery() {
     configured: false,
     reachable: false,
     provider: 'firebase-default',
+    senderActive: false,
     errorCode: 'EMAIL_SERVICE_NOT_CONFIGURED',
     responseCode: null
   };
 }
 
-function buildArabicMessage({ displayName, resetLink }) {
-  const safeName = escapeHtml(displayName || 'الطالب');
+function buildMessage({ displayName, resetLink, language }) {
+  const isEnglish = language === 'en';
+  const safeName = escapeHtml(displayName || (isEnglish ? 'Student' : 'الطالب'));
   const safeLink = escapeHtml(resetLink);
-  const subject = 'إعادة تعيين كلمة المرور | NEON Academy 2060';
+  const subject = isEnglish
+    ? 'Reset your password | NEON Academy 2060'
+    : 'إعادة تعيين كلمة المرور | NEON Academy 2060';
 
-  const text = [
-    `مرحبًا ${displayName || 'بالطالب'}،`,
-    '',
-    'تلقينا طلبًا لإعادة تعيين كلمة المرور لحسابك في NEON Academy 2060.',
-    'افتح الرابط التالي لإنشاء كلمة مرور جديدة:',
-    resetLink,
-    '',
-    'إذا لم تطلب إعادة تعيين كلمة المرور، فتجاهل هذه الرسالة ولن يتغير حسابك.',
-    '',
-    'فريق NEON Academy 2060'
-  ].join('\n');
+  const text = isEnglish
+    ? [
+        `Hello ${displayName || 'Student'},`,
+        '',
+        'We received a request to reset the password for your NEON Academy 2060 account.',
+        'Open the following link to create a new password:',
+        resetLink,
+        '',
+        'If you did not request this change, ignore this email and your account will remain unchanged.',
+        '',
+        'NEON Academy 2060 Team'
+      ].join('\n')
+    : [
+        `مرحبًا ${displayName || 'بالطالب'}،`,
+        '',
+        'تلقينا طلبًا لإعادة تعيين كلمة المرور لحسابك في NEON Academy 2060.',
+        'افتح الرابط التالي لإنشاء كلمة مرور جديدة:',
+        resetLink,
+        '',
+        'إذا لم تطلب إعادة تعيين كلمة المرور، فتجاهل هذه الرسالة ولن يتغير حسابك.',
+        '',
+        'فريق NEON Academy 2060'
+      ].join('\n');
+
+  const direction = isEnglish ? 'ltr' : 'rtl';
+  const fontFamily = isEnglish ? 'Arial,sans-serif' : 'Tahoma,Arial,sans-serif';
+  const heading = isEnglish ? 'Reset your password' : 'إعادة تعيين كلمة المرور';
+  const greeting = isEnglish ? 'Hello' : 'مرحبًا';
+  const intro = isEnglish
+    ? 'We received a request to reset your account password. Use the button below to create a new password:'
+    : 'تلقينا طلبًا لإعادة تعيين كلمة المرور لحسابك. اضغط الزر التالي لإنشاء كلمة مرور جديدة:';
+  const buttonText = isEnglish ? 'Create a new password' : 'تعيين كلمة مرور جديدة';
+  const copyHint = isEnglish
+    ? 'If the button does not open, copy and paste this link into your browser:'
+    : 'عند تعذر فتح الزر، انسخ الرابط التالي والصقه في المتصفح:';
+  const ignoreText = isEnglish
+    ? 'If you did not request this change, ignore this email and your account will remain unchanged.'
+    : 'إذا لم تطلب إعادة تعيين كلمة المرور، فتجاهل الرسالة ولن يتغير حسابك.';
+  const footer = isEnglish
+    ? 'Automated security message from NEON Academy 2060 — never share your password.'
+    : 'رسالة أمنية آلية من NEON Academy 2060 — لا ترسل كلمة مرورك لأي شخص.';
 
   const html = `<!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="${isEnglish ? 'en' : 'ar'}" dir="${direction}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;background:#07101f;font-family:Tahoma,Arial,sans-serif;color:#f8fbff">
+<body style="margin:0;background:#07101f;font-family:${fontFamily};color:#f8fbff">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#07101f;padding:28px 12px">
     <tr><td align="center">
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#101a36;border:1px solid #29375e;border-radius:22px;overflow:hidden">
         <tr><td style="padding:28px 32px;background:linear-gradient(135deg,#58d7f4,#9869ff);color:#07101f">
           <div style="font-size:13px;font-weight:800;letter-spacing:1px">NEON ACADEMY 2060</div>
-          <h1 style="margin:8px 0 0;font-size:28px">إعادة تعيين كلمة المرور</h1>
+          <h1 style="margin:8px 0 0;font-size:28px">${heading}</h1>
         </td></tr>
         <tr><td style="padding:32px;line-height:1.9;color:#dce5ff">
-          <p style="margin:0 0 16px;font-size:18px">مرحبًا <strong style="color:#ffffff">${safeName}</strong>،</p>
-          <p style="margin:0 0 20px">تلقينا طلبًا لإعادة تعيين كلمة المرور لحسابك. اضغط الزر التالي لإنشاء كلمة مرور جديدة:</p>
+          <p style="margin:0 0 16px;font-size:18px">${greeting} <strong style="color:#ffffff">${safeName}</strong>،</p>
+          <p style="margin:0 0 20px">${intro}</p>
           <p style="margin:26px 0;text-align:center">
-            <a href="${safeLink}" style="display:inline-block;padding:14px 28px;border-radius:13px;background:#67dcf4;color:#07101f;text-decoration:none;font-weight:800">تعيين كلمة مرور جديدة</a>
+            <a href="${safeLink}" style="display:inline-block;padding:14px 28px;border-radius:13px;background:#67dcf4;color:#07101f;text-decoration:none;font-weight:800">${buttonText}</a>
           </p>
-          <p style="margin:20px 0 8px;font-size:13px;color:#aebada">عند تعذر فتح الزر، انسخ الرابط التالي والصقه في المتصفح:</p>
+          <p style="margin:20px 0 8px;font-size:13px;color:#aebada">${copyHint}</p>
           <p style="margin:0;padding:12px;border-radius:10px;background:#0a132b;direction:ltr;text-align:left;word-break:break-all;font-size:12px;color:#80e7ff">${safeLink}</p>
-          <p style="margin:24px 0 0;color:#b7c3e3">إذا لم تطلب إعادة تعيين كلمة المرور، فتجاهل الرسالة ولن يتغير حسابك.</p>
+          <p style="margin:24px 0 0;color:#b7c3e3">${ignoreText}</p>
         </td></tr>
-        <tr><td style="padding:18px 32px;border-top:1px solid #29375e;color:#8997bd;font-size:12px">رسالة أمنية آلية من NEON Academy 2060 — لا ترسل كلمة مرورك لأي شخص.</td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
-
-  return { subject, text, html };
-}
-
-function buildEnglishMessage({ displayName, resetLink }) {
-  const safeName = escapeHtml(displayName || 'Student');
-  const safeLink = escapeHtml(resetLink);
-  const subject = 'Reset your password | NEON Academy 2060';
-
-  const text = [
-    `Hello ${displayName || 'Student'},`,
-    '',
-    'We received a request to reset the password for your NEON Academy 2060 account.',
-    'Open the following link to create a new password:',
-    resetLink,
-    '',
-    'If you did not request this change, ignore this email and your account will remain unchanged.',
-    '',
-    'NEON Academy 2060 Team'
-  ].join('\n');
-
-  const html = `<!doctype html>
-<html lang="en" dir="ltr">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;background:#07101f;font-family:Arial,sans-serif;color:#f8fbff">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#07101f;padding:28px 12px">
-    <tr><td align="center">
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#101a36;border:1px solid #29375e;border-radius:22px;overflow:hidden">
-        <tr><td style="padding:28px 32px;background:linear-gradient(135deg,#58d7f4,#9869ff);color:#07101f">
-          <div style="font-size:13px;font-weight:800;letter-spacing:1px">NEON ACADEMY 2060</div>
-          <h1 style="margin:8px 0 0;font-size:28px">Reset your password</h1>
-        </td></tr>
-        <tr><td style="padding:32px;line-height:1.8;color:#dce5ff">
-          <p style="margin:0 0 16px;font-size:18px">Hello <strong style="color:#ffffff">${safeName}</strong>,</p>
-          <p style="margin:0 0 20px">We received a request to reset your account password. Use the button below to create a new password:</p>
-          <p style="margin:26px 0;text-align:center">
-            <a href="${safeLink}" style="display:inline-block;padding:14px 28px;border-radius:13px;background:#67dcf4;color:#07101f;text-decoration:none;font-weight:800">Create a new password</a>
-          </p>
-          <p style="margin:20px 0 8px;font-size:13px;color:#aebada">If the button does not open, copy and paste this link into your browser:</p>
-          <p style="margin:0;padding:12px;border-radius:10px;background:#0a132b;word-break:break-all;font-size:12px;color:#80e7ff">${safeLink}</p>
-          <p style="margin:24px 0 0;color:#b7c3e3">If you did not request this change, ignore the email and your account will remain unchanged.</p>
-        </td></tr>
-        <tr><td style="padding:18px 32px;border-top:1px solid #29375e;color:#8997bd;font-size:12px">Automated security message from NEON Academy 2060 — never share your password.</td></tr>
+        <tr><td style="padding:18px 32px;border-top:1px solid #29375e;color:#8997bd;font-size:12px">${footer}</td></tr>
       </table>
     </td></tr>
   </table>
@@ -250,59 +325,39 @@ function buildEnglishMessage({ displayName, resetLink }) {
 }
 
 async function sendViaBrevoApi({ to, displayName, content }) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 18_000);
-
-  try {
-    const payload = {
-      sender: { name: fromName, email: fromEmail },
-      to: [{ email: to, name: displayName || undefined }],
-      subject: content.subject,
-      textContent: content.text,
-      htmlContent: content.html,
-      headers: {
-        'X-Entity-Ref-ID': `neon-reset-${Date.now()}`,
-        'Auto-Submitted': 'auto-generated'
-      }
-    };
-
-    if (replyTo) payload.replyTo = { email: replyTo };
-
-    const response = await fetch(`${brevoApiBaseUrl}/smtp/email`, {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-        'api-key': brevoApiKey
-      },
-      body: JSON.stringify(payload),
-      signal: controller.signal
-    });
-
-    const result = await readJsonSafely(response);
-    if (!response.ok) {
-      throw createDeliveryError(
-        result.message || `Brevo API rejected the message with status ${response.status}.`,
-        result.code || `BREVO_API_${response.status}`,
-        response.status
-      );
+  const payload = {
+    sender: { name: fromName, email: fromEmail },
+    to: [{ email: to, name: displayName || undefined }],
+    subject: content.subject,
+    htmlContent: content.html,
+    tags: ['password-reset', 'security'],
+    headers: {
+      'X-Entity-Ref-ID': `neon-reset-${Date.now()}`,
+      'X-NEON-Message-Type': 'password-reset',
+      'Auto-Submitted': 'auto-generated'
     }
+  };
 
-    return {
-      provider: 'brevo-api',
-      messageId: result.messageId || null
-    };
-  } catch (error) {
-    if (error?.name === 'AbortError') {
-      throw createDeliveryError('Brevo API request timed out.', 'BREVO_API_TIMEOUT');
-    }
-    if (error instanceof TypeError) {
-      throw createDeliveryError('Brevo API network request failed.', 'BREVO_API_NETWORK_ERROR');
-    }
-    throw error;
-  } finally {
-    clearTimeout(timer);
+  if (replyTo) payload.replyTo = { email: replyTo };
+
+  const { response, result } = await brevoRequest('/smtp/email', {
+    method: 'POST',
+    body: payload,
+    timeoutMs: 18_000
+  });
+
+  if (!response.ok) {
+    throw createDeliveryError(
+      result.message || `Brevo API rejected the message with status ${response.status}.`,
+      brevoErrorCode(result, response.status),
+      response.status
+    );
   }
+
+  return {
+    provider: 'brevo-api',
+    messageId: result.messageId || null
+  };
 }
 
 async function sendViaSmtp({ to, content }) {
@@ -315,6 +370,7 @@ async function sendViaSmtp({ to, content }) {
     html: content.html,
     headers: {
       'X-Entity-Ref-ID': `neon-reset-${Date.now()}`,
+      'X-NEON-Message-Type': 'password-reset',
       'Auto-Submitted': 'auto-generated'
     }
   });
@@ -333,9 +389,7 @@ export async function sendPasswordResetMessage({ to, displayName, resetLink, lan
     throw error;
   }
 
-  const content = language === 'en'
-    ? buildEnglishMessage({ displayName, resetLink })
-    : buildArabicMessage({ displayName, resetLink });
+  const content = buildMessage({ displayName, resetLink, language });
 
   if (isBrevoApiConfigured()) {
     return sendViaBrevoApi({ to, displayName, content });
