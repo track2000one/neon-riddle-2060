@@ -41,7 +41,7 @@
   color:#c5d0e2!important;
 }
 
-/* Icons orbit around the NEON logo while remaining upright. */
+/* Smooth orbital motion around the MSAR NEON mark. */
 .portal-home .hero-visual{
   --neon-orbit-radius:170px;
 }
@@ -52,19 +52,35 @@
   right:auto!important;
   bottom:auto!important;
   margin:-24px 0 0 -24px;
-  transform-origin:center;
-  animation:neon-logo-orbit 24s linear infinite;
+  transform-origin:center center;
+  animation:neon-logo-orbit 20s linear infinite!important;
   will-change:transform;
+  backface-visibility:hidden;
+  transform-style:preserve-3d;
+  z-index:4;
 }
 
-.portal-home .hero-visual .node-a{animation-delay:0s}
-.portal-home .hero-visual .node-b{animation-delay:-6s}
-.portal-home .hero-visual .node-c{animation-delay:-12s}
-.portal-home .hero-visual .node-d{animation-delay:-18s}
+.portal-home .hero-visual .node-a{animation-delay:0s!important}
+.portal-home .hero-visual .node-b{animation-delay:-5s!important}
+.portal-home .hero-visual .node-c{animation-delay:-10s!important}
+.portal-home .hero-visual .node-d{animation-delay:-15s!important}
 
 @keyframes neon-logo-orbit{
-  from{transform:rotate(0deg) translateX(var(--neon-orbit-radius)) rotate(0deg)}
-  to{transform:rotate(360deg) translateX(var(--neon-orbit-radius)) rotate(-360deg)}
+  0%{transform:rotate(0deg) translate3d(var(--neon-orbit-radius),0,0) rotate(0deg)}
+  25%{transform:rotate(90deg) translate3d(var(--neon-orbit-radius),0,0) rotate(-90deg)}
+  50%{transform:rotate(180deg) translate3d(var(--neon-orbit-radius),0,0) rotate(-180deg)}
+  75%{transform:rotate(270deg) translate3d(var(--neon-orbit-radius),0,0) rotate(-270deg)}
+  100%{transform:rotate(360deg) translate3d(var(--neon-orbit-radius),0,0) rotate(-360deg)}
+}
+
+/* A subtle pulse makes the orbital path feel alive without adding JS work. */
+.portal-home .hero-visual .orbit-outer{
+  animation:neon-orbit-breathe 4.8s ease-in-out infinite;
+}
+
+@keyframes neon-orbit-breathe{
+  0%,100%{opacity:.72;box-shadow:0 0 0 rgba(99,231,255,0)}
+  50%{opacity:1;box-shadow:0 0 24px rgba(99,231,255,.08)}
 }
 
 @media(max-width:1120px){
@@ -72,7 +88,7 @@
     font-size:clamp(30px,4.1vw,43px);
   }
   .portal-home .hero-visual{
-    --neon-orbit-radius:148px;
+    --neon-orbit-radius:166px;
   }
 }
 
@@ -82,7 +98,7 @@
     font-size:clamp(30px,6vw,44px);
   }
   .portal-home .hero-visual{
-    --neon-orbit-radius:136px;
+    --neon-orbit-radius:158px;
   }
 }
 
@@ -105,7 +121,7 @@
     line-height:1.3;
   }
   .portal-home .hero-visual{
-    --neon-orbit-radius:112px;
+    --neon-orbit-radius:134px;
   }
   .portal-home .hero-visual .floating-node{
     width:42px;
@@ -118,10 +134,9 @@
 
 @media(prefers-reduced-motion:reduce){
   .portal-home .hero-visual .floating-node{
-    animation:none;
+    animation-duration:60s!important;
   }
-  .portal-home .hero-visual .node-a{transform:translateX(var(--neon-orbit-radius))}
-  .portal-home .hero-visual .node-b{transform:translateY(var(--neon-orbit-radius))}
-  .portal-home .hero-visual .node-c{transform:translateX(calc(var(--neon-orbit-radius) * -1))}
-  .portal-home .hero-visual .node-d{transform:translateY(calc(var(--neon-orbit-radius) * -1))}
+  .portal-home .hero-visual .orbit-outer{
+    animation-duration:12s;
+  }
 }
