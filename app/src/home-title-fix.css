@@ -41,7 +41,7 @@
   color:#c5d0e2!important;
 }
 
-/* MSAR NEON orbital system: four nodes remain exactly 90 degrees apart. */
+/* MSAR NEON orbital system: every node keeps an exact 90-degree separation. */
 .portal-home .hero-visual{
   --neon-orbit-radius:170px;
   isolation:isolate;
@@ -52,6 +52,11 @@
 }
 
 .portal-home .hero-visual .floating-node{
+  --orbit-start:0deg;
+  --orbit-end:360deg;
+  --orbit-counter-start:0deg;
+  --orbit-counter-end:-360deg;
+  --node-glow-delay:0s;
   top:50%!important;
   left:50%!important;
   right:auto!important;
@@ -62,7 +67,7 @@
   transform-origin:center center;
   animation:
     neon-logo-orbit 24s linear infinite,
-    neon-node-glow 4.8s ease-in-out infinite;
+    neon-node-glow 4.8s ease-in-out infinite var(--node-glow-delay);
   will-change:transform,box-shadow;
   backface-visibility:hidden;
   transform-style:preserve-3d;
@@ -75,18 +80,53 @@
     0 0 16px rgba(93,190,255,.07);
 }
 
-/* Initial placement mirrors the approved visual: brain top, target right, chart bottom, laptop left. */
-.portal-home .hero-visual .node-a{animation-delay:0s,0s!important}
-.portal-home .hero-visual .node-b{animation-delay:-6s,-1.2s!important}
-.portal-home .hero-visual .node-c{animation-delay:-18s,-2.4s!important}
-.portal-home .hero-visual .node-d{animation-delay:-12s,-3.6s!important}
+/* HTML mapping: node-a target, node-b chart, node-c brain, node-d laptop.
+   0deg = right, 90deg = bottom, 180deg = left, 270deg = top. */
+.portal-home .hero-visual .node-a{
+  --orbit-start:0deg;
+  --orbit-end:360deg;
+  --orbit-counter-start:0deg;
+  --orbit-counter-end:-360deg;
+  --node-glow-delay:0s;
+}
+
+.portal-home .hero-visual .node-b{
+  --orbit-start:90deg;
+  --orbit-end:450deg;
+  --orbit-counter-start:-90deg;
+  --orbit-counter-end:-450deg;
+  --node-glow-delay:-1.2s;
+}
+
+.portal-home .hero-visual .node-c{
+  --orbit-start:270deg;
+  --orbit-end:630deg;
+  --orbit-counter-start:-270deg;
+  --orbit-counter-end:-630deg;
+  --node-glow-delay:-2.4s;
+}
+
+.portal-home .hero-visual .node-d{
+  --orbit-start:180deg;
+  --orbit-end:540deg;
+  --orbit-counter-start:-180deg;
+  --orbit-counter-end:-540deg;
+  --node-glow-delay:-3.6s;
+}
 
 @keyframes neon-logo-orbit{
-  0%{transform:rotate(0deg) translate3d(var(--neon-orbit-radius),0,0) rotate(0deg)}
-  25%{transform:rotate(90deg) translate3d(var(--neon-orbit-radius),0,0) rotate(-90deg)}
-  50%{transform:rotate(180deg) translate3d(var(--neon-orbit-radius),0,0) rotate(-180deg)}
-  75%{transform:rotate(270deg) translate3d(var(--neon-orbit-radius),0,0) rotate(-270deg)}
-  100%{transform:rotate(360deg) translate3d(var(--neon-orbit-radius),0,0) rotate(-360deg)}
+  from{
+    transform:
+      rotate(var(--orbit-start))
+      translate3d(var(--neon-orbit-radius),0,0)
+      rotate(var(--orbit-counter-start));
+  }
+  to{
+    transform:
+      rotate(var(--orbit-end))
+      translate3d(var(--neon-orbit-radius),0,0)
+      rotate(var(--orbit-counter-end));
+  }
 }
 
 @keyframes neon-node-glow{
