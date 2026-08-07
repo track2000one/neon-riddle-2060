@@ -4,8 +4,19 @@ import { createBrotliCompress, createGzip, constants as zlibConstants } from 'no
 
 const root = resolve(process.cwd(), 'dist');
 const redirects = new Map([
+  ['/legacy', '/'],
+  ['/legacy/', '/'],
+  ['/legacy/index.html', '/'],
   ['/legacy/games.html', '/games'],
   ['/legacy/learning.html', '/learning']
+]);
+const criticalAuthFiles = new Set([
+  '/legacy/auth.html',
+  '/legacy/auth.js',
+  '/legacy/auth-portal-routing.js',
+  '/legacy/auth-phone.js',
+  '/legacy/auth-language-bridge.js',
+  '/legacy/firebase-config.js'
 ]);
 const mimeTypes = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -37,6 +48,7 @@ function resolveFile(urlPath) {
 
 function cacheControl(filePath) {
   const relative = filePath.slice(root.length).replaceAll('\\', '/');
+  if (criticalAuthFiles.has(relative)) return 'no-store, no-cache, must-revalidate, max-age=0';
   if (relative.startsWith('/assets/')) return 'public, max-age=31536000, immutable';
   if (relative.startsWith('/data/exams/')) return 'public, max-age=86400, stale-while-revalidate=604800';
   if (relative.startsWith('/legacy/')) return 'public, max-age=3600, stale-while-revalidate=86400';
@@ -52,7 +64,7 @@ export function handleStatic(req, res, requestPath) {
   }
   const destination = redirects.get(requestPath);
   if (destination) {
-    res.writeHead(308, { Location: destination, 'Cache-Control': 'no-store' });
+    res.writeHead(308, { Location: destination, 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0', Pragma: 'no-cache', Expires: '0' });
     res.end();
     return;
   }
@@ -66,20 +78,25 @@ export function handleStatic(req, res, requestPath) {
   const stats = statSync(filePath);
   const extension = extname(filePath).toLowerCase();
   const type = mimeTypes[extension] || 'application/octet-stream';
+  const policy = cacheControl(filePath);
   const etag = `W/\"${stats.size}-${Math.floor(stats.mtimeMs)}\"`;
-  if (req.headers['if-none-match'] === etag) {
-    res.writeHead(304, { ETag: etag, 'Cache-Control': cacheControl(filePath) });
+  if (!policy.includes('no-store') && req.headers['if-none-match'] === etag) {
+    res.writeHead(304, { ETag: etag, 'Cache-Control': policy });
     res.end();
     return;
   }
   const headers = {
     'Content-Type': type,
-    'Cache-Control': cacheControl(filePath),
+    'Cache-Control': policy,
     ETag: etag,
     'Last-Modified': stats.mtime.toUTCString(),
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'strict-origin-when-cross-origin'
   };
+  if (policy.includes('no-store')) {
+    headers.Pragma = 'no-cache';
+    headers.Expires = '0';
+  }
   if (req.method === 'HEAD') {
     res.writeHead(200, { ...headers, 'Content-Length': stats.size });
     res.end();
