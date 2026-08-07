@@ -41,9 +41,14 @@
   color:#c5d0e2!important;
 }
 
-/* Smooth orbital motion around the MSAR NEON mark. */
+/* MSAR NEON orbital system: four nodes remain exactly 90 degrees apart. */
 .portal-home .hero-visual{
   --neon-orbit-radius:170px;
+  isolation:isolate;
+}
+
+.portal-home .hero-visual .academy-core{
+  z-index:5;
 }
 
 .portal-home .hero-visual .floating-node{
@@ -51,19 +56,30 @@
   left:50%!important;
   right:auto!important;
   bottom:auto!important;
-  margin:-24px 0 0 -24px;
+  width:50px;
+  height:50px;
+  margin:-25px 0 0 -25px;
   transform-origin:center center;
-  animation:neon-logo-orbit 20s linear infinite!important;
-  will-change:transform;
+  animation:
+    neon-logo-orbit 24s linear infinite,
+    neon-node-glow 4.8s ease-in-out infinite;
+  will-change:transform,box-shadow;
   backface-visibility:hidden;
   transform-style:preserve-3d;
-  z-index:4;
+  z-index:6;
+  border-color:rgba(130,170,255,.28);
+  background:linear-gradient(145deg,rgba(7,18,48,.96),rgba(9,12,40,.94));
+  box-shadow:
+    0 10px 28px rgba(0,0,0,.24),
+    0 0 0 1px rgba(105,170,255,.06),
+    0 0 16px rgba(93,190,255,.07);
 }
 
-.portal-home .hero-visual .node-a{animation-delay:0s!important}
-.portal-home .hero-visual .node-b{animation-delay:-5s!important}
-.portal-home .hero-visual .node-c{animation-delay:-10s!important}
-.portal-home .hero-visual .node-d{animation-delay:-15s!important}
+/* Initial placement mirrors the approved visual: brain top, target right, chart bottom, laptop left. */
+.portal-home .hero-visual .node-a{animation-delay:0s,0s!important}
+.portal-home .hero-visual .node-b{animation-delay:-6s,-1.2s!important}
+.portal-home .hero-visual .node-c{animation-delay:-18s,-2.4s!important}
+.portal-home .hero-visual .node-d{animation-delay:-12s,-3.6s!important}
 
 @keyframes neon-logo-orbit{
   0%{transform:rotate(0deg) translate3d(var(--neon-orbit-radius),0,0) rotate(0deg)}
@@ -73,14 +89,79 @@
   100%{transform:rotate(360deg) translate3d(var(--neon-orbit-radius),0,0) rotate(-360deg)}
 }
 
-/* A subtle pulse makes the orbital path feel alive without adding JS work. */
-.portal-home .hero-visual .orbit-outer{
-  animation:neon-orbit-breathe 4.8s ease-in-out infinite;
+@keyframes neon-node-glow{
+  0%,100%{
+    border-color:rgba(130,170,255,.22);
+    box-shadow:
+      0 10px 28px rgba(0,0,0,.24),
+      0 0 0 1px rgba(105,170,255,.05),
+      0 0 12px rgba(93,190,255,.05);
+  }
+  50%{
+    border-color:rgba(141,190,255,.36);
+    box-shadow:
+      0 12px 30px rgba(0,0,0,.26),
+      0 0 0 1px rgba(120,190,255,.09),
+      0 0 20px rgba(94,206,255,.12),
+      0 0 30px rgba(190,101,255,.05);
+  }
 }
 
-@keyframes neon-orbit-breathe{
-  0%,100%{opacity:.72;box-shadow:0 0 0 rgba(99,231,255,0)}
-  50%{opacity:1;box-shadow:0 0 24px rgba(99,231,255,.08)}
+/* Soft independent light pulses on all orbital lines. */
+.portal-home .hero-visual .academy-orbit{
+  will-change:opacity,filter,box-shadow;
+}
+
+.portal-home .hero-visual .orbit-outer{
+  border-color:rgba(116,170,235,.28);
+  animation:neon-orbit-glow-outer 5.8s ease-in-out infinite;
+}
+
+.portal-home .hero-visual .orbit-middle{
+  border-color:rgba(128,165,240,.27);
+  animation:neon-orbit-glow-middle 4.9s ease-in-out infinite -1.6s;
+}
+
+.portal-home .hero-visual .orbit-inner{
+  border-color:rgba(132,184,255,.24);
+  animation:neon-orbit-glow-inner 4.2s ease-in-out infinite -2.2s;
+}
+
+@keyframes neon-orbit-glow-outer{
+  0%,100%{
+    opacity:.58;
+    filter:drop-shadow(0 0 1px rgba(97,194,255,.04));
+    box-shadow:0 0 0 rgba(99,231,255,0);
+  }
+  50%{
+    opacity:.9;
+    filter:drop-shadow(0 0 5px rgba(102,203,255,.12));
+    box-shadow:0 0 24px rgba(92,191,255,.06);
+  }
+}
+
+@keyframes neon-orbit-glow-middle{
+  0%,100%{
+    opacity:.48;
+    filter:drop-shadow(0 0 1px rgba(146,131,255,.04));
+  }
+  50%{
+    opacity:.82;
+    filter:drop-shadow(0 0 6px rgba(131,172,255,.13));
+  }
+}
+
+@keyframes neon-orbit-glow-inner{
+  0%,100%{
+    opacity:.5;
+    filter:drop-shadow(0 0 1px rgba(210,103,255,.03));
+    box-shadow:0 0 0 rgba(208,104,255,0);
+  }
+  50%{
+    opacity:.84;
+    filter:drop-shadow(0 0 5px rgba(187,111,255,.1));
+    box-shadow:0 0 18px rgba(195,104,255,.045);
+  }
 }
 
 @media(max-width:1120px){
@@ -134,9 +215,11 @@
 
 @media(prefers-reduced-motion:reduce){
   .portal-home .hero-visual .floating-node{
-    animation-duration:60s!important;
+    animation-duration:72s,9s!important;
   }
-  .portal-home .hero-visual .orbit-outer{
+  .portal-home .hero-visual .orbit-outer,
+  .portal-home .hero-visual .orbit-middle,
+  .portal-home .hero-visual .orbit-inner{
     animation-duration:12s;
   }
 }
