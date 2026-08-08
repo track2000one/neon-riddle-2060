@@ -103,12 +103,24 @@ async function evaluateSources(files) {
       throw new Error(`تعذر تحليل ${file}: ${error.message}`);
     }
   }
+
+  // Rebuild the uploaded arithmetic image bank after all sources (including
+  // the new video banks) have loaded, so its near-duplicate filter compares
+  // against the complete quantitative bank rather than only earlier files.
+  if (typeof context.window.NEON_BUILD_UPLOADED_IMAGES_ARITHMETIC_20260808 === 'function') {
+    context.window.NEON_BUILD_UPLOADED_IMAGES_ARITHMETIC_20260808();
+  }
+
   return context.window;
 }
 
 function collectQuestionArrays(windowObject) {
   const arrays = [];
   for (const [name, value] of Object.entries(windowObject)) {
+    // RAW_* arrays are staging data for the filtered uploaded-image bank.
+    // Collecting them would re-introduce questions intentionally removed by
+    // its duplicate filter, so only the rebuilt accepted array is exported.
+    if (name.startsWith('NEON_UPLOADED_IMAGES_ARITHMETIC_20260808_RAW_')) continue;
     if (!Array.isArray(value)) continue;
     if (!value.some(item => item && typeof item === 'object' && Array.isArray(item.options) && (item.q || item.question))) continue;
     arrays.push({ name, questions: value });
