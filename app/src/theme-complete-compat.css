@@ -1,0 +1,228 @@
+/*
+ * Shared theme compatibility for every user-facing NEON page.
+ * Component files may use semantic aliases such as --ui-card or
+ * --ui-surface-2. Keep those aliases connected to the active theme so a
+ * missing token can never fall back to the old fixed navy palette.
+ */
+html[data-neon-theme]{
+  --ui-card:color-mix(in srgb,var(--ui-surface) 94%,var(--ui-surface-strong) 6%);
+  --ui-card-strong:color-mix(in srgb,var(--ui-surface-strong) 90%,var(--ui-bg-1) 10%);
+  --ui-surface-2:color-mix(in srgb,var(--ui-surface-strong) 84%,var(--ui-surface-soft) 16%);
+  --ui-heading:var(--ui-text);
+  --ui-input-bg:var(--ui-option-bg);
+  --ui-input-text:var(--ui-option-text);
+  --ui-overlay:color-mix(in srgb,var(--ui-bg-0) 68%,rgba(0,0,0,.54));
+  --ui-shadow:color-mix(in srgb,var(--ui-bg-0) 25%,rgba(0,0,0,.28));
+
+  /* Compatibility with pages that predate the semantic UI tokens. */
+  --bg:var(--ui-bg-0);
+  --card:var(--ui-card);
+  --card2:var(--ui-surface-2);
+  --text:var(--ui-text);
+  --muted:var(--ui-muted);
+  --line:var(--ui-border);
+  --green:var(--ui-success-bg);
+}
+
+/* Group the account, logout, utility and theme controls as one header unit. */
+.neon-header-tools{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:9px;
+  flex:0 0 auto;
+  min-width:0;
+}
+.neon-header-tools .account-chip,
+.neon-header-tools .auth-user-chip{margin:0!important}
+
+/* The palette is docked to the edge rather than covering the page heading. */
+.neon-theme-host{z-index:10050!important}
+.neon-theme-panel{
+  position:fixed!important;
+  inset:76px auto auto 16px!important;
+  width:min(340px,calc(100vw - 24px))!important;
+  max-height:calc(100dvh - 94px);
+  overflow:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  box-shadow:0 22px 64px var(--ui-shadow)!important;
+}
+.neon-theme-panel::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+}
+
+/* New personalized-learning surfaces. */
+html[data-neon-theme] :is(
+  .success-hub,.success-card,.success-modal-card,.notebook-entry,
+  .diagnostic-launch,.diagnostic-shell,.diagnostic-result-hero,.diagnostic-breakdown article,
+  .exam-success-tools,.exam-tool-card,.exam-notebook-item,.question-report-context,
+  .trust-hero,.trust-card,.trust-step,.trust-note
+){
+  border-color:var(--ui-border)!important;
+  color:var(--ui-text)!important;
+}
+
+html[data-neon-theme] :is(
+  .success-card,.notebook-entry,.diagnostic-breakdown article,
+  .exam-success-tools,.exam-notebook-item,.trust-card,.trust-step
+){
+  background:var(--ui-card)!important;
+}
+
+html[data-neon-theme] :is(
+  .success-modal-card,.diagnostic-shell,.exam-tool-card
+){
+  background:var(--ui-surface)!important;
+}
+
+html[data-neon-theme] .success-hub{
+  background:linear-gradient(145deg,
+    color-mix(in srgb,var(--ui-surface) 95%,var(--ui-primary-bg) 5%),
+    color-mix(in srgb,var(--ui-surface-strong) 91%,var(--ui-secondary-bg) 9%))!important;
+}
+html[data-neon-theme] .diagnostic-launch{
+  background:linear-gradient(135deg,
+    color-mix(in srgb,var(--ui-card) 92%,var(--ui-primary-bg) 8%),
+    color-mix(in srgb,var(--ui-card) 90%,var(--ui-secondary-bg) 10%))!important;
+}
+html[data-neon-theme] .diagnostic-result-hero{
+  background:linear-gradient(135deg,
+    color-mix(in srgb,var(--ui-card) 88%,var(--ui-primary-bg) 12%),
+    var(--ui-card))!important;
+}
+html[data-neon-theme] .trust-hero{
+  background:linear-gradient(145deg,var(--ui-surface),var(--ui-surface-2))!important;
+}
+html[data-neon-theme] .trust-header{
+  background:color-mix(in srgb,var(--ui-surface-strong) 92%,transparent)!important;
+  border-color:var(--ui-border)!important;
+  color:var(--ui-text)!important;
+}
+html[data-neon-theme] .trust-score::before{background:var(--ui-card)!important}
+html[data-neon-theme] .trust-badges span{
+  background:color-mix(in srgb,var(--ui-success-bg) 18%,transparent)!important;
+  border-color:color-mix(in srgb,var(--ui-success-text) 32%,transparent)!important;
+  color:var(--ui-success-text)!important;
+}
+html[data-neon-theme] .trust-note{
+  background:color-mix(in srgb,var(--ui-secondary-bg) 16%,var(--ui-card))!important;
+}
+
+/* Text tokens: prevent dark-on-dark and pale-on-pale combinations. */
+html[data-neon-theme] :is(
+  .success-head h2,.success-card h3,.readiness-label,.plan-copy strong,
+  .week-stats strong,.success-modal-head h2,.notebook-entry strong,
+  .diagnostic-launch h2,.diagnostic-head h2,.diagnostic-question,
+  .diagnostic-result-hero h3,.diagnostic-breakdown strong,
+  .exam-success-tools h2,.exam-tool-head h2,.exam-notebook-item strong,
+  .trust-hero h1,.trust-card h2,.trust-step strong
+){color:var(--ui-text)!important}
+
+html[data-neon-theme] :is(
+  .success-head p,.success-card>p,.plan-copy small,.week-stats small,
+  .success-modal-head p,.notebook-entry p,.notebook-empty,
+  .diagnostic-launch p,.diagnostic-head p,.diagnostic-result-hero p,
+  .diagnostic-breakdown small,.diagnostic-loading,
+  .exam-success-tools p,.exam-tool-head p,.exam-notebook-item p,
+  .exam-tool-empty,.question-report-context,
+  .trust-hero p,.trust-card p,.trust-card li,.trust-step small,.trust-score small
+){color:var(--ui-muted)!important}
+
+/* Inputs and choices. */
+html[data-neon-theme] :is(
+  .goal-form select,.goal-form input,
+  .question-report-form select,.question-report-form textarea,
+  .diagnostic-option
+){
+  background:var(--ui-option-bg)!important;
+  color:var(--ui-option-text)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] .diagnostic-option span{
+  background:var(--ui-surface-2)!important;
+  color:var(--ui-text)!important;
+}
+html[data-neon-theme] .diagnostic-option:hover:not(:disabled),
+html[data-neon-theme] .diagnostic-option.selected{
+  background:var(--ui-option-hover-bg)!important;
+  color:var(--ui-option-hover-text)!important;
+  border-color:var(--ui-option-hover-text)!important;
+}
+html[data-neon-theme] .diagnostic-option:hover span,
+html[data-neon-theme] .diagnostic-option.selected span{
+  background:color-mix(in srgb,var(--ui-option-hover-text) 13%,transparent)!important;
+  color:var(--ui-option-hover-text)!important;
+}
+
+/* Primary actions. */
+html[data-neon-theme] :is(
+  .success-primary-button,.diagnostic-primary,
+  .exam-notebook-button,.question-report-submit,
+  .trust-header nav a.primary
+){
+  background:var(--ui-primary-bg)!important;
+  color:var(--ui-primary-text)!important;
+  border-color:color-mix(in srgb,var(--ui-primary-text) 20%,transparent)!important;
+  text-shadow:none!important;
+}
+
+/* Secondary and quiet actions. */
+html[data-neon-theme] :is(
+  .success-goal-button,.success-soft-button,.diagnostic-secondary,
+  .success-close,.exam-tool-close,.notebook-entry button,.exam-notebook-item button
+){
+  background:var(--ui-secondary-bg)!important;
+  color:var(--ui-secondary-text)!important;
+  border-color:color-mix(in srgb,var(--ui-secondary-text) 22%,transparent)!important;
+  text-shadow:none!important;
+}
+html[data-neon-theme] .question-report-button{
+  background:var(--ui-ghost-bg)!important;
+  color:var(--ui-ghost-text)!important;
+  border-color:var(--ui-border)!important;
+}
+
+/* Modal dimmers adapt without changing the readable card itself. */
+html[data-neon-theme] :is(.success-modal,.exam-tool-modal){
+  background:var(--ui-overlay)!important;
+}
+
+/* Progress, badges and highlights. */
+html[data-neon-theme] :is(.plan-task,.week-stats article,.question-report-context){
+  background:var(--ui-surface-2)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] :is(.plan-total,.goal-summary span,.diagnostic-subject){
+  color:var(--ui-text)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] :is(.plan-minutes,.notebook-count,.notebook-entry small,.exam-notebook-item small){
+  color:color-mix(in srgb,var(--ui-accent-1) 72%,var(--ui-text))!important;
+}
+html[data-neon-theme] .readiness-ring::before,
+html[data-neon-theme] .diagnostic-result-score::before{background:var(--ui-card)!important}
+
+/* Public trust page navigation. */
+html[data-neon-theme] .trust-header nav a:not(.primary){
+  background:var(--ui-ghost-bg)!important;
+  color:var(--ui-ghost-text)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] .trust-footer{
+  color:var(--ui-muted)!important;
+  border-color:var(--ui-border)!important;
+}
+
+@media(max-width:900px){
+  .neon-header-tools{gap:6px}
+  .neon-theme-panel{inset:72px 12px auto 12px!important;width:auto!important;max-height:calc(100dvh - 84px)}
+}
+@media(max-width:620px){
+  .neon-header-tools{max-width:100%;flex-wrap:wrap}
+  .neon-theme-trigger{width:38px!important;height:38px!important}
+}

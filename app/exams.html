@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07101f" />
+  <meta name="description" content="مركز التحصيلي والقدرات المتكيف في منصة NEON" />
+  <title>مركز التحصيلي والقدرات | NEON</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="stylesheet" href="/src/exams.css" />
+  <link rel="stylesheet" href="/src/exam-mastery.css" />
+</head>
+<body class="center-body">
+  <div class="page-glow glow-one"></div>
+  <div class="page-glow glow-two"></div>
+
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="NEON">
+      <img class="brand-logo" src="./neon-logo.svg" alt="شعار NEON" />
+      <span><strong>NEON</strong><small>LEARN • PLAY • BUILD</small></span>
+    </a>
+    <nav class="quick-nav" aria-label="التنقل">
+      <a href="/">المراكز</a>
+      <a href="/step">English STEP</a>
+      <a class="active" href="/exams">التحصيلي والقدرات</a>
+    </nav>
+    <div class="account-chip" id="accountChip" aria-live="polite">
+      <span class="account-avatar" id="accountAvatar">N</span>
+      <span><strong id="accountName">جارٍ التحقق…</strong><small id="accountEmail">حساب الطالب</small></span>
+    </div>
+  </header>
+
+  <main>
+    <section class="exam-hero">
+      <div>
+        <span class="eyebrow">ADAPTIVE MASTERY EXAM CENTER</span>
+        <h1>مركز التحصيلي والقدرات</h1>
+        <p>تدريب ذكي يتابع حالة كل سؤال، ويعيد الأخطاء للتثبيت، ويستبعد الأسئلة المتقنة من الاختبارات العادية.</p>
+      </div>
+      <div class="exam-total"><strong id="totalQuestions">—</strong><small>سؤالًا متاحًا للتدريب</small></div>
+    </section>
+
+    <section class="exam-subjects" id="examSubjects" aria-label="أقسام الاختبارات"></section>
+
+    <section class="exam-setup" id="examSetup" hidden>
+      <div>
+        <span class="eyebrow">PERSONALIZED TRAINING</span>
+        <h2 id="setupTitle">إنشاء تدريب</h2>
+        <p id="setupDescription">حدد عدد الأسئلة ونمط التدريب والزمن.</p>
+      </div>
+
+      <section class="mastery-dashboard" id="masteryDashboard" hidden aria-live="polite"></section>
+
+      <div class="setup-fields">
+        <label>عدد الأسئلة
+          <select id="examCount">
+            <option value="10">10 أسئلة</option>
+            <option value="20" selected>20 سؤالًا</option>
+            <option value="40">40 سؤالًا</option>
+          </select>
+        </label>
+        <label>نمط التدريب
+          <select id="examMode">
+            <option value="smart" selected>مزيج ذكي — الموصى به</option>
+            <option value="new">أسئلة جديدة فقط</option>
+            <option value="review">مراجعة الأخطاء والتثبيت</option>
+            <option value="mastered">مراجعة الأسئلة المتقنة</option>
+            <option value="all">محاكاة شاملة</option>
+          </select>
+        </label>
+        <label>المستوى
+          <select id="examLevel">
+            <option value="all">مختلط</option>
+            <option value="foundation">تأسيسي</option>
+            <option value="practice">تطبيقي</option>
+            <option value="mastery">إتقان</option>
+          </select>
+        </label>
+        <label>الزمن
+          <select id="examMinutes">
+            <option value="10">10 دقائق</option>
+            <option value="20" selected>20 دقيقة</option>
+            <option value="40">40 دقيقة</option>
+            <option value="0">وقت مفتوح</option>
+          </select>
+        </label>
+        <button class="exam-primary" id="startExamButton">بدء التدريب</button>
+      </div>
+      <div class="exam-load-note" id="examLoadNote">اختر المادة لقراءة سجل تدريبك.</div>
+    </section>
+
+    <section class="exam-runner" id="examRunner" hidden aria-live="polite"></section>
+  </main>
+
+  <div class="boot-overlay" id="bootOverlay"><div class="loader"></div><p id="bootText">جارٍ تحميل فهرس الاختبارات…</p></div>
+
+  <script src="/legacy/biology-mastery-lessons.js"></script>
+  <script src="/legacy/exam-bank-uploaded-biology-mastery-2026.js"></script>
+
+  <script src="/legacy/exam-bank-uploaded-tahsili-math-advanced-model8-2026.js"></script>
+  <script src="/legacy/exam-bank-uploaded-tahsili-physics-advanced-model8-2026.js"></script>
+  <script src="/legacy/exam-bank-uploaded-tahsili-chemistry-advanced-model8-2026.js"></script>
+  <script src="/legacy/exam-bank-uploaded-tahsili-biology-advanced-model8-2026.js"></script>
+  <script src="/legacy/tahsili-advanced-lessons-2026.js"></script>
+
+  <script src="/legacy/biology-mastery-runtime.js"></script>
+  <script src="/legacy/tahsili-advanced-runtime-2026.js"></script>
+  <script type="module" src="/src/exam-progress-bootstrap.js"></script>
+  <script type="module" src="/src/exams-bootstrap.js"></script>
+  <script type="module" src="/src/report-polish.js"></script>
+</body>
+</html>

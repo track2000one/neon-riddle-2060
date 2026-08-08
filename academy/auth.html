@@ -2,10 +2,11 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#07101f" />
-  <meta name="description" content="تسجيل الدخول وإنشاء حساب في NEON Academy 2060" />
-  <title>NEON Academy 2060 | الحساب</title>
+  <meta name="description" content="تسجيل الدخول وإنشاء حساب في منصة NEON" />
+  <title>NEON | الحساب</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="auth.css" />
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-NZNC6929YS"></script>
 </head>
@@ -13,14 +14,14 @@
   <div class="auth-grid"></div><div class="auth-glow glow-one"></div><div class="auth-glow glow-two"></div>
   <main class="auth-shell">
     <section class="auth-showcase">
-      <a class="auth-brand" href="../"><span class="brand-mark">N</span><span><strong>NEON ACADEMY 2060</strong><small>UNIFIED STUDENT ACCOUNT</small></span></a>
+      <a class="auth-brand" href="../"><img class="neon-brand-img" src="neon-logo.svg" alt="شعار NEON"><span><strong>NEON</strong><small>LEARN • PLAY • BUILD</small></span></a>
       <div class="showcase-content"><div class="eyebrow">LEARN • PLAY • BUILD</div><h1>حساب واحد<br><span>لمكتبتك التعليمية كاملة</span></h1><p>أنشئ حسابك وادخل إلى الألعاب والدروس والاختبارات ومسارات البرمجة من بوابة موحدة وآمنة.</p><div class="feature-list"><article><span>✓</span><div><strong>تسجيل آمن</strong><small>بريد إلكتروني وكلمة مرور عبر Firebase</small></div></article><article><span>↗</span><div><strong>استكمال التعلم</strong><small>ربط ملفك الحالي بالحساب على هذا الجهاز</small></div></article><article><span>✦</span><div><strong>استعادة كلمة المرور</strong><small>رسالة إعادة تعيين تصل إلى بريدك</small></div></article></div></div>
-      <div class="showcase-orbit" aria-hidden="true"><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="orbit-core">2060</div></div>
+      <div class="showcase-orbit" aria-hidden="true"><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="orbit-core"><img class="neon-core-logo" src="neon-logo.svg" alt=""></div></div>
     </section>
     <section class="auth-card">
-      <div class="mobile-brand"><span>N</span><strong>NEON ACADEMY</strong></div>
+      <div class="mobile-brand"><img class="neon-brand-img" src="neon-logo.svg" alt="NEON"><strong>NEON</strong></div>
       <div class="auth-tabs" role="tablist"><button class="auth-tab active" type="button" data-view="login">تسجيل الدخول</button><button class="auth-tab" type="button" data-view="register">إنشاء حساب</button><button class="auth-tab" type="button" data-view="reset">نسيت كلمة المرور</button></div>
-      <div id="signedInPanel" class="signed-in-panel hidden"><div class="signed-avatar">✓</div><div class="eyebrow">SESSION ACTIVE</div><h2>أنت مسجل الدخول بالفعل</h2><p id="signedInText" class="muted"></p><a class="primary-button" href="./">دخول الأكاديمية</a><button id="signedOutButton" class="secondary-button" type="button">تسجيل الخروج</button></div>
+      <div id="signedInPanel" class="signed-in-panel hidden"><div class="signed-avatar">✓</div><div class="eyebrow">SESSION ACTIVE</div><h2>أنت مسجل الدخول بالفعل</h2><p id="signedInText" class="muted"></p><a class="primary-button" href="./">دخول المنصة</a><button id="signedOutButton" class="secondary-button" type="button">تسجيل الخروج</button></div>
       <form id="loginForm" class="auth-form active-form" data-form="login" novalidate>
         <div class="form-heading"><div class="eyebrow">WELCOME BACK</div><h2>مرحبًا بعودتك</h2><p>أدخل بريدك وكلمة المرور للمتابعة.</p></div>
         <label for="loginEmail">البريد الإلكتروني</label><div class="input-wrap"><span>✉</span><input id="loginEmail" type="email" autocomplete="username" required placeholder="name@example.com" /></div>
@@ -42,11 +43,11 @@
         <label for="resetEmail">البريد الإلكتروني</label><div class="input-wrap"><span>✉</span><input id="resetEmail" type="email" autocomplete="email" required placeholder="name@example.com" /></div>
         <button id="resetButton" class="primary-button" type="submit"><span>إرسال رابط الاستعادة</span><b>←</b></button><div id="resetMessage" class="form-message" role="alert"></div><div class="reset-help"><strong>لم تصل الرسالة؟</strong><p>تحقق من البريد غير المرغوب فيه، وتأكد من كتابة البريد المسجل بالحساب نفسه.</p></div><p class="form-foot"><button type="button" data-switch="login">العودة إلى تسجيل الدخول</button></p>
       </form>
-      <footer class="auth-footer"><a href="../">اللعبة الرئيسية</a><span>•</span><a href="../track2000one/">لوحة المسؤول</a></footer>
+      <footer class="auth-footer"><a href="../">المنصة الرئيسية</a><span>•</span><a href="../track2000one/">لوحة المسؤول</a></footer>
     </section>
   </main>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="academy-i18n-dict-1.js"></script><script src="academy-i18n-dict-2.js"></script><script src="academy-i18n-dict-3.js"></script><script src="academy-i18n-dict-4.js"></script><script src="academy-i18n.js"></script>
-  <script type="module" src="auth.js"></script><script type="module" src="auth-phone.js"></script><script type="module" src="auth-language-bridge.js"></script>
+  <script src="legacy-brand.js?v=20260731-1"></script><script src="auth-portal-routing.js?v=20260807-1"></script><script type="module" src="auth.js"></script><script type="module" src="auth-phone.js"></script><script type="module" src="auth-language-bridge.js"></script>
 </body>
 </html>

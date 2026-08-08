@@ -1,0 +1,46 @@
+/* Mobile and tablet headers must remain in normal document flow.
+ * Desktop keeps the current sticky navigation for fast section access.
+ */
+@media (max-width:1024px), (hover:none) and (pointer:coarse){
+  html{
+    scroll-padding-top:0!important;
+  }
+
+  .site-header,
+  .topbar{
+    position:relative!important;
+    top:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    left:auto!important;
+    inset:auto!important;
+    transform:none!important;
+    will-change:auto!important;
+  }
+
+  .site-header,
+  .topbar{
+    z-index:20!important;
+  }
+
+  /* Keep horizontal navigation usable without turning the whole header sticky. */
+  .main-nav,
+  .quick-nav{
+    overscroll-behavior-inline:contain;
+    -webkit-overflow-scrolling:touch;
+    scroll-snap-type:x proximity;
+  }
+
+  .main-nav a,
+  .quick-nav a{
+    scroll-snap-align:start;
+  }
+}
+
+@media (max-width:560px){
+  .site-header,
+  .topbar{
+    min-height:auto!important;
+    padding-top:max(10px,env(safe-area-inset-top))!important;
+  }
+}

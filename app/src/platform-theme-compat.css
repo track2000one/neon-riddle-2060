@@ -1,0 +1,362 @@
+/*
+ * Theme compatibility for runtime-injected learning modules.
+ * These components originate from legacy scripts and previously used fixed
+ * navy/white colors that did not react to the selected platform theme.
+ */
+
+/* --------------------------------------------------------------------------
+   Adaptive question-mastery dashboard
+   -------------------------------------------------------------------------- */
+html[data-neon-theme] .mastery-dashboard{
+  color:var(--ui-text)!important;
+  background:
+    radial-gradient(circle at 12% 10%,color-mix(in srgb,var(--ui-accent-1) 13%,transparent),transparent 34%),
+    radial-gradient(circle at 88% 12%,color-mix(in srgb,var(--ui-accent-2) 13%,transparent),transparent 36%),
+    linear-gradient(145deg,color-mix(in srgb,var(--ui-surface) 98%,transparent),color-mix(in srgb,var(--ui-surface-strong) 94%,transparent))!important;
+  border-color:var(--ui-border)!important;
+  box-shadow:0 22px 64px color-mix(in srgb,#000 20%,transparent)!important;
+}
+html[data-neon-theme] .mastery-dashboard :is(h2,h3,h4,strong,.question-category){
+  color:var(--ui-text)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html[data-neon-theme] .mastery-dashboard :is(p,small,.mastery-loading,.review-state-row>small){
+  color:var(--ui-muted)!important;
+}
+html[data-neon-theme] .mastery-ring{
+  background:
+    radial-gradient(circle at center,var(--ui-surface-strong) 58%,transparent 60%),
+    conic-gradient(var(--ui-primary-bg) 0 var(--mastery),color-mix(in srgb,var(--ui-text) 10%,transparent) var(--mastery) 360deg)!important;
+  box-shadow:0 0 28px color-mix(in srgb,var(--ui-accent-1) 20%,transparent)!important;
+}
+html[data-neon-theme] .mastery-ring strong{
+  color:color-mix(in srgb,var(--ui-accent-1) 55%,var(--ui-text))!important;
+}
+html[data-neon-theme] .mastery-ring small{
+  color:var(--ui-muted)!important;
+}
+html[data-neon-theme] :is(.mastery-stat-grid article,.session-mastery-summary article,.memory-note){
+  color:var(--ui-text)!important;
+  background:var(--ui-surface-soft)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] :is(.mastery-stat-grid article,.session-mastery-summary article) small{
+  color:var(--ui-muted)!important;
+}
+html[data-neon-theme] .mastery-stat-grid .needs-review{
+  color:var(--ui-danger-text)!important;
+  background:color-mix(in srgb,var(--ui-danger-bg) 78%,transparent)!important;
+  border-color:color-mix(in srgb,var(--ui-danger-text) 32%,transparent)!important;
+}
+html[data-neon-theme] .mastery-stat-grid .needs-review :is(strong,small){color:var(--ui-danger-text)!important}
+html[data-neon-theme] .mastery-stat-grid .mastered{
+  color:var(--ui-success-text)!important;
+  background:color-mix(in srgb,var(--ui-success-bg) 78%,transparent)!important;
+  border-color:color-mix(in srgb,var(--ui-success-text) 32%,transparent)!important;
+}
+html[data-neon-theme] .mastery-stat-grid .mastered :is(strong,small){color:var(--ui-success-text)!important}
+html[data-neon-theme] .mastery-progress-line{
+  background:color-mix(in srgb,var(--ui-text) 10%,transparent)!important;
+}
+html[data-neon-theme] .mastery-progress-line span{
+  background:linear-gradient(90deg,var(--ui-primary-bg),var(--ui-secondary-bg),var(--ui-success-bg))!important;
+}
+html[data-neon-theme] .question-state{
+  color:var(--ui-ghost-text)!important;
+  background:var(--ui-ghost-bg)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] .question-state.state-learning{
+  color:var(--ui-primary-text)!important;background:var(--ui-primary-bg)!important;border-color:var(--ui-primary-text)!important
+}
+html[data-neon-theme] .question-state.state-review{
+  color:var(--ui-danger-text)!important;background:var(--ui-danger-bg)!important;border-color:var(--ui-danger-text)!important
+}
+html[data-neon-theme] .question-state.state-reinforcing{
+  color:var(--ui-secondary-text)!important;background:var(--ui-secondary-bg)!important;border-color:var(--ui-secondary-text)!important
+}
+html[data-neon-theme] .question-state.state-mastered{
+  color:var(--ui-success-text)!important;background:var(--ui-success-bg)!important;border-color:var(--ui-success-text)!important
+}
+html[data-neon-theme] .question-category{
+  color:color-mix(in srgb,var(--ui-accent-1) 58%,var(--ui-text))!important;
+}
+
+/* --------------------------------------------------------------------------
+   Advanced Tahsili mastery path: mathematics, physics and chemistry
+   -------------------------------------------------------------------------- */
+html[data-neon-theme] #advancedTahsiliLab,
+html[data-neon-theme] #advancedTahsiliLab .atl-shell{
+  color:var(--ui-text)!important;
+}
+html[data-neon-theme] #advancedTahsiliLab .atl-shell{
+  background:
+    radial-gradient(circle at 10% 10%,color-mix(in srgb,var(--ui-accent-1) 15%,transparent),transparent 29%),
+    radial-gradient(circle at 90% 4%,color-mix(in srgb,var(--ui-accent-2) 15%,transparent),transparent 34%),
+    linear-gradient(145deg,color-mix(in srgb,var(--ui-surface) 98%,transparent),color-mix(in srgb,var(--ui-surface-strong) 94%,transparent))!important;
+  border-color:var(--ui-border)!important;
+  box-shadow:0 26px 76px color-mix(in srgb,#000 21%,transparent)!important;
+}
+html[data-neon-theme] #advancedTahsiliLab :is(h2,h3,h4,strong,.atl-question){
+  color:var(--ui-text)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html[data-neon-theme] #advancedTahsiliLab :is(p,small,.atl-card p,.atl-hero p){
+  color:var(--ui-muted)!important;
+}
+html[data-neon-theme] #advancedTahsiliLab .atl-badge{
+  color:color-mix(in srgb,var(--ui-accent-1) 58%,var(--ui-text))!important;
+  background:var(--ui-surface-soft)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] #advancedTahsiliLab :is(.atl-stat,.atl-card,.atl-lesson,.atl-model,.atl-progress,.atl-runner,.atl-feedback,.atl-review,.atl-breakdown article){
+  color:var(--ui-text)!important;
+  background:var(--ui-surface-soft)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] #advancedTahsiliLab :is(.atl-tab,.atl-btn:not(.primary)){
+  color:var(--ui-secondary-text)!important;
+  background:var(--ui-secondary-bg)!important;
+  border-color:color-mix(in srgb,var(--ui-secondary-text) 22%,transparent)!important;
+  text-shadow:none!important;
+}
+html[data-neon-theme] #advancedTahsiliLab :is(.atl-tab.active,.atl-btn.primary){
+  color:var(--ui-primary-text)!important;
+  background:var(--ui-primary-bg)!important;
+  border-color:color-mix(in srgb,var(--ui-primary-text) 22%,transparent)!important;
+}
+html[data-neon-theme] #advancedTahsiliLab .atl-note{
+  color:var(--ui-success-text)!important;
+  background:color-mix(in srgb,var(--ui-success-bg) 82%,transparent)!important;
+  border-color:color-mix(in srgb,var(--ui-success-text) 34%,transparent)!important;
+}
+html[data-neon-theme] #advancedTahsiliLab .atl-lesson.done{
+  color:var(--ui-success-text)!important;
+  background:color-mix(in srgb,var(--ui-success-bg) 78%,transparent)!important;
+  border-color:color-mix(in srgb,var(--ui-success-text) 34%,transparent)!important;
+}
+html[data-neon-theme] #advancedTahsiliLab .atl-lesson.done :is(h3,p,small,strong){color:var(--ui-success-text)!important}
+html[data-neon-theme] #advancedTahsiliLab .atl-option{
+  color:var(--ui-option-text)!important;
+  background:var(--ui-option-bg)!important;
+  border-color:var(--ui-border)!important;
+  text-shadow:none!important;
+}
+html[data-neon-theme] #advancedTahsiliLab .atl-option:hover:not(:disabled),
+html[data-neon-theme] #advancedTahsiliLab .atl-option:focus-visible{
+  color:var(--ui-option-hover-text)!important;
+  background:var(--ui-option-hover-bg)!important;
+  border-color:var(--ui-option-hover-text)!important;
+}
+html[data-neon-theme] #advancedTahsiliLab .atl-option span{
+  color:inherit!important;
+  background:color-mix(in srgb,currentColor 10%,transparent)!important;
+}
+html[data-neon-theme] #advancedTahsiliLab .atl-option.correct{
+  color:var(--ui-success-text)!important;background:var(--ui-success-bg)!important;border-color:var(--ui-success-text)!important
+}
+html[data-neon-theme] #advancedTahsiliLab .atl-option.wrong{
+  color:var(--ui-danger-text)!important;background:var(--ui-danger-bg)!important;border-color:var(--ui-danger-text)!important
+}
+html[data-neon-theme] #advancedTahsiliLab .atl-timer{
+  color:var(--ui-primary-text)!important;background:var(--ui-primary-bg)!important
+}
+html[data-neon-theme] #advancedTahsiliLab .atl-track{
+  background:color-mix(in srgb,var(--ui-text) 10%,transparent)!important
+}
+html[data-neon-theme] #advancedTahsiliLab .atl-track b{
+  background:linear-gradient(90deg,var(--ui-primary-bg),var(--ui-secondary-bg))!important
+}
+html[data-neon-theme] #advancedTahsiliLab .atl-report-hero{
+  color:var(--ui-text)!important;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--ui-primary-bg) 17%,transparent),color-mix(in srgb,var(--ui-secondary-bg) 17%,transparent))!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] #advancedTahsiliLab .atl-report-hero>strong{
+  color:color-mix(in srgb,var(--ui-accent-1) 55%,var(--ui-text))!important
+}
+html[data-neon-theme] #advancedTahsiliLab .atl-review em{
+  color:var(--ui-danger-text)!important;background:var(--ui-danger-bg)!important;border-radius:6px;padding:1px 4px
+}
+html[data-neon-theme] #advancedTahsiliLab .atl-review b{
+  color:color-mix(in srgb,var(--ui-accent-1) 58%,var(--ui-text))!important
+}
+
+/* Advanced Tahsili dialogs are appended directly to body. */
+html[data-neon-theme] .atl-modal{
+  background:color-mix(in srgb,var(--ui-bg-0) 78%,#000 22%)!important
+}
+html[data-neon-theme] .atl-modal-card{
+  color:var(--ui-text)!important;
+  background:linear-gradient(150deg,var(--ui-surface),var(--ui-surface-strong))!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] .atl-modal-card :is(h2,h3,h4,strong,.atl-question){color:var(--ui-text)!important}
+html[data-neon-theme] .atl-modal-card :is(p,small,li){color:var(--ui-muted)!important}
+html[data-neon-theme] .atl-close{
+  color:var(--ui-secondary-text)!important;background:var(--ui-secondary-bg)!important;border:1px solid var(--ui-border)!important
+}
+html[data-neon-theme] .atl-modal-card :is(.atl-box,.atl-runner,.atl-feedback,.atl-review,.atl-breakdown article){
+  color:var(--ui-text)!important;background:var(--ui-surface-soft)!important;border-color:var(--ui-border)!important
+}
+html[data-neon-theme] .atl-modal-card .atl-box.trap{
+  color:var(--ui-danger-text)!important;background:var(--ui-danger-bg)!important;border-color:var(--ui-danger-text)!important
+}
+html[data-neon-theme] .atl-modal-card .atl-box.trap :is(h3,p,li,strong){color:var(--ui-danger-text)!important}
+html[data-neon-theme] .atl-modal-card .atl-option{
+  color:var(--ui-option-text)!important;background:var(--ui-option-bg)!important;border-color:var(--ui-border)!important
+}
+html[data-neon-theme] .atl-modal-card .atl-option.correct{
+  color:var(--ui-success-text)!important;background:var(--ui-success-bg)!important;border-color:var(--ui-success-text)!important
+}
+html[data-neon-theme] .atl-modal-card .atl-option.wrong{
+  color:var(--ui-danger-text)!important;background:var(--ui-danger-bg)!important;border-color:var(--ui-danger-text)!important
+}
+
+/* --------------------------------------------------------------------------
+   Biology mastery laboratory
+   -------------------------------------------------------------------------- */
+html[data-neon-theme] #biologyMasteryLab,
+html[data-neon-theme] #biologyMasteryLab .bio-shell{
+  color:var(--ui-text)!important;
+}
+html[data-neon-theme] #biologyMasteryLab .bio-shell{
+  background:
+    radial-gradient(circle at 8% 10%,color-mix(in srgb,var(--ui-accent-1) 15%,transparent),transparent 31%),
+    radial-gradient(circle at 92% 12%,color-mix(in srgb,var(--ui-accent-2) 15%,transparent),transparent 34%),
+    linear-gradient(145deg,color-mix(in srgb,var(--ui-surface) 98%,transparent),color-mix(in srgb,var(--ui-surface-strong) 94%,transparent))!important;
+  border-color:var(--ui-border)!important;
+  box-shadow:0 27px 78px color-mix(in srgb,#000 21%,transparent)!important;
+}
+html[data-neon-theme] #biologyMasteryLab :is(h2,h3,h4,strong,.bio-question){
+  color:var(--ui-text)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html[data-neon-theme] #biologyMasteryLab :is(p,small,.bio-card p,.bio-lesson p,.bio-model p){color:var(--ui-muted)!important}
+html[data-neon-theme] #biologyMasteryLab .bio-badge{
+  color:color-mix(in srgb,var(--ui-accent-1) 58%,var(--ui-text))!important;
+  background:var(--ui-surface-soft)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] #biologyMasteryLab :is(.bio-stat,.bio-card,.bio-lesson,.bio-model,.bio-progress-card,.bio-runner,.bio-feedback,.bio-review,.bio-breakdown article,.bio-best,.bio-path span){
+  color:var(--ui-text)!important;
+  background:var(--ui-surface-soft)!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] #biologyMasteryLab :is(.bio-stat small,.bio-progress-card small){color:var(--ui-muted)!important}
+html[data-neon-theme] #biologyMasteryLab :is(.bio-tab,.bio-filter){
+  color:var(--ui-ghost-text)!important;background:var(--ui-ghost-bg)!important;border-color:var(--ui-border)!important
+}
+html[data-neon-theme] #biologyMasteryLab :is(.bio-tab.active,.bio-filter.active){
+  color:var(--ui-primary-text)!important;background:var(--ui-primary-bg)!important;border-color:var(--ui-primary-text)!important
+}
+html[data-neon-theme] #biologyMasteryLab .bio-btn{
+  color:var(--ui-primary-text)!important;background:var(--ui-primary-bg)!important;border:1px solid var(--ui-primary-text)!important;text-shadow:none!important
+}
+html[data-neon-theme] #biologyMasteryLab .bio-btn.secondary{
+  color:var(--ui-secondary-text)!important;background:var(--ui-secondary-bg)!important;border-color:var(--ui-secondary-text)!important
+}
+html[data-neon-theme] #biologyMasteryLab .bio-btn.warning{
+  color:var(--ui-danger-text)!important;background:var(--ui-danger-bg)!important;border-color:var(--ui-danger-text)!important
+}
+html[data-neon-theme] #biologyMasteryLab .bio-note{
+  color:var(--ui-success-text)!important;background:color-mix(in srgb,var(--ui-success-bg) 82%,transparent)!important;border-color:var(--ui-success-text)!important
+}
+html[data-neon-theme] #biologyMasteryLab .bio-lesson.done{
+  color:var(--ui-success-text)!important;background:color-mix(in srgb,var(--ui-success-bg) 78%,transparent)!important;border-color:var(--ui-success-text)!important
+}
+html[data-neon-theme] #biologyMasteryLab .bio-lesson.done :is(h3,p,small,strong){color:var(--ui-success-text)!important}
+html[data-neon-theme] #biologyMasteryLab :is(.bio-mini-options button,.bio-option){
+  color:var(--ui-option-text)!important;background:var(--ui-option-bg)!important;border-color:var(--ui-border)!important;text-shadow:none!important
+}
+html[data-neon-theme] #biologyMasteryLab :is(.bio-mini-options button,.bio-option):hover:not(:disabled),
+html[data-neon-theme] #biologyMasteryLab :is(.bio-mini-options button,.bio-option):focus-visible{
+  color:var(--ui-option-hover-text)!important;background:var(--ui-option-hover-bg)!important;border-color:var(--ui-option-hover-text)!important
+}
+html[data-neon-theme] #biologyMasteryLab .bio-option span{
+  color:inherit!important;background:color-mix(in srgb,currentColor 10%,transparent)!important
+}
+html[data-neon-theme] #biologyMasteryLab .bio-option.correct{
+  color:var(--ui-success-text)!important;background:var(--ui-success-bg)!important;border-color:var(--ui-success-text)!important
+}
+html[data-neon-theme] #biologyMasteryLab .bio-option.wrong{
+  color:var(--ui-danger-text)!important;background:var(--ui-danger-bg)!important;border-color:var(--ui-danger-text)!important
+}
+html[data-neon-theme] #biologyMasteryLab .bio-timer{
+  color:var(--ui-primary-text)!important;background:var(--ui-primary-bg)!important
+}
+html[data-neon-theme] #biologyMasteryLab .bio-track,
+html[data-neon-theme] #biologyMasteryLab .bio-breakdown i{
+  background:color-mix(in srgb,var(--ui-text) 10%,transparent)!important
+}
+html[data-neon-theme] #biologyMasteryLab .bio-track b,
+html[data-neon-theme] #biologyMasteryLab .bio-breakdown i b{
+  background:linear-gradient(90deg,var(--ui-primary-bg),var(--ui-secondary-bg))!important
+}
+html[data-neon-theme] #biologyMasteryLab .bio-report-hero{
+  color:var(--ui-text)!important;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--ui-primary-bg) 17%,transparent),color-mix(in srgb,var(--ui-secondary-bg) 17%,transparent))!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] #biologyMasteryLab .bio-report-hero>strong{
+  color:color-mix(in srgb,var(--ui-accent-1) 55%,var(--ui-text))!important
+}
+html[data-neon-theme] #biologyMasteryLab .bio-table :is(th,td){border-color:var(--ui-border)!important}
+html[data-neon-theme] #biologyMasteryLab .bio-table th,
+html[data-neon-theme] #biologyMasteryLab .bio-review b{
+  color:color-mix(in srgb,var(--ui-accent-1) 58%,var(--ui-text))!important
+}
+html[data-neon-theme] #biologyMasteryLab .bio-review em{
+  color:var(--ui-danger-text)!important;background:var(--ui-danger-bg)!important;border-radius:6px;padding:1px 4px
+}
+
+/* Biology dialogs are appended directly to body. */
+html[data-neon-theme] .bio-modal{
+  background:color-mix(in srgb,var(--ui-bg-0) 78%,#000 22%)!important
+}
+html[data-neon-theme] .bio-modal-card{
+  color:var(--ui-text)!important;
+  background:linear-gradient(150deg,var(--ui-surface),var(--ui-surface-strong))!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] .bio-modal-card :is(h2,h3,h4,strong,.bio-question){color:var(--ui-text)!important}
+html[data-neon-theme] .bio-modal-card :is(p,small,li){color:var(--ui-muted)!important}
+html[data-neon-theme] .bio-close{
+  color:var(--ui-secondary-text)!important;background:var(--ui-secondary-bg)!important;border:1px solid var(--ui-border)!important
+}
+html[data-neon-theme] .bio-modal-card :is(.bio-concepts,.bio-check,.bio-runner,.bio-feedback,.bio-review,.bio-breakdown article){
+  color:var(--ui-text)!important;background:var(--ui-surface-soft)!important;border-color:var(--ui-border)!important
+}
+html[data-neon-theme] .bio-modal-card .bio-traps{
+  color:var(--ui-danger-text)!important;background:var(--ui-danger-bg)!important;border-color:var(--ui-danger-text)!important
+}
+html[data-neon-theme] .bio-modal-card .bio-traps :is(h3,p,li,strong){color:var(--ui-danger-text)!important}
+html[data-neon-theme] .bio-modal-card :is(.bio-mini-options button,.bio-option){
+  color:var(--ui-option-text)!important;background:var(--ui-option-bg)!important;border-color:var(--ui-border)!important
+}
+html[data-neon-theme] .bio-modal-card .bio-option.correct{
+  color:var(--ui-success-text)!important;background:var(--ui-success-bg)!important;border-color:var(--ui-success-text)!important
+}
+html[data-neon-theme] .bio-modal-card .bio-option.wrong{
+  color:var(--ui-danger-text)!important;background:var(--ui-danger-bg)!important;border-color:var(--ui-danger-text)!important
+}
+
+/* --------------------------------------------------------------------------
+   Native pages: final safeguards for dynamically created surfaces
+   -------------------------------------------------------------------------- */
+html[data-neon-theme] :is(.exam-modal,.game-modal,.learning-modal,.lesson-modal){
+  color:var(--ui-text)!important;
+}
+html[data-neon-theme] :is(.exam-modal-card,.game-modal-card,.learning-modal-card,.lesson-modal-card){
+  color:var(--ui-text)!important;
+  background:linear-gradient(150deg,var(--ui-surface),var(--ui-surface-strong))!important;
+  border-color:var(--ui-border)!important;
+}
+html[data-neon-theme] :is(.exam-modal-card,.game-modal-card,.learning-modal-card,.lesson-modal-card) :is(p,small,li){
+  color:var(--ui-muted)!important;
+}
+html[data-neon-theme] :is(.exam-modal-card,.game-modal-card,.learning-modal-card,.lesson-modal-card) :is(input,select,textarea){
+  color:var(--ui-option-text)!important;
+  background:var(--ui-option-bg)!important;
+  border-color:var(--ui-border)!important;
+}

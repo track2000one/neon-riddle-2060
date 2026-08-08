@@ -1,0 +1,210 @@
+/*
+ * Theme compatibility for the core STEP runtime.
+ * The legacy STEP renderer injects fixed navy and white colors at runtime;
+ * these rules bind every generated surface to the active platform palette.
+ */
+
+html[data-neon-theme] #stepAcademy,
+html[data-neon-theme] #stepAcademy .step-shell{
+  color:var(--ui-text)!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-shell{
+  background:
+    radial-gradient(circle at 10% 10%,color-mix(in srgb,var(--ui-accent-1) 14%,transparent),transparent 31%),
+    radial-gradient(circle at 90% 8%,color-mix(in srgb,var(--ui-accent-2) 13%,transparent),transparent 34%),
+    linear-gradient(145deg,color-mix(in srgb,var(--ui-surface) 98%,transparent),color-mix(in srgb,var(--ui-surface-strong) 94%,transparent))!important;
+  border-color:var(--ui-border)!important;
+  box-shadow:0 26px 76px color-mix(in srgb,#000 20%,transparent)!important;
+}
+
+html[data-neon-theme] #stepAcademy :is(h2,h3,h4,strong,.step-question){
+  color:var(--ui-text)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+
+html[data-neon-theme] #stepAcademy :is(p,small,.step-feedback,.step-progress-card span){
+  color:var(--ui-muted)!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-badge{
+  color:color-mix(in srgb,var(--ui-accent-1) 58%,var(--ui-text))!important;
+  background:var(--ui-surface-soft)!important;
+  border-color:var(--ui-border)!important;
+}
+
+html[data-neon-theme] #stepAcademy :is(.step-stat,.step-lesson,.step-progress-card,.step-practice-card,.step-feedback){
+  color:var(--ui-text)!important;
+  background:color-mix(in srgb,var(--ui-surface-soft) 92%,transparent)!important;
+  border-color:var(--ui-border)!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-lesson{
+  box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ui-text) 4%,transparent)!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-lesson:hover{
+  background:color-mix(in srgb,var(--ui-accent-1) 8%,var(--ui-surface-soft))!important;
+  border-color:color-mix(in srgb,var(--ui-accent-1) 45%,var(--ui-border))!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-lesson small{
+  color:color-mix(in srgb,var(--ui-accent-1) 58%,var(--ui-text))!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-lesson p,
+html[data-neon-theme] #stepAcademy .step-hero p{
+  color:var(--ui-muted)!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-tab{
+  color:var(--ui-ghost-text)!important;
+  background:var(--ui-ghost-bg)!important;
+  border-color:var(--ui-border)!important;
+  text-shadow:none!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-tab:hover:not(.active),
+html[data-neon-theme] #stepAcademy .step-tab:focus-visible:not(.active){
+  color:var(--ui-option-hover-text)!important;
+  background:var(--ui-option-hover-bg)!important;
+  border-color:var(--ui-option-hover-text)!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-tab.active{
+  color:var(--ui-primary-text)!important;
+  background:var(--ui-primary-bg)!important;
+  border-color:color-mix(in srgb,var(--ui-primary-text) 24%,transparent)!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-btn:not(.secondary){
+  color:var(--ui-primary-text)!important;
+  background:var(--ui-primary-bg)!important;
+  border:1px solid color-mix(in srgb,var(--ui-primary-text) 22%,transparent)!important;
+  text-shadow:none!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-btn.secondary{
+  color:var(--ui-secondary-text)!important;
+  background:var(--ui-secondary-bg)!important;
+  border-color:color-mix(in srgb,var(--ui-secondary-text) 22%,transparent)!important;
+  text-shadow:none!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-btn:hover:not(:disabled),
+html[data-neon-theme] #stepAcademy .step-btn:focus-visible{
+  filter:brightness(1.04);
+  box-shadow:0 7px 20px color-mix(in srgb,var(--ui-accent-1) 18%,transparent)!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-target :is(input,select){
+  color:var(--ui-option-text)!important;
+  background:var(--ui-option-bg)!important;
+  border-color:var(--ui-border)!important;
+  caret-color:var(--ui-option-text)!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-target label{
+  color:var(--ui-text)!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-passage{
+  color:var(--ui-option-text)!important;
+  background:var(--ui-option-bg)!important;
+  border:1px solid var(--ui-border)!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-option{
+  color:var(--ui-option-text)!important;
+  background:var(--ui-option-bg)!important;
+  border-color:var(--ui-border)!important;
+  text-shadow:none!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-option:hover:not(:disabled),
+html[data-neon-theme] #stepAcademy .step-option:focus-visible{
+  color:var(--ui-option-hover-text)!important;
+  background:var(--ui-option-hover-bg)!important;
+  border-color:var(--ui-option-hover-text)!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-option.correct{
+  color:var(--ui-success-text)!important;
+  background:var(--ui-success-bg)!important;
+  border-color:var(--ui-success-text)!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-option.wrong{
+  color:var(--ui-danger-text)!important;
+  background:var(--ui-danger-bg)!important;
+  border-color:var(--ui-danger-text)!important;
+}
+
+html[data-neon-theme] #stepAcademy .step-feedback strong{
+  color:var(--ui-text)!important;
+}
+
+/* STEP lesson dialogs are appended directly to body. */
+html[data-neon-theme] .step-modal{
+  background:color-mix(in srgb,var(--ui-bg-0) 78%,#000 22%)!important;
+  backdrop-filter:blur(12px);
+}
+
+html[data-neon-theme] .step-modal-card{
+  color:var(--ui-text)!important;
+  background:linear-gradient(150deg,var(--ui-surface),var(--ui-surface-strong))!important;
+  border-color:var(--ui-border)!important;
+  box-shadow:0 32px 90px color-mix(in srgb,#000 38%,transparent)!important;
+}
+
+html[data-neon-theme] .step-modal-card :is(h2,h3,h4,strong,.step-question){
+  color:var(--ui-text)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+
+html[data-neon-theme] .step-modal-card :is(p,small,li){
+  color:var(--ui-muted)!important;
+}
+
+html[data-neon-theme] .step-close{
+  color:var(--ui-secondary-text)!important;
+  background:var(--ui-secondary-bg)!important;
+  border:1px solid color-mix(in srgb,var(--ui-secondary-text) 22%,transparent)!important;
+}
+
+html[data-neon-theme] .step-modal-card .step-badge{
+  color:color-mix(in srgb,var(--ui-accent-1) 58%,var(--ui-text))!important;
+  background:var(--ui-surface-soft)!important;
+  border-color:var(--ui-border)!important;
+}
+
+html[data-neon-theme] .step-modal-card .step-btn:not(.secondary){
+  color:var(--ui-primary-text)!important;
+  background:var(--ui-primary-bg)!important;
+  border:1px solid color-mix(in srgb,var(--ui-primary-text) 22%,transparent)!important;
+}
+
+html[data-neon-theme] .step-modal-card .step-passage,
+html[data-neon-theme] .step-modal-card .step-feedback{
+  color:var(--ui-text)!important;
+  background:var(--ui-surface-soft)!important;
+  border-color:var(--ui-border)!important;
+}
+
+html[data-neon-theme] .step-modal-card .step-option{
+  color:var(--ui-option-text)!important;
+  background:var(--ui-option-bg)!important;
+  border-color:var(--ui-border)!important;
+}
+
+html[data-neon-theme] .step-modal-card .step-option.correct{
+  color:var(--ui-success-text)!important;
+  background:var(--ui-success-bg)!important;
+  border-color:var(--ui-success-text)!important;
+}
+
+html[data-neon-theme] .step-modal-card .step-option.wrong{
+  color:var(--ui-danger-text)!important;
+  background:var(--ui-danger-bg)!important;
+  border-color:var(--ui-danger-text)!important;
+}
