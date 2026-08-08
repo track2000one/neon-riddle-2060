@@ -1,5 +1,8 @@
 (() => {
   'use strict';
+  if (typeof window.NEON_BUILD_UPLOADED_IMAGES_ARITHMETIC_20260808 === 'function') {
+    window.NEON_BUILD_UPLOADED_IMAGES_ARITHMETIC_20260808();
+  }
   const questions = [
     ...(window.NEON_IMPORTED_QUANT_A || []),
     ...(window.NEON_IMPORTED_QUANT_B || []),
@@ -26,7 +29,8 @@
     ...(window.NEON_IMPORTED_VIDEO_COMPILATIONS_2026_B || []),
     ...(window.NEON_IMPORTED_ARITHMETIC_VIDEO_V1_20260808 || []),
     ...(window.NEON_IMPORTED_ARITHMETIC_VIDEO_V2_20260808 || []),
-    ...(window.NEON_IMPORTED_ARITHMETIC_VIDEO_V3_20260808 || [])
+    ...(window.NEON_IMPORTED_ARITHMETIC_VIDEO_V3_20260808 || []),
+    ...(window.NEON_UPLOADED_IMAGES_ARITHMETIC_20260808 || [])
   ];
   window.NEON_IMPORTED_EXAM_QUESTIONS_2026 = questions;
   window.NEON_IMPORTED_EXAM_SOURCE_STATS = {
@@ -34,7 +38,7 @@
     quant: questions.filter(item => item.subject === 'qudurat-quant').length,
     verbal: questions.filter(item => item.subject === 'qudurat-verbal').length,
     visualQuant: questions.filter(item => item.subject === 'qudurat-quant' && item.visualId).length,
-    filesReviewed: 48,
+    filesReviewed: 79,
     videoFramesReviewed: 68,
     videoUniqueQuestionsPrepared: 66,
     videoDuplicateFramesSkipped: 2,
@@ -44,6 +48,9 @@
     arithmeticVideoFramesReviewed: 136,
     arithmeticVideoQuestionsPrepared: 123,
     arithmeticVideoDuplicatesSkipped: 13,
+    uploadedArithmeticImagePagesReviewed: 31,
+    uploadedArithmeticImageQuestionsPrepared: (window.NEON_UPLOADED_IMAGES_ARITHMETIC_20260808 || []).length,
+    uploadedArithmeticImageDuplicateReport: window.NEON_UPLOADED_IMAGES_ARITHMETIC_20260808_REPORT || null,
     exactDuplicateFilesSkipped: 1,
     duplicateHeavyFilesSkipped: 1
   };
