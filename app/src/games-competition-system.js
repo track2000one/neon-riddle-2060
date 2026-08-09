@@ -1,9 +1,10 @@
 import './games-competition-system.css';
+import { expandedGameQuestions } from './games-expansion-data.js';
 
-const PROGRESS_KEY = 'neonGamesExpansionProgressV1';
 const MASTERY_KEY = 'neonGamesMasteryV1';
 const STATE_KEY = 'neonGamesCompetitionV2';
 const CATEGORIES = ['cross','visual','hidden','lateral'];
+const banks = Object.fromEntries(CATEGORIES.map(cat => [cat,expandedGameQuestions.filter(item => item.cat === cat)]));
 const categoryMeta = {
   cross:{title:'شبكات الكلمات',icon:'▦'},
   visual:{title:'الذكاء البصري',icon:'◈'},
@@ -40,15 +41,9 @@ function todayKey() { return riyadhDateKey(); }
 function currentWeekKey() { return weekKeyFromDay(todayKey()); }
 function currentMonthKey() { return monthKeyFromDay(todayKey()); }
 
-function currentCompleted() {
-  const progress = readJson(PROGRESS_KEY,{completed:{}});
-  return Object.fromEntries(CATEGORIES.map(cat => [cat,Array.isArray(progress.completed?.[cat]) ? progress.completed[cat] : []]));
-}
-
 function loadState() {
   const value = readJson(STATE_KEY,{});
-  value.version = 2;
-  value.known ??= null;
+  value.version = 3;
   value.activity ??= [];
   value.claimed ??= {};
   value.outbox ??= [];
@@ -60,12 +55,6 @@ function saveState() {
   state.activity = state.activity.slice(-1000);
   state.outbox = state.outbox.slice(-250);
   localStorage.setItem(STATE_KEY,JSON.stringify(state));
-}
-
-function migrateBaseline() {
-  if (state.known) return;
-  state.known = currentCompleted();
-  saveState();
 }
 
 function displayName() {
@@ -190,46 +179,40 @@ function claimMission(group,periodKey,mission) {
   render();
 }
 
-async function handleNewStage(cat,id) {
-  if (!CATEGORIES.includes(cat) || state.activity.some(item=>item.id===id)) return;
-  const stars = await waitForStars(cat,id);
-  const now = new Date();
-  const day = riyadhDateKey(now);
-  const entry = {id,cat,stars,at:now.toISOString(),day,week:weekKeyFromDay(day),month:monthKeyFromDay(day)};
+function stageContext() {
+  const runner=document.getElementById('expansionRunner');
+  if(!runner || runner.hidden) return null;
+  const title=runner.querySelector('.expansion-runner-head span')?.textContent || '';
+  const cat=CATEGORIES.find(key=>title.includes(categoryMeta[key].title));
+  const text=runner.querySelector('.expansion-runner-head strong')?.textContent || '';
+  const match=text.match(/المرحلة\s+(\d+)/);
+  const index=match?Number(match[1])-1:-1;
+  const q=cat&&index>=0?banks[cat]?.[index]:null;
+  return q?{cat,index,q}:null;
+}
+
+async function recordGameplay(cat,id) {
+  if(!CATEGORIES.includes(cat)) return;
+  const now=new Date();
+  const day=riyadhDateKey(now);
+  if(state.activity.some(item=>item.id===id && item.day===day)) return;
+  const stars=await waitForStars(cat,id);
+  const week=weekKeyFromDay(day);
+  const entry={id,cat,stars,at:now.toISOString(),day,week,month:monthKeyFromDay(day)};
   state.activity.push(entry);
   saveState();
-  enqueue({eventType:'stage_complete',eventKey:`stage:${id}`,category:cat,stars,metadata:{stageId:id}});
+  enqueue({eventType:'stage_complete',eventKey:`stage:${week}:${id}`,category:cat,stars,metadata:{stageId:id,week}});
   render();
 }
 
-function detectNewCompletions(previousValue,nextValue) {
-  let before={completed:{}}, after={completed:{}};
-  try { before=JSON.parse(previousValue||'{}')||before; } catch {}
-  try { after=JSON.parse(nextValue||'{}')||after; } catch {}
-  for (const cat of CATEGORIES) {
-    const oldSet=new Set(before.completed?.[cat]||[]);
-    const next=Array.isArray(after.completed?.[cat])?after.completed[cat]:[];
-    for (const id of next) {
-      if (!oldSet.has(id)) {
-        state.known[cat] ??=[];
-        if (!state.known[cat].includes(id)) state.known[cat].push(id);
-        handleNewStage(cat,id).catch(()=>{});
-      }
-    }
-  }
-  saveState();
-}
-
-function installStorageWatcher() {
-  if (window.__NEON_COMPETITION_STORAGE_WATCHER__) return;
-  window.__NEON_COMPETITION_STORAGE_WATCHER__=true;
-  const original=Storage.prototype.setItem;
-  Storage.prototype.setItem=function competitionSetItem(key,value){
-    const watch=this===localStorage && String(key)===PROGRESS_KEY;
-    const previous=watch?this.getItem(key):null;
-    original.call(this,key,value);
-    if (watch && previous!==String(value)) queueMicrotask(()=>detectNewCompletions(previous,String(value)));
-  };
+function handleStageAnswer(event) {
+  const answer=event.target.closest('[data-expansion-answer]');
+  if(!answer) return false;
+  const context=stageContext();
+  if(!context) return false;
+  if(Number(answer.dataset.expansionAnswer)!==Number(context.q.answer)) return false;
+  setTimeout(()=>recordGameplay(context.cat,context.q.id).catch(()=>{}),90);
+  return true;
 }
 
 function missionCard(group,definition) {
@@ -322,6 +305,7 @@ function registerPresence() {
 }
 
 function handleClick(event) {
+  handleStageAnswer(event);
   const claim=event.target.closest('[data-quest-claim]');
   if (claim) {
     const group=claim.dataset.questClaim, period=claim.dataset.period, id=claim.dataset.mission;
@@ -348,8 +332,6 @@ function onAuth() {
 }
 
 function init() {
-  migrateBaseline();
-  installStorageWatcher();
   render();
   startCountdown();
   if(sessionReady()) onAuth();
