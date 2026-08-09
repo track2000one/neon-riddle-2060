@@ -11,6 +11,8 @@
   const palette = [orange, green, blue, '#8e68b1', '#e3ae3b', '#4f5d66', '#c4576d', '#55a4a6'];
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
   const text = (x,y,value,size=23,weight=700,fill=ink,anchor='middle') => `<text x="${x}" y="${y}" text-anchor="${anchor}" font-family="${font}" font-size="${size}" font-weight="${weight}" fill="${fill}" direction="rtl" unicode-bidi="plaintext">${esc(value)}</text>`;
+  const rtlRight = (x,y,value,size=22,weight=800,fill=ink) => `<text x="${x}" y="${y}" text-anchor="start" font-family="${font}" font-size="${size}" font-weight="${weight}" fill="${fill}" direction="rtl" unicode-bidi="plaintext">${esc(value)}</text>`;
+  const ltrText = (x,y,value,size=18,weight=800,fill=ink,anchor='middle') => `<text x="${x}" y="${y}" text-anchor="${anchor}" font-family="${font}" font-size="${size}" font-weight="${weight}" fill="${fill}" direction="ltr" unicode-bidi="plaintext">${esc(value)}</text>`;
   const frame = (body,title='') => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" role="img" aria-label="${esc(title)}"><rect width="960" height="560" rx="28" fill="#fff"/>${body}</svg>`;
 
   function verticalBars({title,labels,values,max,series,colors=[orange,green],suffix=''}) {
@@ -22,7 +24,7 @@
     for(let i=0;i<=5;i++){
       const y=top+height-(i/5)*height;
       body+=`<line x1="${left}" y1="${y}" x2="${left+width}" y2="${y}" stroke="${grid}" stroke-width="2"/>`;
-      body+=text(left-18,y+8,Math.round(topValue*i/5),17,600,muted,'end');
+      body+=ltrText(left-18,y+8,Math.round(topValue*i/5),17,600,muted,'end');
     }
     const groupWidth=width/groups;
     const barGap=7;
@@ -36,34 +38,34 @@
         const x=center-totalW/2+seriesIndex*(usable+barGap);
         const y=top+height-h;
         body+=`<rect x="${x}" y="${y}" width="${usable}" height="${h}" rx="6" fill="${item.color||colors[seriesIndex%colors.length]}"/>`;
-        body+=text(x+usable/2,y-9,`${value}${suffix}`,16,800,ink);
+        body+=ltrText(x+usable/2,y-9,`${value}${suffix}`,16,800,ink);
       });
       body+=text(center,top+height+40,label,18,700,ink);
     });
     if(seriesList.some(item=>item.name)){
       let x=760;
-      seriesList.forEach(item=>{body+=`<rect x="${x}" y="500" width="20" height="20" rx="4" fill="${item.color}"/>${text(x-10,517,item.name,16,700,ink,'end')}`;x-=155;});
+      seriesList.forEach(item=>{body+=`<rect x="${x}" y="500" width="20" height="20" rx="4" fill="${item.color}"/>${rtlRight(x-10,517,item.name,16,700,ink)}`;x-=155;});
     }
     return frame(body,title);
   }
 
   function horizontalBars({title,labels,values,max}){
-    const barLeft=90, top=96, barWidth=590, row=62;
-    const labelPanelLeft=735, labelRight=910, separatorX=710;
+    const barLeft=85, top=96, barWidth=570, row=62;
+    const separatorX=690, labelPanelLeft=710, labelPanelWidth=220, labelRight=900;
     const topValue=max || Math.max(...values)*1.15;
     let body=text(480,55,title,30,900);
     body+=`<line x1="${separatorX}" y1="88" x2="${separatorX}" y2="470" stroke="${grid}" stroke-width="2"/>`;
-    body+=`<text x="${labelRight}" y="84" text-anchor="end" font-family="${font}" font-size="15" font-weight="800" fill="${muted}">المنصة</text>`;
+    body+=rtlRight(labelRight,84,'المنصة',18,800,muted);
     values.forEach((value,index)=>{
       const y=top+index*row;
       const fillWidth=Math.max(3,value/topValue*barWidth);
       const valueX=Math.min(barLeft+fillWidth+14,barLeft+barWidth-8);
       const valueAnchor=valueX>=barLeft+barWidth-10?'end':'start';
-      body+=`<rect x="${labelPanelLeft}" y="${y-2}" width="190" height="40" rx="10" fill="${index%2?'#f8fafb':'#f3f7f9'}"/>`;
-      body+=`<text x="${labelRight}" y="${y+25}" text-anchor="end" font-family="${font}" font-size="20" font-weight="800" fill="${ink}">${esc(labels[index])}</text>`;
+      body+=`<rect x="${labelPanelLeft}" y="${y-2}" width="${labelPanelWidth}" height="40" rx="10" fill="${index%2?'#f8fafb':'#f3f7f9'}"/>`;
+      body+=rtlRight(labelRight,y+26,labels[index],22,800,ink);
       body+=`<rect x="${barLeft}" y="${y}" width="${barWidth}" height="34" rx="8" fill="#edf1f4"/>`;
       body+=`<rect x="${barLeft}" y="${y}" width="${fillWidth}" height="34" rx="8" fill="${index%2?green:orange}"/>`;
-      body+=`<text x="${valueX}" y="${y+25}" text-anchor="${valueAnchor}" font-family="${font}" font-size="18" font-weight="900" fill="${ink}">${value}</text>`;
+      body+=ltrText(valueX,y+25,value,19,900,ink,valueAnchor);
     });
     return frame(body,title);
   }
@@ -75,13 +77,13 @@
     for(let i=0;i<=5;i++){
       const y=top+height-(i/5)*height;
       body+=`<line x1="${left}" y1="${y}" x2="${left+width}" y2="${y}" stroke="${grid}" stroke-width="2"/>`;
-      body+=text(left-20,y+7,Math.round(topValue*i/5),16,600,muted,'end');
+      body+=ltrText(left-20,y+7,Math.round(topValue*i/5),16,600,muted,'end');
     }
     const points=values.map((value,index)=>({x:left+(labels.length===1?width/2:index*(width/(labels.length-1))),y:top+height-value/topValue*height,value,index}));
     body+=`<polyline points="${points.map(p=>`${p.x},${p.y}`).join(' ')}" fill="none" stroke="${orange}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`;
     points.forEach(point=>{
       body+=`<circle cx="${point.x}" cy="${point.y}" r="9" fill="${ink}" stroke="#fff" stroke-width="4"/>`;
-      body+=text(point.x,point.y-18,point.value,16,800,ink);
+      body+=ltrText(point.x,point.y-18,point.value,16,800,ink);
       body+=text(point.x,top+height+40,labels[point.index],17,700,ink);
     });
     return frame(body,title);
@@ -106,7 +108,7 @@
     let ly=170;
     items.forEach((item,index)=>{
       body+=`<rect x="650" y="${ly-18}" width="22" height="22" rx="5" fill="${item.color||palette[index%palette.length]}"/>`;
-      body+=text(690,ly,item.label,18,700,ink,'start');
+      body+=rtlRight(690,ly,item.label,18,700,ink);
       ly+=48;
     });
     return frame(body,title);
