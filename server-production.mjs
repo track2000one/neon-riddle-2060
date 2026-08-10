@@ -13,6 +13,8 @@ import { handleStatic } from './server/static.mjs';
 const port = Number(process.env.PORT || 3000);
 const host = '0.0.0.0';
 const maxBodyBytes = 64 * 1024;
+const railwayCommitSha = String(process.env.RAILWAY_GIT_COMMIT_SHA || '').trim().toLowerCase();
+const deploymentCommitSha = /^[0-9a-f]{40}$/.test(railwayCommitSha) ? railwayCommitSha : null;
 
 function readJsonBody(req) {
   return new Promise((resolveBody, rejectBody) => {
@@ -60,7 +62,8 @@ function handleHealth(req, res, requestPath) {
     status: 'ok',
     service: 'neon-learning-platform',
     runtime: 'modern',
-    legacyRuntime: false
+    legacyRuntime: false,
+    commitSha: deploymentCommitSha
   }, { headOnly: req.method === 'HEAD' });
   return true;
 }
