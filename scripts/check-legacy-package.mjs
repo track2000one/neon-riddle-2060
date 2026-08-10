@@ -1,6 +1,5 @@
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { LEGACY_RUNTIME_ALLOWLIST } from './legacy-runtime-allowlist.mjs';
 
 const root = process.cwd();
 const sourceRoot = join(root, 'academy');
@@ -17,28 +16,10 @@ function listFiles(directory, base = directory) {
   return files.sort();
 }
 
-function totalBytes(directory, files) {
-  return files.reduce((sum, file) => sum + statSync(join(directory, file)).size, 0);
-}
-
-const expected = [...LEGACY_RUNTIME_ALLOWLIST].sort();
-const packaged = listFiles(packageRoot);
-const missing = expected.filter(file => !packaged.includes(file));
-const extra = packaged.filter(file => !expected.includes(file));
-
-if (missing.length || extra.length) {
-  const details = [
-    missing.length ? `Missing: ${missing.join(', ')}` : '',
-    extra.length ? `Unexpected: ${extra.join(', ')}` : ''
-  ].filter(Boolean).join('\n');
-  throw new Error(`Selective Legacy package mismatch.\n${details}`);
-}
-
 const sourceFiles = listFiles(sourceRoot);
-const sourceBytes = totalBytes(sourceRoot, sourceFiles);
-const packagedBytes = totalBytes(packageRoot, packaged);
-const fileReduction = sourceFiles.length ? (1 - packaged.length / sourceFiles.length) * 100 : 0;
-const byteReduction = sourceBytes ? (1 - packagedBytes / sourceBytes) * 100 : 0;
+const packaged = listFiles(packageRoot);
+if (packaged.length) {
+  throw new Error(`Production Legacy package must be empty. Unexpected files:\n${packaged.map(file => `- ${file}`).join('\n')}`);
+}
 
-console.log(`Selective Legacy package verified: ${packaged.length}/${sourceFiles.length} files published (${fileReduction.toFixed(1)}% fewer files).`);
-console.log(`Legacy payload: ${packagedBytes}/${sourceBytes} bytes (${byteReduction.toFixed(1)}% smaller than academy source tree).`);
+console.log(`Zero-Legacy production package verified: 0/${sourceFiles.length} academy files published (100.0% removed from runtime payload).`);
