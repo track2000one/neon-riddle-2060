@@ -17,6 +17,7 @@
     "verify:legacy-package": "node scripts/check-legacy-package.mjs",
     "check:release": "node scripts/check-release-readiness.mjs",
     "test:release": "node scripts/test-production-release.mjs",
+    "test:live": "node scripts/test-live-preview.mjs",
     "test:uat": "node scripts/test-uat-readiness.mjs",
     "test:manual-uat": "node scripts/test-manual-uat-signoff.mjs",
     "check:rc": "node scripts/check-rc-readiness.mjs",
