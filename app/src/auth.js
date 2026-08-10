@@ -12,6 +12,7 @@ import './success-diagnostic-routing.js';
 import './exam-experience.js';
 import './diagnostic-experience.js';
 import './diagnostic-notebook-bridge.js';
+import './student-state-sync.js';
 import { configureProgress, flushProgressQueue } from './progress-client.js';
 import './progress-integrations.js';
 
@@ -90,7 +91,10 @@ function installLogoutButton() {
     button.classList.add('is-loading');
     button.querySelector('b').textContent = 'جارٍ الخروج…';
     try {
-      await flushProgressQueue().catch(() => {});
+      await Promise.allSettled([
+        flushProgressQueue(),
+        window.NEON_STUDENT_STATE?.flush?.()
+      ]);
       await signOutCurrentUser();
       location.replace('/legacy/auth.html');
     } catch (error) {
