@@ -1,68 +1,57 @@
 # NEON Release Candidate — 0.6.0-rc.1
 
-هذه النسخة هي أول Release Candidate للبنية الحديثة Zero-Legacy. الهدف منها فصل أربع حالات بوضوح:
+هذه النسخة هي أول Release Candidate للبنية الحديثة Zero-Legacy، وتفصل أربع حالات بوضوح:
 
 1. **Build Success**: الكود يبنى ويمر بحراس الجودة.
 2. **RC PREPARED**: Release + Automated UAT نجحا وتم إنشاء Manifest مربوط بالـSHA وحزمة `dist`.
-3. **Manual UAT APPROVED**: نفذت الحالات الـ15 فعليًا وسُجلت في Artifact غير قابل للتعديل مربوط بالـSHA والمختبر.
-4. **RC APPROVED**: Final Merge Gate تحقق من Manual UAT Artifact وRailway على نفس SHA، ثم أعاد الاختبارات وأصدر Manifest نهائيًا بحالة `APPROVED`.
+3. **Manual UAT APPROVED**: نفذت الحالات الـ15 فعليًا على SHA محدد وتم إنشاء سجل اعتماد داخل PR.
+4. **RC APPROVED**: Final Merge Gate أثبت أن Runtime لم يتغير بعد الاختبار، وتحقق من Railway ثم أعاد الاختبارات وأصدر Manifest نهائيًا `APPROVED`.
 
 ## RC Preparation
-
-الأمر المحلي/CI:
 
 ```bash
 npm run rc:prepare
 ```
 
-ويشمل:
+ويشمل `uat:gate` وفحص سياسة RC وإنشاء `artifacts/release-candidate-manifest.json` مع SHA-256 تجميعي لحزمة `dist`.
 
-- `npm run uat:gate`
-- فحص سياسة RC.
-- إنشاء `artifacts/release-candidate-manifest.json`.
-- حساب SHA-256 تجميعي لحزمة `dist` مع عدد الملفات والحجم.
+Workflow: **Release Candidate Preparation**. نجاحه يعني **PREPARED فقط**.
 
-Workflow: **Release Candidate Preparation**.
+## Manual UAT
 
-نجاح هذا Workflow يعني **PREPARED فقط** ولا يعني الموافقة على الدمج.
+نفذ الحالات المحددة في `docs/UAT-MERGE-READINESS.md` على رأس PR ثابت، وسجل SHA هذا كـ`testedSha`.
 
-## Manual UAT Sign-off
+استخدم `release/manual-uat-template.json` أثناء التنفيذ. لا تحول أي حالة إلى `PASS` قبل نجاحها فعليًا، ولا تدخل كلمات مرور أو Firebase tokens أو أسرارًا في المستودع.
 
-يجب تنفيذ جميع الحالات المحددة في `docs/UAT-MERGE-READINESS.md` فعليًا، وتشمل الحسابات والصلاحيات والحساب الموقوف وتبديل حسابين وSTEP/Exams/Coding والهاتف والكمبيوتر.
+بعد 15/15 PASS:
 
-استخدم `release/manual-uat-template.json` أثناء التنفيذ. لا تحول أي حالة إلى `PASS` قبل نجاحها فعليًا، ولا تدخل كلمات مرور أو Firebase tokens في GitHub comments أو artifacts.
+1. أنشئ `release/manual-uat-signoff.json` من القالب.
+2. اجعل `status = APPROVED` و`approvedCaseCount = 15`.
+3. ضع `testedSha` الذي تم اختبار Runtime عليه، واسم المختبر، ومرجع الأدلة، ووقت `approvedAt`.
+4. يجب أن يكون Commit الاعتماد هو **التغيير الوحيد** بعد `testedSha`؛ لا تعدل أي كود أو Runtime معه.
 
-بعد 15/15 PASS شغّل Workflow **Manual UAT Sign-off**. هذا Workflow:
-
-- يتأكد أن `candidate_sha` هو الرأس الحالي لـPR #1.
-- يتأكد أن Railway Preview = `success` على نفس SHA.
-- يرفض أي حالة ليست `PASS`، أو حالة ناقصة/زائدة، أو وجود Critical/High regression.
-- يحفظ اسم المختبر ومرجع الأدلة بدون أسرار.
-- ينتج Artifact باسم `neon-manual-uat-<sha>` محفوظًا 90 يومًا.
-
-نجاح Workflow هو سجل الاعتماد البشري القابل للتدقيق. لا يكفي إدخال Boolean عام في Final Gate.
+هذا يجعل Git نفسه سجل التدقيق: الاختبار تم على `testedSha`، والرأس اللاحق يضيف سجل الاعتماد فقط.
 
 ## Final Merge Gate
 
-Workflow: **Final Merge Gate** ويعمل يدويًا فقط (`workflow_dispatch`).
+Workflow: **Final Merge Gate** ويعمل تلقائيًا عند إضافة/تعديل `release/manual-uat-signoff.json` في PR.
 
-المدخل الوحيد المطلوب:
+البوابة تتحقق من:
 
-- `candidate_sha`: رأس PR #1 الكامل من 40 خانة.
+- أن checkout هو رأس PR الحالي نفسه.
+- صحة سجل Manual UAT ووجود 15/15 PASS وصفر Critical/High regressions.
+- أن `testedSha` أصل للرأس الحالي.
+- أن `git diff testedSha..HEAD` يحتوي ملفًا واحدًا فقط: `release/manual-uat-signoff.json`.
+- أن رأس PR لم يتحرك أثناء الفحص.
+- Railway Preview = `success` على رأس الـPR الحالي.
+- إعادة تشغيل `npm run rc:final` بالكامل.
+- إنشاء Manifest بحالة `APPROVED` ورفع كل من Manifest وسجل UAT كArtifact لمدة 90 يومًا.
 
-البوابة تتحقق آليًا من:
-
-- أن `candidate_sha` هو **الرأس الحالي** لـPR #1، وليس Commit قديمًا.
-- أن Railway Preview = `success` على **نفس SHA**.
-- وجود تشغيل ناجح لـ**Manual UAT Sign-off** على نفس SHA.
-- تنزيل Artifact `neon-manual-uat-<sha>` من تشغيل UAT الناجح.
-- التحقق مرة أخرى من أن الحالات الـ15 كلها PASS، وRegression clearance = صفر، واسم المختبر/الدليل موجودان.
-- إعادة تشغيل كامل `rc:final` على SHA المحدد.
-- إنشاء Manifest جديد بحالة `APPROVED` ورفعه كArtifact لمدة 90 يومًا.
+إذا تغيّر أي ملف آخر بعد `testedSha`، تفشل البوابة ويجب إعادة Manual UAT على SHA الجديد.
 
 ## Ready for Review
 
-بعد نجاح **Final Merge Gate** فقط يمكن تحويل PR #1 من Draft إلى Ready for Review. التحويل نفسه لا يتم تلقائيًا من Workflow حتى تبقى خطوة الدمج قرارًا صريحًا.
+بعد نجاح **Final Merge Gate** فقط يمكن تحويل PR #1 من Draft إلى Ready for Review. التحويل لا يتم تلقائيًا حتى تبقى خطوة الدمج قرارًا صريحًا.
 
 ## Merge
 
@@ -73,6 +62,6 @@ Workflow: **Final Merge Gate** ويعمل يدويًا فقط (`workflow_dispatc
 - Automated UAT Gate = Success.
 - Release Candidate Preparation = Success.
 - Railway Preview = Success على الرأس الحالي.
-- Manual UAT Sign-off = Success على الرأس الحالي و15/15 PASS.
+- Manual UAT = 15/15 PASS بسجل صالح.
 - Final Merge Gate = Success على الرأس الحالي.
-- عدم تحرك HEAD بعد الاعتماد النهائي؛ إذا تحرك SHA يجب إعادة Manual UAT للحالات المتأثرة ثم Final Merge Gate على SHA الجديد.
+- عدم وجود Critical/High regressions مفتوحة.
