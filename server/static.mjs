@@ -59,20 +59,10 @@ function cacheControl(filePath) {
   const relative = filePath.slice(root.length).replaceAll('\\', '/');
   if (criticalAuthFiles.has(relative)) return 'no-store, no-cache, must-revalidate, max-age=0';
   if (relative.startsWith('/assets/')) return 'public, max-age=31536000, immutable';
-  if (relative.startsWith('/data/exams/')) return 'public, max-age=86400, stale-while-revalidate=604800';
+  if (relative.startsWith('/data/exams/') || relative.startsWith('/data/coding/')) return 'public, max-age=86400, stale-while-revalidate=604800';
   if (relative.startsWith('/legacy/')) return 'public, max-age=3600, stale-while-revalidate=86400';
   if (extname(filePath) === '.html') return 'public, max-age=0, must-revalidate';
   return 'public, max-age=3600';
-}
-
-function isEmbeddedLegacyRequest(req, requestPath) {
-  if (requestPath !== '/legacy/coding.html') return false;
-  try {
-    const url = new URL(req.url || '/', 'http://localhost');
-    return url.searchParams.get('embedded') === '1';
-  } catch {
-    return false;
-  }
 }
 
 function redirectLocation(req, requestPath, destination) {
@@ -91,7 +81,7 @@ export function handleStatic(req, res, requestPath) {
     res.end();
     return;
   }
-  const destination = isEmbeddedLegacyRequest(req, requestPath) ? null : redirects.get(requestPath);
+  const destination = redirects.get(requestPath);
   if (destination) {
     res.writeHead(308, { Location: redirectLocation(req, requestPath, destination), 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0', Pragma: 'no-cache', Expires: '0' });
     res.end();
