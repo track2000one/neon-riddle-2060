@@ -10,6 +10,23 @@ function fail(message) {
   throw new Error(`Manual UAT sign-off failed: ${message}`);
 }
 
+function parseResults() {
+  const raw = String(process.env.NEON_UAT_RESULTS_JSON || '').trim();
+  if (raw) {
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      fail('NEON_UAT_RESULTS_JSON must be valid JSON');
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) fail('UAT results must be a JSON object');
+    return parsed;
+  }
+  const fallback = {};
+  for (const id of ids) fallback[id] = process.env[`NEON_UAT_${id.replaceAll('-', '_')}`] || '';
+  return fallback;
+}
+
 const candidateSha = String(process.env.NEON_CANDIDATE_SHA || '').trim();
 const tester = String(process.env.NEON_UAT_TESTER || '').trim();
 const evidence = String(process.env.NEON_UAT_EVIDENCE || '').trim();
@@ -24,10 +41,13 @@ if (evidence.length > 2000) fail('evidence reference is too long');
 if (railwayStatus !== 'success') fail(`Railway must be success on candidate SHA; received ${railwayStatus || 'missing'}`);
 if (!noHighSeverityRegressions) fail('critical/high regression clearance must be explicitly approved');
 
+const suppliedResults = parseResults();
+const unknownIds = Object.keys(suppliedResults).filter(id => !ids.includes(id));
+if (unknownIds.length) fail(`unknown UAT case IDs: ${unknownIds.join(', ')}`);
+
 const cases = {};
 for (const id of ids) {
-  const key = `NEON_UAT_${id.replaceAll('-', '_')}`;
-  const status = String(process.env[key] || '').trim().toUpperCase();
+  const status = String(suppliedResults[id] || '').trim().toUpperCase();
   if (status !== 'PASS') fail(`${id} must be PASS; received ${status || 'missing'}`);
   cases[id] = 'PASS';
 }
