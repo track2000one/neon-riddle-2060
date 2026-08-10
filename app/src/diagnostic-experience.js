@@ -1,8 +1,8 @@
 import './diagnostic-experience.css';
 
 const HISTORY_KEY = 'neonOptimizedExamHistoryV1';
-const DIAGNOSTIC_COUNT = 20;
-const DIAGNOSTIC_MINUTES = 25;
+const DIAGNOSTIC_COUNT = 28;
+const DIAGNOSTIC_MINUTES = 30;
 const tracks = {
   tahsili: {
     title: 'التشخيص الشامل للتحصيلي العلمي',
@@ -23,6 +23,17 @@ const subjectTitles = {
   'qudurat-verbal': 'القدرات اللفظية',
   'qudurat-quant': 'القدرات الكمية'
 };
+const categoryTitles = {
+  algebra:'الجبر', arithmetic:'الحساب', percentages:'النسب المئوية', percentage:'النسب المئوية', ratios:'النسب والتناسب', ratio:'النسب والتناسب',
+  fractions:'الكسور', decimals:'الأعداد العشرية', integers:'الأعداد الصحيحة', numbers:'الأعداد', 'number-sense':'الحس العددي', exponents:'الأسس', roots:'الجذور',
+  equations:'المعادلات', inequalities:'المتباينات', functions:'الدوال', polynomials:'كثيرات الحدود', sequences:'المتتابعات', matrices:'المصفوفات',
+  geometry:'الهندسة', 'analytic-geometry':'الهندسة التحليلية', 'solid-geometry':'الهندسة الفراغية', transformations:'التحويلات', conics:'القطوع المخروطية', trigonometry:'المثلثات', measurement:'القياس',
+  probability:'الاحتمالات', statistics:'الإحصاء', combinatorics:'العد', calculus:'التفاضل والتكامل', 'word-problems':'المسائل اللفظية', speed:'السرعة', work:'العمل',
+  analogy:'التناظر اللفظي', analogies:'التناظر اللفظي', vocabulary:'المفردات', 'sentence-completion':'إكمال الجمل', 'contextual-error':'الخطأ السياقي', 'reading-comprehension':'استيعاب المقروء', 'verbal-reasoning':'الاستدلال اللفظي',
+  motion:'الحركة', projectiles:'المقذوفات', equilibrium:'الاتزان', rotation:'الدوران', momentum:'الزخم', energy:'الطاقة', 'work-power':'الشغل والقدرة', oscillations:'الاهتزازات', waves:'الموجات', optics:'البصريات', sound:'الصوت', electricity:'الكهرباء', circuits:'الدوائر الكهربائية', magnetism:'المغناطيسية', modern:'الفيزياء الحديثة',
+  matter:'المادة', atmosphere:'الغلاف الجوي', liquids:'السوائل', atomic:'الذرة', nuclear:'النواة', 'electron-config':'التوزيع الإلكتروني', periodic:'الجدول الدوري', ions:'الأيونات', bonding:'الروابط', polarity:'القطبية', intermolecular:'القوى بين الجزيئات', reactions:'التفاعلات', stoichiometry:'الحسابات الكيميائية', gases:'الغازات',
+  genetics:'الوراثة', ecology:'علم البيئة', environment:'علوم البيئة', ecosystems:'الأنظمة البيئية', biodiversity:'التنوع الحيوي', behavior:'السلوك الحيواني', evolution:'التطور', classification:'التصنيف', cells:'الخلايا', plants:'النبات', animals:'الحيوان', microbiology:'الأحياء الدقيقة', anatomy:'أجهزة الجسم', reproduction:'التكاثر'
+};
 
 let manifest;
 let state;
@@ -30,6 +41,15 @@ let timer;
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, character => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[character]);
+}
+
+function normalizeCategory(value) {
+  return String(value || 'general').trim().toLowerCase().replace(/\s+/g, '-').replace(/_/g, '-');
+}
+
+function categoryTitle(value) {
+  const category = normalizeCategory(value);
+  return categoryTitles[category] || String(value || 'مهارات عامة').replace(/[-_]+/g, ' ');
 }
 
 function shuffle(values) {
@@ -61,7 +81,7 @@ function ensureUi() {
   launch.id = 'diagnosticLaunch';
   launch.className = 'diagnostic-launch';
   launch.innerHTML = `
-    <div><h2>ابدأ بقياس مستواك قبل التدريب</h2><p>تشخيص موحّد من 20 سؤالًا يوزع النتيجة على المواد ويحدد أولويات خطتك.</p></div>
+    <div><h2>ابدأ بقياس مستواك قبل التدريب</h2><p>تشخيص من ${DIAGNOSTIC_COUNT.toLocaleString('ar-SA')} سؤالًا يوزع النتيجة على المواد والمهارات ويحدد أولويات خطتك.</p></div>
     <div class="diagnostic-launch-actions"><button class="diagnostic-primary" data-start-diagnostic="tahsili">تشخيص التحصيلي</button><button class="diagnostic-secondary" data-start-diagnostic="qudurat">تشخيص القدرات</button></div>`;
   subjectGrid.insertAdjacentElement('beforebegin', launch);
 
@@ -109,7 +129,7 @@ async function loadSubject(subject) {
 function balancedSample(rows, count) {
   const byCategory = new Map();
   for (const row of shuffle(rows)) {
-    const key = String(row.category || 'general');
+    const key = normalizeCategory(row.category);
     if (!byCategory.has(key)) byCategory.set(key, []);
     byCategory.get(key).push(row);
   }
@@ -162,7 +182,7 @@ function renderQuestion() {
   shell.innerHTML = `
     <div class="diagnostic-head"><div><span class="eyebrow">STANDARDIZED DIAGNOSTIC</span><h2>${escapeHtml(tracks[state.trackId].title)}</h2><p>لا تظهر الإجابات أثناء التشخيص حتى تكون النتيجة أقرب إلى مستواك الفعلي.</p></div><time class="diagnostic-timer" id="diagnosticTimer">${formatTime(state.remaining)}</time></div>
     <div class="diagnostic-progress"><span style="width:${percent}%"></span></div>
-    <span class="diagnostic-subject">${escapeHtml(subjectTitles[question.subject] || question.subject)} • السؤال ${(state.index + 1).toLocaleString('ar-SA')} من ${state.questions.length.toLocaleString('ar-SA')}</span>
+    <span class="diagnostic-subject">${escapeHtml(subjectTitles[question.subject] || question.subject)} • ${escapeHtml(categoryTitle(question.category))} • السؤال ${(state.index + 1).toLocaleString('ar-SA')} من ${state.questions.length.toLocaleString('ar-SA')}</span>
     ${question.passage ? `<div class="exam-passage">${escapeHtml(question.passage)}</div>` : ''}
     <h3 class="diagnostic-question">${escapeHtml(question.q)}</h3>
     <div class="diagnostic-options">${question.options.map((option, index) => `<button class="diagnostic-option ${selected === index ? 'selected' : ''}" data-diagnostic-answer="${index}"><span>${String.fromCharCode(65 + index)}</span>${escapeHtml(option)}</button>`).join('')}</div>
@@ -220,6 +240,8 @@ function selectAnswer(choice) {
   state.answers[state.index] = {
     id: String(question.id),
     subject: question.subject,
+    category: normalizeCategory(question.category),
+    categoryTitle: categoryTitle(question.category),
     selected: choice,
     answer: Number(question.answer),
     correct: choice === Number(question.answer)
@@ -248,11 +270,34 @@ function breakdownFor(answers) {
   })).sort((a, b) => a.percent - b.percent);
 }
 
+function skillBreakdownFor(answers) {
+  const map = new Map();
+  for (const answer of answers) {
+    const category = normalizeCategory(answer.category);
+    const key = `${answer.subject}|${category}`;
+    const row = map.get(key) || {
+      subject: answer.subject,
+      subjectTitle: subjectTitles[answer.subject] || answer.subject,
+      category,
+      title: answer.categoryTitle || categoryTitle(category),
+      total: 0,
+      correct: 0
+    };
+    row.total += 1;
+    if (answer.correct) row.correct += 1;
+    map.set(key, row);
+  }
+  return [...map.values()].map(row => ({
+    ...row,
+    percent: row.total ? Math.round((row.correct / row.total) * 100) : 0
+  })).sort((a, b) => (a.percent - b.percent) || (b.total - a.total) || a.title.localeCompare(b.title, 'ar'));
+}
+
 function readinessMessage(score) {
   if (score >= 85) return 'مستواك قوي. ركز على المحاكاة الزمنية والأسئلة المتقدمة للحفاظ على الجاهزية.';
   if (score >= 70) return 'مستواك جيد. خطتك القادمة ينبغي أن تجمع تثبيت الأخطاء مع محاكاة قصيرة متكررة.';
-  if (score >= 50) return 'لديك أساس مناسب، لكنك تحتاج تدريبًا مركزًا على أضعف مادتين قبل المحاكاة الشاملة.';
-  return 'ابدأ بالتأسيس المنظم ثم التدريب القصير. ستتغير خطتك تلقائيًا كلما تحسنت نتائجك.';
+  if (score >= 50) return 'لديك أساس مناسب، لكنك تحتاج تدريبًا مركزًا على المهارات الأضعف قبل المحاكاة الشاملة.';
+  return 'ابدأ بالتأسيس المنظم ثم التدريب القصير. ستتغير خريطة مهاراتك تلقائيًا كلما تحسنت نتائجك.';
 }
 
 async function finishDiagnostic() {
@@ -261,15 +306,22 @@ async function finishDiagnostic() {
   clearInterval(timer);
   const current = state;
   const answers = current.questions.map((question, index) => current.answers[index] || {
-    id: String(question.id), subject: question.subject, selected: null,
-    answer: Number(question.answer), correct: false
+    id: String(question.id),
+    subject: question.subject,
+    category: normalizeCategory(question.category),
+    categoryTitle: categoryTitle(question.category),
+    selected: null,
+    answer: Number(question.answer),
+    correct: false
   });
   const correct = answers.filter(answer => answer.correct).length;
   const total = answers.length;
   const score = total ? Math.round((correct / total) * 100) : 0;
   const elapsed = Math.max(1, Math.round((Date.now() - current.startedAt) / 1000));
   const breakdown = breakdownFor(answers);
+  const skillBreakdown = skillBreakdownFor(answers);
   const weakest = breakdown[0];
+  const weakestSkill = skillBreakdown.find(item => item.total >= 2) || skillBreakdown[0];
   const result = {
     date: new Date().toISOString(),
     subject: `diagnostic-${current.trackId}`,
@@ -280,8 +332,10 @@ async function finishDiagnostic() {
     durationSeconds: elapsed,
     level: 'diagnostic',
     mode: 'diagnostic',
+    diagnosticVersion: 2,
     wrongCount: total - correct,
     breakdown,
+    skillBreakdown,
     answers
   };
   saveHistory(result);
@@ -291,16 +345,24 @@ async function finishDiagnostic() {
     title: result.title, status: 'completed', progressPercent: 100,
     masteryScore: score, score, subjectId: `diagnostic-${current.trackId}`,
     correct, total, durationSeconds: elapsed, href: '/exams',
-    details: { breakdown, trackId: current.trackId }
+    details: { breakdown, skillBreakdown, trackId: current.trackId, diagnosticVersion: 2 }
   }).catch?.(() => {});
 
+  const visibleSkills = skillBreakdown.slice(0, 10);
+  const skillHref = weakestSkill
+    ? `/exams?subject=${encodeURIComponent(weakestSkill.subject)}&skill=${encodeURIComponent(weakestSkill.category)}`
+    : weakest ? `/exams?subject=${encodeURIComponent(weakest.subject)}` : '/exams';
   const shell = document.getElementById('diagnosticShell');
   shell.innerHTML = `
-    <div class="diagnostic-head"><div><span class="eyebrow">DIAGNOSTIC REPORT</span><h2>تقرير التشخيص</h2><p>النتيجة إرشادية وتُستخدم لترتيب الخطة والتدريب، وليست توقعًا رسميًا للدرجة.</p></div></div>
+    <div class="diagnostic-head"><div><span class="eyebrow">DIAGNOSTIC REPORT</span><h2>تقرير التشخيص وخريطة المهارات</h2><p>النتيجة إرشادية وتُستخدم لترتيب الخطة والتدريب، وليست توقعًا رسميًا للدرجة.</p></div></div>
     <div class="diagnostic-result-hero"><div class="diagnostic-result-score" style="--diagnostic-angle:${score * 3.6}deg"><strong>${score}%</strong></div><div><h3>${score >= 70 ? 'بداية جيدة لبناء خطة الإتقان' : 'الخطوة التالية واضحة الآن'}</h3><p>${escapeHtml(readinessMessage(score))}</p></div></div>
     <div class="diagnostic-breakdown">${breakdown.map(item => `<article><strong>${escapeHtml(item.title)}</strong><b>${item.percent}%</b><small>${item.correct} من ${item.total}</small></article>`).join('')}</div>
-    <div class="diagnostic-recommendation"><strong>الأولوية الأولى:</strong> ${weakest ? `ابدأ بتدريب ${escapeHtml(weakest.title)}؛ فهي الأقل أداءً في هذا التشخيص.` : 'ابدأ بالتدريب الذكي.'}</div>
-    <div class="diagnostic-result-actions">${weakest ? `<a class="diagnostic-primary" href="/exams?subject=${encodeURIComponent(weakest.subject)}">تدريب ${escapeHtml(weakest.title)}</a>` : ''}<a class="diagnostic-secondary" href="/">عرض خطتي اليومية</a><button class="diagnostic-secondary" data-start-diagnostic="${current.trackId}">إعادة التشخيص</button></div>`;
+    <section class="diagnostic-skill-map"><div class="diagnostic-skill-head"><div><h3>خريطة المهارات</h3><p>الأولوية للأقل دقة مع مراعاة حجم العينة. المهارة ذات سؤال واحد تحتاج أدلة إضافية قبل الحكم عليها.</p></div></div><div class="diagnostic-skill-grid">${visibleSkills.map(item => {
+      const status = item.total < 2 ? 'evidence' : item.percent >= 80 ? 'strong' : item.percent >= 60 ? 'developing' : 'priority';
+      return `<a class="diagnostic-skill-card ${status}" href="/exams?subject=${encodeURIComponent(item.subject)}&skill=${encodeURIComponent(item.category)}"><span>${escapeHtml(item.subjectTitle)}</span><strong>${escapeHtml(item.title)}</strong><div><i style="width:${item.percent}%"></i></div><small>${item.percent}% • ${item.correct}/${item.total}${item.total < 2 ? ' • عينة أولية' : ''}</small></a>`;
+    }).join('')}</div></section>
+    <div class="diagnostic-recommendation"><strong>الأولوية الأولى:</strong> ${weakestSkill ? `ابدأ بتدريب ${escapeHtml(weakestSkill.title)} في ${escapeHtml(weakestSkill.subjectTitle)}؛ فهي من أضعف المهارات التي ظهرت في التشخيص.` : weakest ? `ابدأ بتدريب ${escapeHtml(weakest.title)}.` : 'ابدأ بالتدريب الذكي.'}</div>
+    <div class="diagnostic-result-actions"><a class="diagnostic-primary" href="${skillHref}">ابدأ تدريب الأولوية</a><a class="diagnostic-secondary" href="/">عرض خطتي اليومية</a><button class="diagnostic-secondary" data-start-diagnostic="${current.trackId}">إعادة التشخيص</button></div>`;
   state = null;
 }
 
