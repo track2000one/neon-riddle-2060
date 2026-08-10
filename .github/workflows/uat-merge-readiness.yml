@@ -12,13 +12,16 @@ on:
       - 'server/**'
       - 'scripts/**'
       - 'academy/**'
+      - 'release/**'
       - 'docs/UAT-MERGE-READINESS.md'
+      - 'docs/RELEASE-CANDIDATE.md'
       - 'package.json'
       - 'package-lock.json'
       - 'vite.config.js'
       - 'railway.toml'
       - 'vercel.json'
       - '.github/workflows/uat-merge-readiness.yml'
+      - '.github/workflows/final-merge-gate.yml'
 
 permissions:
   contents: read
@@ -48,4 +51,7 @@ jobs:
           grep -q '| AUTH-01 |' docs/UAT-MERGE-READINESS.md
           grep -q '| RBAC-03 |' docs/UAT-MERGE-READINESS.md
           grep -q '| MOBILE-01 |' docs/UAT-MERGE-READINESS.md
-          grep -q 'Railway Preview = Success on the same HEAD SHA\|Railway Preview = Success على نفس HEAD SHA' docs/UAT-MERGE-READINESS.md
+          grep -q 'release/manual-uat-signoff.json' docs/UAT-MERGE-READINESS.md
+          grep -q 'Sign-off only\|Sign-off-only\|Sign-off only' docs/UAT-MERGE-READINESS.md docs/RELEASE-CANDIDATE.md
+          grep -q 'Final Merge Gate' docs/UAT-MERGE-READINESS.md
+          test ! -f release/manual-uat-signoff.json || node scripts/verify-manual-uat-signoff.mjs release/manual-uat-signoff.json
