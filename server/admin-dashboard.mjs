@@ -147,6 +147,18 @@ async function ensureSchema() {
   if (!pool) throw Object.assign(new Error('DATABASE_NOT_CONFIGURED'), { statusCode: 503 });
   if (!schemaPromise) {
     schemaPromise = pool.query(`
+      CREATE TABLE IF NOT EXISTS neon_question_reports (
+        id BIGSERIAL PRIMARY KEY,
+        firebase_uid TEXT NOT NULL,
+        question_id TEXT NOT NULL DEFAULT '',
+        subject_id TEXT NOT NULL DEFAULT '',
+        reason TEXT NOT NULL DEFAULT 'other',
+        note TEXT NOT NULL DEFAULT '',
+        question_text TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'new',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
       CREATE TABLE IF NOT EXISTS neon_question_overrides (
         subject_id TEXT NOT NULL,
         question_id TEXT NOT NULL,
@@ -174,6 +186,7 @@ async function ensureSchema() {
       ALTER TABLE neon_question_reports ADD COLUMN IF NOT EXISTS resolved_by TEXT NOT NULL DEFAULT '';
       ALTER TABLE neon_question_reports ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ;
 
+      CREATE INDEX IF NOT EXISTS neon_question_reports_status_idx ON neon_question_reports(status, created_at DESC);
       CREATE INDEX IF NOT EXISTS neon_question_overrides_status_idx ON neon_question_overrides(review_status, updated_at DESC);
       CREATE INDEX IF NOT EXISTS neon_admin_audit_created_idx ON neon_admin_audit(created_at DESC);
       CREATE INDEX IF NOT EXISTS neon_admin_audit_entity_idx ON neon_admin_audit(entity_type, entity_id, created_at DESC);
