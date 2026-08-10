@@ -34,6 +34,30 @@ function runtimeImport(url) {
   return import(/* @vite-ignore */ url);
 }
 
+async function registerPlatformAccess(user) {
+  try {
+    const token = await user.getIdToken();
+    const response = await fetch('/api/access/session', {
+      method: 'POST',
+      cache: 'no-store',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 403 && data.error === 'ACCOUNT_SUSPENDED') {
+      throw Object.assign(new Error(data.message || 'تم إيقاف الوصول إلى المنصة لهذا الحساب.'), { code: 'ACCOUNT_SUSPENDED', access: data.access });
+    }
+    if (!response.ok) {
+      if (response.status >= 500) return { role: 'student', status: 'active', configured: false, degraded: true };
+      throw Object.assign(new Error(data.message || `HTTP_${response.status}`), { code: data.error || 'ACCESS_CHECK_FAILED' });
+    }
+    return data.access || { role: 'student', status: 'active', configured: false };
+  } catch (error) {
+    if (error?.code === 'ACCOUNT_SUSPENDED') throw error;
+    console.warn('NEON platform access check degraded:', error?.message || error);
+    return { role: 'student', status: 'active', configured: false, degraded: true };
+  }
+}
+
 function seedProfile(user) {
   const profilesKey = 'neonRiddleGrandProfilesV4';
   const settingsKey = 'neonRiddleGrandSettingsV4';
@@ -126,7 +150,7 @@ export async function ensureAuth() {
   signOutCurrentUser = () => signOut(auth);
 
   return new Promise((resolve, reject) => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
+    const unsubscribe = onAuthStateChanged(auth, async user => {
       unsubscribe();
       if (!user) {
         const next = encodeURIComponent(`${location.pathname}${location.search}${location.hash}`);
@@ -135,19 +159,32 @@ export async function ensureAuth() {
         return;
       }
 
-      const ownership = claimLocalStateOwner(localStorage, user.uid);
-      if (ownership.changed) {
-        console.info(`NEON local cache isolated for account switch (${ownership.cleared.length} shared keys cleared).`);
-      }
+      try {
+        const access = await registerPlatformAccess(user);
+        if (access.status === 'suspended') throw Object.assign(new Error('تم إيقاف الوصول إلى المنصة لهذا الحساب.'), { code: 'ACCOUNT_SUSPENDED' });
 
-      const profile = seedProfile(user);
-      const session = { user, profile, auth };
-      window.NEON_AUTH_USER = { uid: user.uid, email: user.email || '', displayName: profile.academy?.name || profile.name };
-      window.NEON_AUTH_SESSION = session;
-      configureProgress(session);
-      flushProgressQueue().catch(() => {});
-      window.dispatchEvent(new CustomEvent('neon-auth-session', { detail: session }));
-      resolve(session);
+        const ownership = claimLocalStateOwner(localStorage, user.uid);
+        if (ownership.changed) {
+          console.info(`NEON local cache isolated for account switch (${ownership.cleared.length} shared keys cleared).`);
+        }
+
+        const profile = seedProfile(user);
+        const session = { user, profile, auth, access };
+        window.NEON_PLATFORM_ACCESS = access;
+        window.NEON_AUTH_USER = { uid: user.uid, email: user.email || '', displayName: profile.academy?.name || profile.name, role: access.role || 'student' };
+        window.NEON_AUTH_SESSION = session;
+        configureProgress(session);
+        flushProgressQueue().catch(() => {});
+        window.dispatchEvent(new CustomEvent('neon-auth-session', { detail: session }));
+        resolve(session);
+      } catch (error) {
+        if (error?.code === 'ACCOUNT_SUSPENDED') {
+          await signOut(auth).catch(() => {});
+          window.alert('تم إيقاف الوصول إلى خدمات NEON لهذا الحساب. إذا كنت تعتقد أن هذا بالخطأ فتواصل مع إدارة المنصة.');
+          location.replace('/legacy/auth.html?blocked=1');
+        }
+        reject(error);
+      }
     }, reject);
   });
 }
