@@ -55,11 +55,13 @@ jobs:
           test -f dist/exams.html
           test -f dist/games.html
           test -f dist/learning.html
+          test -f dist/coding.html
           test -f dist/tutor.html
           test -d dist/assets
           test -d dist/legacy
           grep -q 'ADAPTIVE MASTERY EXAM CENTER' dist/exams.html
           grep -q 'examMode' dist/exams.html
+          grep -q 'تعليم البرمجة' dist/coding.html
           test -f dist/legacy/step-mastery-lessons.js
           test -f dist/legacy/step-mastery-questions.js
           test -f dist/legacy/step-book-kafayat-1-runtime.js
@@ -77,10 +79,11 @@ jobs:
           test -f dist/data/exams/tahsili-physics.json
           test -f dist/data/exams/tahsili-chemistry.json
           test -f dist/data/exams/tahsili-biology.json
-          node -e "const m=require('./dist/data/exams/manifest.json'); if(!m.totalQuestions) process.exit(1); if(Object.keys(m.subjects).length!==6) process.exit(1); if((m.subjects['tahsili-biology']?.count||0)<100) process.exit(1); console.log('Compiled questions:',m.totalQuestions,'Biology:',m.subjects['tahsili-biology'].count,'Subjects:',Object.keys(m.subjects).length)"
+          node -e "const m=require('./dist/data/exams/manifest.json'); if(!m.totalQuestions) process.exit(1); if(Object.keys(m.subjects).length!==6) process.exit(1); if((m.subjects['tahsili-biology']?.count||0)<100) process.exit(1); if(!Number.isInteger(m.exactDuplicatesRemoved)||!Number.isInteger(m.fuzzyDuplicatesRemoved)) process.exit(1); console.log('Compiled questions:',m.totalQuestions,'Biology:',m.subjects['tahsili-biology'].count,'Subjects:',Object.keys(m.subjects).length,'Fuzzy removed:',m.fuzzyDuplicatesRemoved)"
           node -e "const fs=require('fs'),vm=require('vm'); const expected={'tahsili-math':['exam-bank-uploaded-tahsili-math-advanced-model8-2026.js',30],'tahsili-physics':['exam-bank-uploaded-tahsili-physics-advanced-model8-2026.js',30],'tahsili-chemistry':['exam-bank-uploaded-tahsili-chemistry-advanced-model8-2026.js',51],'tahsili-biology':['exam-bank-uploaded-tahsili-biology-advanced-model8-2026.js',40]}; for(const [subject,[file,count]] of Object.entries(expected)){const window={}; window.window=window; vm.runInNewContext(fs.readFileSync('./dist/legacy/'+file,'utf8'),{window,globalThis:window}); const sourceRows=window.NEON_TAHSILI_ADVANCED_QUESTIONS||[]; if(sourceRows.length!==count) throw new Error(subject+': source bank expected '+count+', found '+sourceRows.length); const rows=JSON.parse(fs.readFileSync('./dist/data/exams/'+subject+'.json','utf8')); const advanced=rows.filter(row=>String(row.id||'').startsWith('adv8-')); if(advanced.length<Math.floor(count*.8)) throw new Error(subject+': too many advanced questions lost during deduplication'); if(!advanced.every(row=>row.explain&&row.category&&row.level)) throw new Error(subject+': incomplete advanced explanation metadata'); console.log(subject,'source:',sourceRows.length,'unique compiled:',advanced.length)}"
           node -e "const fs=require('fs'); const path=require('path'); const forbidden=new Set(['source','sourcePage','sourceQuestion','sourcePages','sourceFile','sourceTitle','book','bookId','bookTitle','author','writer','page','pageNo','pageNumber','pdf','pdfPage','documentName','documentTitle']); for(const file of fs.readdirSync('dist/data/exams').filter(x=>x.endsWith('.json')&&x!=='manifest.json')){const rows=JSON.parse(fs.readFileSync(path.join('dist/data/exams',file),'utf8')); for(const row of rows){for(const key of Object.keys(row)){if(forbidden.has(key)) throw new Error(file+': forbidden metadata '+key)}}} console.log('Exam source identity and page metadata removed.')"
           node --check server/question-mastery.mjs
+          node --check server/student-state.mjs
           node --check dist/legacy/step-mastery-lessons.js
           node --check dist/legacy/step-mastery-questions.js
           node --check dist/legacy/step-book-kafayat-1-runtime.js
@@ -110,6 +113,8 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:4173/exams > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/games > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/learning > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/coding | grep -q 'تعليم البرمجة'
+          curl --fail --silent --show-error 'http://127.0.0.1:4173/legacy/coding.html?embedded=1' | grep -q 'تعليم البرمجة'
           curl --fail --silent --show-error http://127.0.0.1:4173/tutor > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/legacy/step-mastery-lessons.js > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/legacy/step-mastery-questions.js > /dev/null
@@ -131,6 +136,7 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:4173/api/tutor/status | grep -q '"configured":false'
           curl --fail --silent --show-error http://127.0.0.1:4173/api/progress/status | grep -q '"configured":false'
           curl --fail --silent --show-error http://127.0.0.1:4173/api/mastery/status | grep -q '"configured":false'
+          curl --fail --silent --show-error http://127.0.0.1:4173/api/student-state/status | grep -q '"configured":false'
           TUTOR_HTTP=$(curl --silent --output /tmp/tutor-response.json --write-out '%{http_code}' \
             --header 'Content-Type: application/json' \
             --data '{"message":"أين تقع القاهرة؟","subject":"الجغرافيا","level":"تطبيقي","mode":"explain"}' \
@@ -145,5 +151,9 @@ jobs:
             'http://127.0.0.1:4173/api/mastery/questions?subject=tahsili-math')
           test "$MASTERY_HTTP" = "401"
           grep -q 'AUTH_REQUIRED' /tmp/mastery-response.json
+          STUDENT_STATE_HTTP=$(curl --silent --output /tmp/student-state-response.json --write-out '%{http_code}' \
+            http://127.0.0.1:4173/api/student-state/notebook)
+          test "$STUDENT_STATE_HTTP" = "401"
+          grep -q 'AUTH_REQUIRED' /tmp/student-state-response.json
           cat /tmp/neon-server.log
-          echo "Railway production server, adaptive question mastery, advanced tahsili assets, source privacy, Gemini fallback, and authenticated progress APIs validated successfully."
+          echo "Railway production server, canonical routes, central dedupe, student state sync, source privacy, and authenticated APIs validated successfully."
