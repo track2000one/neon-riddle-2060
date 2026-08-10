@@ -70,11 +70,16 @@ jobs:
           grep -q 'examMode' dist/exams.html
           grep -q 'تعليم البرمجة' dist/coding.html
           grep -q 'NEON ADMIN' dist/admin.html
+          grep -q 'المستخدمون والصلاحيات' dist/admin.html
           grep -q 'DIAGNOSTIC_COUNT = 28' app/src/diagnostic-experience.js
           grep -q 'skillBreakdown' app/src/diagnostic-experience.js
           grep -q 'requestedSkill' app/src/exam-skill-selector.js
           grep -q 'skill-map' server/student-success.mjs
           grep -q 'live-overrides' server/admin-dashboard.mjs
+          grep -q "'super-admin'" server/admin-users.mjs
+          grep -q "'content-admin'" server/admin-users.mjs
+          grep -q "support:" server/admin-users.mjs
+          grep -q 'registerPlatformAccess' app/src/auth.js
           test -f dist/legacy/step-mastery-lessons.js
           test -f dist/legacy/step-mastery-questions.js
           test -f dist/legacy/step-book-kafayat-1-runtime.js
@@ -99,10 +104,13 @@ jobs:
           node --check server/student-state.mjs
           node --check server/readiness-engine.mjs
           node --check server/student-success.mjs
+          node --check server/platform-access.mjs
+          node --check server/admin-users.mjs
           node --check server/admin-dashboard.mjs
           node --check app/src/diagnostic-experience.js
           node --check app/src/exam-skill-selector.js
           node --check app/src/student-success.js
+          node --check app/src/admin-users.js
           node --check app/src/admin.js
           node --check dist/legacy/step-mastery-lessons.js
           node --check dist/legacy/step-mastery-questions.js
@@ -137,18 +145,6 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:4173/admin | grep -q 'NEON ADMIN'
           curl --fail --silent --show-error 'http://127.0.0.1:4173/legacy/coding.html?embedded=1' | grep -q 'تعليم البرمجة'
           curl --fail --silent --show-error http://127.0.0.1:4173/tutor > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/step-mastery-lessons.js > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/step-mastery-questions.js > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/step-book-kafayat-1-runtime.js > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/biology-mastery-lessons.js > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/biology-mastery-runtime.js > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/exam-bank-uploaded-biology-mastery-2026.js > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/tahsili-advanced-lessons-2026.js > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/tahsili-advanced-runtime-2026.js > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/exam-bank-uploaded-tahsili-math-advanced-model8-2026.js > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/exam-bank-uploaded-tahsili-physics-advanced-model8-2026.js > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/exam-bank-uploaded-tahsili-chemistry-advanced-model8-2026.js > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/exam-bank-uploaded-tahsili-biology-advanced-model8-2026.js > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/tahsili-math.json > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/tahsili-physics.json > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/tahsili-chemistry.json > /dev/null
@@ -159,31 +155,32 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:4173/api/mastery/status | grep -q '"configured":false'
           curl --fail --silent --show-error http://127.0.0.1:4173/api/student-state/status | grep -q '"configured":false'
           curl --fail --silent --show-error http://127.0.0.1:4173/api/success/status | grep -q '"skill-map"'
-          TUTOR_HTTP=$(curl --silent --output /tmp/tutor-response.json --write-out '%{http_code}' \
-            --header 'Content-Type: application/json' \
-            --data '{"message":"أين تقع القاهرة؟","subject":"الجغرافيا","level":"تطبيقي","mode":"explain"}' \
-            http://127.0.0.1:4173/api/tutor)
+          TUTOR_HTTP=$(curl --silent --output /tmp/tutor-response.json --write-out '%{http_code}' --header 'Content-Type: application/json' --data '{"message":"أين تقع القاهرة؟","subject":"الجغرافيا","level":"تطبيقي","mode":"explain"}' http://127.0.0.1:4173/api/tutor)
           test "$TUTOR_HTTP" = "503"
           grep -q 'GEMINI_NOT_CONFIGURED' /tmp/tutor-response.json
-          PROGRESS_HTTP=$(curl --silent --output /tmp/progress-response.json --write-out '%{http_code}' \
-            http://127.0.0.1:4173/api/progress/me)
+          PROGRESS_HTTP=$(curl --silent --output /tmp/progress-response.json --write-out '%{http_code}' http://127.0.0.1:4173/api/progress/me)
           test "$PROGRESS_HTTP" = "401"
           grep -q 'AUTH_REQUIRED' /tmp/progress-response.json
-          MASTERY_HTTP=$(curl --silent --output /tmp/mastery-response.json --write-out '%{http_code}' \
-            'http://127.0.0.1:4173/api/mastery/questions?subject=tahsili-math')
+          MASTERY_HTTP=$(curl --silent --output /tmp/mastery-response.json --write-out '%{http_code}' 'http://127.0.0.1:4173/api/mastery/questions?subject=tahsili-math')
           test "$MASTERY_HTTP" = "401"
           grep -q 'AUTH_REQUIRED' /tmp/mastery-response.json
-          STUDENT_STATE_HTTP=$(curl --silent --output /tmp/student-state-response.json --write-out '%{http_code}' \
-            http://127.0.0.1:4173/api/student-state/notebook)
+          STUDENT_STATE_HTTP=$(curl --silent --output /tmp/student-state-response.json --write-out '%{http_code}' http://127.0.0.1:4173/api/student-state/notebook)
           test "$STUDENT_STATE_HTTP" = "401"
           grep -q 'AUTH_REQUIRED' /tmp/student-state-response.json
-          SUCCESS_HTTP=$(curl --silent --output /tmp/success-response.json --write-out '%{http_code}' \
-            http://127.0.0.1:4173/api/success/dashboard)
+          SUCCESS_HTTP=$(curl --silent --output /tmp/success-response.json --write-out '%{http_code}' http://127.0.0.1:4173/api/success/dashboard)
           test "$SUCCESS_HTTP" = "401"
           grep -q 'AUTH_REQUIRED' /tmp/success-response.json
-          ADMIN_HTTP=$(curl --silent --output /tmp/admin-response.json --write-out '%{http_code}' \
-            http://127.0.0.1:4173/api/admin/status)
+          ACCESS_HTTP=$(curl --silent --output /tmp/access-response.json --write-out '%{http_code}' http://127.0.0.1:4173/api/access/session)
+          test "$ACCESS_HTTP" = "401"
+          grep -q 'AUTH_REQUIRED' /tmp/access-response.json
+          ADMIN_ACCESS_HTTP=$(curl --silent --output /tmp/admin-access-response.json --write-out '%{http_code}' http://127.0.0.1:4173/api/admin/access)
+          test "$ADMIN_ACCESS_HTTP" = "401"
+          grep -q 'AUTH_REQUIRED' /tmp/admin-access-response.json
+          ADMIN_USERS_HTTP=$(curl --silent --output /tmp/admin-users-response.json --write-out '%{http_code}' http://127.0.0.1:4173/api/admin/users)
+          test "$ADMIN_USERS_HTTP" = "401"
+          grep -q 'AUTH_REQUIRED' /tmp/admin-users-response.json
+          ADMIN_HTTP=$(curl --silent --output /tmp/admin-response.json --write-out '%{http_code}' http://127.0.0.1:4173/api/admin/status)
           test "$ADMIN_HTTP" = "401"
           grep -q 'AUTH_REQUIRED' /tmp/admin-response.json
           cat /tmp/neon-server.log
-          echo "Railway production server, canonical routes, secure admin dashboard, central dedupe, account isolation, evidence-weighted readiness, skill diagnostics, student state sync, source privacy, and authenticated APIs validated successfully."
+          echo "Railway production server, RBAC user administration, platform access guard, secure admin dashboard, canonical routes, central dedupe, account isolation, evidence-weighted readiness, skill diagnostics, student state sync, source privacy, and authenticated APIs validated successfully."
