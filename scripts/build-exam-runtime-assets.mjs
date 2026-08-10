@@ -52,6 +52,22 @@ async function evaluate(files) {
   return context.window;
 }
 
+async function collectVisuals() {
+  const visuals = {};
+  for (const file of visualFiles) {
+    // Some historical visual bundles freeze their registry. Evaluate each source in
+    // an isolated VM and merge only the serializable result into the modern asset.
+    const windowObject = await evaluate([file]);
+    const registry = windowObject.NEON_EXAM_VISUALS;
+    if (!registry || typeof registry !== 'object') continue;
+    for (const [id, svg] of Object.entries(registry)) {
+      if (!id || typeof svg !== 'string' || !svg.includes('<svg')) continue;
+      visuals[String(id)] = svg;
+    }
+  }
+  return visuals;
+}
+
 function cleanLesson(value) {
   if (!value || typeof value !== 'object') return null;
   const id = String(value.id || '').trim();
@@ -78,22 +94,25 @@ function cleanLesson(value) {
 async function main() {
   await mkdir(outputDirectory, { recursive: true });
 
-  const visualWindow = await evaluate(visualFiles);
-  const visuals = visualWindow.NEON_EXAM_VISUALS && typeof visualWindow.NEON_EXAM_VISUALS === 'object'
-    ? visualWindow.NEON_EXAM_VISUALS
-    : {};
-
+  const visuals = await collectVisuals();
   const learningWindow = await evaluate(learningFiles);
   const biology = (learningWindow.NEON_BIOLOGY_MASTERY_LESSONS || []).map(cleanLesson).filter(Boolean)
     .map(lesson => ({ ...lesson, subject: 'tahsili-biology' }));
   const advanced = (learningWindow.NEON_TAHSILI_ADVANCED_LESSONS || []).map(cleanLesson).filter(Boolean);
   const lessons = [...biology, ...advanced];
+  const groupedLessons = Map.groupBy(lessons, lesson => lesson.subject);
+
+  if (Object.keys(visuals).length < 20) throw new Error(`Modern visual extraction is unexpectedly small: ${Object.keys(visuals).length}`);
+  if (lessons.length < 20) throw new Error(`Modern lesson extraction is unexpectedly small: ${lessons.length}`);
+  for (const subject of ['tahsili-math', 'tahsili-physics', 'tahsili-chemistry', 'tahsili-biology']) {
+    if (!(groupedLessons.get(subject) || []).length) throw new Error(`No modern lessons extracted for ${subject}`);
+  }
 
   await writeFile(path.join(outputDirectory, 'visuals.json'), `${JSON.stringify(visuals)}\n`, 'utf8');
   await writeFile(path.join(outputDirectory, 'learning-paths.json'), `${JSON.stringify({
     version: new Date().toISOString(),
     total: lessons.length,
-    subjects: Object.fromEntries(Map.groupBy(lessons, lesson => lesson.subject).entries())
+    subjects: Object.fromEntries(groupedLessons.entries())
   })}\n`, 'utf8');
 
   console.log(`Exam runtime assets built: ${Object.keys(visuals).length} visuals and ${lessons.length} lessons.`);
