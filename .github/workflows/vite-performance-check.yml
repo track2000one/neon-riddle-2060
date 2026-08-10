@@ -48,6 +48,9 @@ jobs:
       - name: Test account isolation
         run: node scripts/test-account-isolation.mjs
 
+      - name: Test evidence-weighted readiness
+        run: node scripts/test-readiness-engine.mjs
+
       - name: Build Vite preview and exam data
         run: npm run build
 
@@ -65,6 +68,10 @@ jobs:
           grep -q 'ADAPTIVE MASTERY EXAM CENTER' dist/exams.html
           grep -q 'examMode' dist/exams.html
           grep -q 'تعليم البرمجة' dist/coding.html
+          grep -q 'DIAGNOSTIC_COUNT = 28' app/src/diagnostic-experience.js
+          grep -q 'skillBreakdown' app/src/diagnostic-experience.js
+          grep -q 'requestedSkill' app/src/exam-skill-selector.js
+          grep -q 'skill-map' server/student-success.mjs
           test -f dist/legacy/step-mastery-lessons.js
           test -f dist/legacy/step-mastery-questions.js
           test -f dist/legacy/step-book-kafayat-1-runtime.js
@@ -87,6 +94,11 @@ jobs:
           node -e "const fs=require('fs'); const path=require('path'); const forbidden=new Set(['source','sourcePage','sourceQuestion','sourcePages','sourceFile','sourceTitle','book','bookId','bookTitle','author','writer','page','pageNo','pageNumber','pdf','pdfPage','documentName','documentTitle']); for(const file of fs.readdirSync('dist/data/exams').filter(x=>x.endsWith('.json')&&x!=='manifest.json')){const rows=JSON.parse(fs.readFileSync(path.join('dist/data/exams',file),'utf8')); for(const row of rows){for(const key of Object.keys(row)){if(forbidden.has(key)) throw new Error(file+': forbidden metadata '+key)}}} console.log('Exam source identity and page metadata removed.')"
           node --check server/question-mastery.mjs
           node --check server/student-state.mjs
+          node --check server/readiness-engine.mjs
+          node --check server/student-success.mjs
+          node --check app/src/diagnostic-experience.js
+          node --check app/src/exam-skill-selector.js
+          node --check app/src/student-success.js
           node --check dist/legacy/step-mastery-lessons.js
           node --check dist/legacy/step-mastery-questions.js
           node --check dist/legacy/step-book-kafayat-1-runtime.js
@@ -140,6 +152,7 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:4173/api/progress/status | grep -q '"configured":false'
           curl --fail --silent --show-error http://127.0.0.1:4173/api/mastery/status | grep -q '"configured":false'
           curl --fail --silent --show-error http://127.0.0.1:4173/api/student-state/status | grep -q '"configured":false'
+          curl --fail --silent --show-error http://127.0.0.1:4173/api/success/status | grep -q '"skill-map"'
           TUTOR_HTTP=$(curl --silent --output /tmp/tutor-response.json --write-out '%{http_code}' \
             --header 'Content-Type: application/json' \
             --data '{"message":"أين تقع القاهرة؟","subject":"الجغرافيا","level":"تطبيقي","mode":"explain"}' \
@@ -158,5 +171,9 @@ jobs:
             http://127.0.0.1:4173/api/student-state/notebook)
           test "$STUDENT_STATE_HTTP" = "401"
           grep -q 'AUTH_REQUIRED' /tmp/student-state-response.json
+          SUCCESS_HTTP=$(curl --silent --output /tmp/success-response.json --write-out '%{http_code}' \
+            http://127.0.0.1:4173/api/success/dashboard)
+          test "$SUCCESS_HTTP" = "401"
+          grep -q 'AUTH_REQUIRED' /tmp/success-response.json
           cat /tmp/neon-server.log
-          echo "Railway production server, canonical routes, central dedupe, account isolation, student state sync, source privacy, and authenticated APIs validated successfully."
+          echo "Railway production server, canonical routes, central dedupe, account isolation, evidence-weighted readiness, skill diagnostics, student state sync, source privacy, and authenticated APIs validated successfully."
