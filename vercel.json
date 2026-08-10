@@ -7,7 +7,8 @@
   "redirects": [
     { "source": "/tutor", "destination": "/", "permanent": true },
     { "source": "/tutor.html", "destination": "/", "permanent": true },
-    { "source": "/legacy/tutor.html", "destination": "/", "permanent": true }
+    { "source": "/legacy/tutor.html", "destination": "/", "permanent": true },
+    { "source": "/legacy/auth.html", "destination": "/auth", "permanent": true }
   ],
   "headers": [
     {
@@ -26,6 +27,12 @@
       "source": "/legacy/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=3600, stale-while-revalidate=86400" }
+      ]
+    },
+    {
+      "source": "/auth",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" }
       ]
     },
     {
