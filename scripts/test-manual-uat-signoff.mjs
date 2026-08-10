@@ -1,31 +1,42 @@
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const root = process.cwd();
-const script = join(root, 'scripts/create-manual-uat-signoff.mjs');
-const output = join(root, 'artifacts/manual-uat-signoff.json');
+const verifier = join(root, 'scripts/verify-manual-uat-signoff.mjs');
 const ids = [
   'AUTH-01','AUTH-02','AUTH-03','AUTH-04','ACCESS-01','ACCESS-02','RBAC-01','RBAC-02','RBAC-03',
   'STATE-01','STEP-01','EXAM-01','CODING-01','MOBILE-01','DESKTOP-01'
 ];
 const allPass = Object.fromEntries(ids.map(id => [id, 'PASS']));
+const baseRecord = {
+  schemaVersion: 1,
+  candidate: '0.6.0-rc.1',
+  status: 'APPROVED',
+  testedSha: 'a'.repeat(40),
+  tester: 'Automated Sign-off Contract Test',
+  evidence: 'test-evidence',
+  regressionClearance: { criticalOpen: 0, highOpen: 0 },
+  cases: allPass,
+  approvedCaseCount: 15,
+  approvedAt: '2026-08-10T16:00:00.000Z'
+};
 
-function run(overrides = {}) {
-  return spawnSync(process.execPath, [script], {
+function run(record) {
+  const dir = mkdtempSync(join(tmpdir(), 'neon-uat-'));
+  const input = join(dir, 'signoff.json');
+  const envFile = join(dir, 'github-env.txt');
+  writeFileSync(input, `${JSON.stringify(record, null, 2)}\n`);
+  const result = spawnSync(process.execPath, [verifier, input], {
     cwd: root,
     encoding: 'utf8',
-    env: {
-      ...process.env,
-      NEON_CANDIDATE_SHA: 'a'.repeat(40),
-      NEON_UAT_TESTER: 'Automated Sign-off Contract Test',
-      NEON_UAT_EVIDENCE: 'test-evidence',
-      NEON_RAILWAY_STATUS: 'success',
-      NEON_NO_HIGH_SEVERITY_REGRESSIONS: 'true',
-      NEON_UAT_RESULTS_JSON: JSON.stringify(allPass),
-      ...overrides
-    }
+    env: { ...process.env, GITHUB_ENV: envFile }
   });
+  let exported = '';
+  try { exported = readFileSync(envFile, 'utf8'); } catch {}
+  rmSync(dir, { recursive: true, force: true });
+  return { ...result, exported };
 }
 
 function expectSuccess(result, label) {
@@ -35,19 +46,19 @@ function expectFailure(result, label) {
   if (result.status === 0) throw new Error(`${label} unexpectedly passed`);
 }
 
-expectSuccess(run(), 'all PASS sign-off');
-const record = JSON.parse(readFileSync(output, 'utf8'));
-if (record.status !== 'APPROVED' || record.approvedCaseCount !== 15) throw new Error('approved sign-off artifact is malformed');
+const valid = run(baseRecord);
+expectSuccess(valid, '15/15 PASS sign-off');
+if (!valid.exported.includes('NEON_MANUAL_UAT_APPROVED')) throw new Error('valid sign-off did not export approval state');
+if (!valid.exported.includes('NEON_TESTED_SHA')) throw new Error('valid sign-off did not export tested SHA');
 
-const oneFail = { ...allPass, 'RBAC-02': 'FAIL' };
-expectFailure(run({ NEON_UAT_RESULTS_JSON: JSON.stringify(oneFail) }), 'single FAIL case');
-
+expectFailure(run({ ...baseRecord, cases: { ...allPass, 'RBAC-02': 'FAIL' } }), 'single FAIL case');
 const missingCase = { ...allPass };
 delete missingCase['MOBILE-01'];
-expectFailure(run({ NEON_UAT_RESULTS_JSON: JSON.stringify(missingCase) }), 'missing case');
+expectFailure(run({ ...baseRecord, cases: missingCase }), 'missing case');
+expectFailure(run({ ...baseRecord, cases: { ...allPass, 'UNKNOWN-99': 'PASS' } }), 'unknown case');
+expectFailure(run({ ...baseRecord, testedSha: 'abc' }), 'invalid tested SHA');
+expectFailure(run({ ...baseRecord, regressionClearance: { criticalOpen: 0, highOpen: 1 } }), 'open high severity regression');
+expectFailure(run({ ...baseRecord, tester: '' }), 'missing tester');
+expectFailure(run({ ...baseRecord, evidence: '' }), 'missing evidence');
 
-expectFailure(run({ NEON_RAILWAY_STATUS: 'pending' }), 'Railway pending');
-expectFailure(run({ NEON_NO_HIGH_SEVERITY_REGRESSIONS: 'false' }), 'open high severity regression');
-expectFailure(run({ NEON_UAT_RESULTS_JSON: JSON.stringify({ ...allPass, 'UNKNOWN-99': 'PASS' }) }), 'unknown case');
-
-console.log('Manual UAT sign-off contract passed: 15/15 PASS required; FAIL/missing/unknown cases, Railway pending, and high-severity regressions are rejected.');
+console.log('Manual UAT sign-off contract passed: committed record requires 15/15 PASS, valid tested SHA, named tester/evidence, and zero Critical/High regressions.');
