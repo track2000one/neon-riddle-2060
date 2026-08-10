@@ -22,7 +22,7 @@ Legacy content is still copied into /legacy while migration continues. User-faci
 
 Authentication
 --------------
-Modern pages use app/src/firebase-config.js and app/src/auth.js. They no longer load /legacy/firebase-config.js or route unauthenticated users through /legacy/auth.html. The /auth page performs Firebase sign-in/registration/recovery, platform Access Guard validation, and local account isolation before entering the learning portal.
+Modern pages use app/src/firebase-config.js and app/src/auth.js. They no longer load /legacy/firebase-config.js or route unauthenticated users through /legacy/auth.html. The /auth page performs Firebase sign-in, registration, password recovery, optional mobile-profile capture, platform Access Guard validation, and local account isolation before entering the learning portal.
 
 Tutor/Gemini
 ------------
