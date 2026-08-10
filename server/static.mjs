@@ -8,7 +8,10 @@ const redirects = new Map([
   ['/legacy/', '/'],
   ['/legacy/index.html', '/'],
   ['/legacy/games.html', '/games'],
-  ['/legacy/learning.html', '/learning']
+  ['/legacy/learning.html', '/learning'],
+  ['/legacy/coding.html', '/coding'],
+  ['/legacy/exams.html', '/exams'],
+  ['/legacy/kids-games.html', '/kids-games']
 ]);
 const criticalAuthFiles = new Set([
   '/legacy/auth.html',
