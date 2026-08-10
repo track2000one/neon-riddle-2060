@@ -1,35 +1,19 @@
-import { copyFileSync, cpSync, existsSync, mkdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { cpSync, existsSync, mkdirSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
-import { LEGACY_RUNTIME_ALLOWLIST } from './scripts/legacy-runtime-allowlist.mjs';
 
 const projectRoot = fileURLToPath(new URL('.', import.meta.url));
 const appRoot = fileURLToPath(new URL('./app', import.meta.url));
-const legacySource = fileURLToPath(new URL('./academy', import.meta.url));
 const generatedExamSource = fileURLToPath(new URL('./generated/exams', import.meta.url));
 const generatedCodingSource = fileURLToPath(new URL('./generated/coding', import.meta.url));
+const generatedStepSource = fileURLToPath(new URL('./generated/step', import.meta.url));
 const outputDirectory = fileURLToPath(new URL('./dist', import.meta.url));
-
-function copyAllowlistedLegacyRuntime() {
-  const destinationRoot = join(outputDirectory, 'legacy');
-  mkdirSync(destinationRoot, { recursive: true });
-
-  for (const relativePath of LEGACY_RUNTIME_ALLOWLIST) {
-    const sourcePath = join(legacySource, relativePath);
-    if (!existsSync(sourcePath)) throw new Error(`Missing allowlisted Legacy runtime source: ${relativePath}`);
-    const destinationPath = join(destinationRoot, relativePath);
-    mkdirSync(dirname(destinationPath), { recursive: true });
-    copyFileSync(sourcePath, destinationPath);
-  }
-}
 
 function copyStaticData() {
   return {
     name: 'copy-neon-static-data',
     closeBundle() {
       mkdirSync(outputDirectory, { recursive: true });
-      copyAllowlistedLegacyRuntime();
       if (existsSync(generatedExamSource)) {
         mkdirSync(`${outputDirectory}/data`, { recursive: true });
         cpSync(generatedExamSource, `${outputDirectory}/data/exams`, { recursive: true });
@@ -37,6 +21,10 @@ function copyStaticData() {
       if (existsSync(generatedCodingSource)) {
         mkdirSync(`${outputDirectory}/data`, { recursive: true });
         cpSync(generatedCodingSource, `${outputDirectory}/data/coding`, { recursive: true });
+      }
+      if (existsSync(generatedStepSource)) {
+        mkdirSync(`${outputDirectory}/data`, { recursive: true });
+        cpSync(generatedStepSource, `${outputDirectory}/data/step`, { recursive: true });
       }
     }
   };
