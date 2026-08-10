@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "candidate": "0.6.0-rc.1",
+  "requiredManualTests": [
+    "AUTH-01",
+    "AUTH-02",
+    "AUTH-03",
+    "AUTH-04",
+    "ACCESS-01",
+    "ACCESS-02",
+    "RBAC-01",
+    "RBAC-02",
+    "RBAC-03",
+    "STATE-01",
+    "STEP-01",
+    "EXAM-01",
+    "CODING-01",
+    "MOBILE-01",
+    "DESKTOP-01"
+  ],
+  "requiredExternalChecks": [
+    "Vite Performance Build",
+    "Production Release Gate",
+    "Automated UAT Gate",
+    "Railway Preview"
+  ],
+  "mergeRequirements": {
+    "manualUatApproved": true,
+    "railwayPreviewSuccessOnCandidateSha": true,
+    "criticalRegressionsOpen": 0,
+    "highRegressionsOpen": 0
+  }
+}
