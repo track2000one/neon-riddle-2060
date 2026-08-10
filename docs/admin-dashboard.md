@@ -1,44 +1,27 @@
 # NEON Admin Dashboard
 
-لوحة الإدارة متاحة على المسار `/admin`.
+لوحة الإدارة: `/admin`.
 
 ## Bootstrap Admin
-
-تسجيل الدخول وحده لا يمنح صلاحية الإدارة. المسؤول الأساسي يحدد بأحد الخيارات: `NEON_ADMIN_EMAILS`، `NEON_ADMIN_UIDS`، أو Firebase claim بقيمة `admin: true` / `role: "admin"` / `role: "super-admin"`.
-
-المسؤول الأساسي يعامل كـ `super-admin` وهو محمي من تغيير دوره أو إيقافه من داخل اللوحة لتفادي Lockout إداري.
+المسؤول الأساسي يحدد عبر `NEON_ADMIN_EMAILS` أو `NEON_ADMIN_UIDS` أو Firebase claim (`admin: true` / `role: "admin"` / `role: "super-admin"`). يعامل كـ `super-admin` ومحمي من تغيير دوره أو إيقافه داخل اللوحة.
 
 ## الأدوار
+- `super-admin`: جميع الصلاحيات، بما فيها إدارة المستخدمين والأدوار وحالة الوصول.
+- `content-admin`: إدارة المحتوى والبلاغات والمكرر وسجل التدقيق، دون إدارة المستخدمين.
+- `support`: ملخص الإدارة والمستخدمون والبلاغات والتدقيق، دون بنك الأسئلة أو تغيير الصلاحيات.
+- `student`: لا يدخل لوحة الإدارة.
 
-- `super-admin`: جميع أقسام الإدارة، إدارة المحتوى والبلاغات والمستخدمين، تغيير الأدوار، وإيقاف أو إعادة تفعيل الوصول.
-- `content-admin`: إدارة بنك الأسئلة والبلاغات والمكرر المحتمل وسجل التدقيق، دون إدارة المستخدمين.
-- `support`: ملخص الإدارة، عرض المستخدمين ونشاطهم، معالجة البلاغات وقراءة التدقيق، دون فتح/تعديل بنك الأسئلة أو تغيير الأدوار.
-- `student`: لا يملك دخول لوحة الإدارة.
+التحقق من الصلاحيات Server-side باستخدام Capability Matrix: `dashboard.read`, `content.read`, `content.manage`, `reports.manage`, `duplicates.read`, `audit.read`, `users.read`, `users.manage`.
 
-التحقق النهائي من الصلاحيات يتم على الخادم، وليس بمجرد إخفاء عناصر الواجهة.
-
-## سجل المستخدمين
-
-يستخدم النظام `neon_platform_users` لحفظ UID، البريد والاسم، الدور، حالة الوصول `active` أو `suspended`، سبب الإيقاف، أول ظهور وآخر نشاط. يتم Backfill للمستخدمين المعروفين من `neon_users` وجداول الأهداف والاختبارات.
-
-لوحة المستخدم تعرض عند توفر البيانات: الهوية، الدور والحالة، آخر نشاط، عدد محاولات الاختبارات ومتوسطها، الهدف الدراسي، وآخر المحاولات.
+## المستخدمون
+يحفظ `neon_platform_users` UID والبريد والاسم والدور وحالة الوصول وسبب الإيقاف وأوقات النشاط. يتم Backfill للمستخدمين المعروفين من `neon_users` وجداول الأهداف والاختبارات. تعرض اللوحة النشاط، محاولات الاختبار ومتوسطها، الهدف الدراسي، وآخر المحاولات عند توفر البيانات.
 
 ## Platform-level Suspension
+الحالة `suspended` تمنع الوصول إلى خدمات NEON عبر `/api/access/session` و`ensureAuth()` وAccess Guard المركزي، وتسجل في `neon_admin_audit`. هذا لا يعطل حساب Firebase Authentication نفسه؛ ذلك يحتاج Firebase Admin SDK وصلاحيات خادم مستقلة.
 
-الإيقاف الحالي يمنع الوصول إلى خدمات NEON، لكنه لا يعطل حساب Firebase Authentication نفسه.
+لا يستطيع المسؤول إيقاف نفسه أو تغيير دوره من الجلسة الحالية، وBootstrap Admin محمي من التعديل داخل اللوحة.
 
-عند `suspended`: يرفض `/api/access/session` الحساب، يمنع `ensureAuth()` استكمال جلسة الطالب، ويمنع Access Guard الطلبات الموثقة إلى APIs، مع تسجيل الإجراء في `neon_admin_audit`.
-
-لا يستطيع المسؤول تعديل دوره أو إيقاف حسابه من نفس الجلسة، وBootstrap Admin محمي من التعديل داخل اللوحة. تعطيل Firebase Auth نفسه يحتاج Firebase Admin SDK وصلاحيات خادم مخصصة وليس جزءًا من هذه المرحلة.
-
-## Capability Matrix
-
-`dashboard.read`, `content.read`, `content.manage`, `reports.manage`, `duplicates.read`, `audit.read`, `users.read`, `users.manage`.
-
-## إدارة المحتوى والبلاغات
-
-ملفات بنك الأسئلة المولدة تبقى المصدر الأساسي. التعديلات تحفظ في `neon_question_overrides` وتطبق على `/data/exams/*.json`، مع `adminRevision` لإبطال Cache القديم. السؤال `hidden` لا يصل للطالب، وإعادة الضبط تعيد النسخة الأصلية.
-
-حالات البلاغات: `new`, `reviewing`, `resolved`, `dismissed`. وكل تعديل سؤال أو بلاغ أو دور/حالة مستخدم يسجل في `neon_admin_audit`.
+## المحتوى والبلاغات
+تعديلات الأسئلة تحفظ في `neon_question_overrides` وتطبق على `/data/exams/*.json` مع `adminRevision` لإبطال Cache. السؤال `hidden` لا يصل للطالب. حالات البلاغات: `new`, `reviewing`, `resolved`, `dismissed`. جميع التغييرات الإدارية تسجل في `neon_admin_audit`.
 
 كشف المكرر المحتمل للمراجعة البشرية فقط ولا يحذف الأسئلة تلقائيًا.
