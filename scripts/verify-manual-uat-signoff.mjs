@@ -7,7 +7,7 @@ const requiredIds = [
 ];
 
 function fail(message) {
-  throw new Error(`Manual UAT artifact verification failed: ${message}`);
+  throw new Error(`Manual UAT sign-off verification failed: ${message}`);
 }
 
 function exportEnv(name, value) {
@@ -17,10 +17,7 @@ function exportEnv(name, value) {
   appendFileSync(envFile, `${name}<<${delimiter}\n${String(value)}\n${delimiter}\n`);
 }
 
-const candidateSha = String(process.env.NEON_CANDIDATE_SHA || '').trim();
-const path = resolve(process.argv[2] || 'artifacts/manual-uat/manual-uat-signoff.json');
-if (!/^[0-9a-f]{40}$/i.test(candidateSha)) fail('candidate SHA is invalid');
-
+const path = resolve(process.argv[2] || 'release/manual-uat-signoff.json');
 let record;
 try {
   record = JSON.parse(readFileSync(path, 'utf8'));
@@ -30,12 +27,14 @@ try {
 
 if (record.schemaVersion !== 1) fail(`unsupported schema ${record.schemaVersion}`);
 if (record.candidate !== '0.6.0-rc.1') fail(`candidate version mismatch: ${record.candidate}`);
-if (String(record.candidateSha || '').toLowerCase() !== candidateSha.toLowerCase()) fail('candidate SHA mismatch');
 if (record.status !== 'APPROVED') fail(`sign-off status is ${record.status || 'missing'}`);
-if (record.railwayPreview !== 'success') fail('Railway was not recorded as success');
+if (!/^[0-9a-f]{40}$/i.test(String(record.testedSha || ''))) fail('testedSha must be a full 40-character SHA');
 if (Number(record.regressionClearance?.criticalOpen) !== 0 || Number(record.regressionClearance?.highOpen) !== 0) fail('critical/high regression clearance is not zero');
 if (!record.tester || typeof record.tester !== 'string') fail('tester identity is missing');
+if (record.tester.trim().length > 160) fail('tester identity is too long');
 if (!record.evidence || typeof record.evidence !== 'string') fail('evidence reference is missing');
+if (record.evidence.trim().length > 2000) fail('evidence reference is too long');
+if (!record.approvedAt || Number.isNaN(Date.parse(record.approvedAt))) fail('approvedAt must be a valid timestamp');
 if (Number(record.approvedCaseCount) !== requiredIds.length) fail(`approvedCaseCount must be ${requiredIds.length}`);
 
 const suppliedIds = Object.keys(record.cases || {});
@@ -45,9 +44,9 @@ for (const id of requiredIds) {
 const extras = suppliedIds.filter(id => !requiredIds.includes(id));
 if (extras.length) fail(`unexpected UAT case IDs: ${extras.join(', ')}`);
 
+exportEnv('NEON_TESTED_SHA', String(record.testedSha).toLowerCase());
 exportEnv('NEON_MANUAL_UAT_APPROVED', 'true');
 exportEnv('NEON_NO_HIGH_SEVERITY_REGRESSIONS', 'true');
 exportEnv('NEON_SIGNOFF_OWNER', record.tester.trim());
 exportEnv('NEON_UAT_EVIDENCE', record.evidence.trim());
-exportEnv('NEON_UAT_SIGNOFF_RUN_ID', String(record.github?.runId || ''));
-console.log(`Manual UAT artifact verified: ${requiredIds.length}/${requiredIds.length} PASS for ${candidateSha} by ${record.tester}.`);
+console.log(`Committed Manual UAT sign-off verified: ${requiredIds.length}/${requiredIds.length} PASS for tested SHA ${record.testedSha} by ${record.tester}.`);
