@@ -10,6 +10,7 @@ const redirects = new Map([
   ['/legacy', '/'],
   ['/legacy/', '/'],
   ['/legacy/index.html', '/'],
+  ['/legacy/auth.html', '/auth'],
   ['/legacy/games.html', '/games'],
   ['/legacy/learning.html', '/learning'],
   ['/legacy/coding.html', '/coding'],
@@ -18,6 +19,7 @@ const redirects = new Map([
   ['/legacy/tutor.html', '/']
 ]);
 const criticalAuthFiles = new Set([
+  '/auth.html',
   '/legacy/auth.html',
   '/legacy/auth.js',
   '/legacy/auth-portal-routing.js',
@@ -28,7 +30,7 @@ const criticalAuthFiles = new Set([
 const mimeTypes = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
   '.mjs': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml',
-  '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.ico': 'image/x-icon',
+  '.png': 'image/png', '.jpg': 'image/jpg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.ico': 'image/x-icon',
   '.woff': 'font/woff', '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8'
 };
 const compressible = new Set(['.html', '.css', '.js', '.mjs', '.json', '.svg', '.txt']);
@@ -73,6 +75,16 @@ function isEmbeddedLegacyRequest(req, requestPath) {
   }
 }
 
+function redirectLocation(req, requestPath, destination) {
+  if (requestPath !== '/legacy/auth.html') return destination;
+  try {
+    const url = new URL(req.url || '/', 'http://localhost');
+    return `${destination}${url.search}`;
+  } catch {
+    return destination;
+  }
+}
+
 export function handleStatic(req, res, requestPath) {
   if (!['GET', 'HEAD'].includes(req.method || 'GET')) {
     res.writeHead(405, { Allow: 'GET, HEAD' });
@@ -81,7 +93,7 @@ export function handleStatic(req, res, requestPath) {
   }
   const destination = isEmbeddedLegacyRequest(req, requestPath) ? null : redirects.get(requestPath);
   if (destination) {
-    res.writeHead(308, { Location: destination, 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0', Pragma: 'no-cache', Expires: '0' });
+    res.writeHead(308, { Location: redirectLocation(req, requestPath, destination), 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0', Pragma: 'no-cache', Expires: '0' });
     res.end();
     return;
   }
