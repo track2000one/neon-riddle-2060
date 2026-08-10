@@ -212,8 +212,8 @@ function installEvents() {
 
 export async function prepareModernExamRuntime() {
   const [visuals, paths] = await Promise.all([
-    readJson('/data/exams/visuals.json', {}),
-    readJson('/data/exams/learning-paths.json', { subjects: {} })
+    readJson('/data/exams/runtime/visuals.json', {}),
+    readJson('/data/exams/runtime/learning-paths.json', { subjects: {} })
   ]);
   window.NEON_EXAM_VISUALS = visuals && typeof visuals === 'object' ? visuals : {};
   learningPaths = paths && typeof paths === 'object' ? paths : { subjects: {} };
