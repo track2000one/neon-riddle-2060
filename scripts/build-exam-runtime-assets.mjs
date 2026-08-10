@@ -5,6 +5,7 @@ import vm from 'node:vm';
 const root = process.cwd();
 const academyDirectory = path.join(root, 'academy');
 const outputDirectory = path.join(root, 'generated', 'exams');
+const runtimeDirectory = path.join(outputDirectory, 'runtime');
 
 const visualFiles = [
   'exam-visuals.js',
@@ -55,8 +56,6 @@ async function evaluate(files) {
 async function collectVisuals() {
   const visuals = {};
   for (const file of visualFiles) {
-    // Some historical visual bundles freeze their registry. Evaluate each source in
-    // an isolated VM and merge only the serializable result into the modern asset.
     const windowObject = await evaluate([file]);
     const registry = windowObject.NEON_EXAM_VISUALS;
     if (!registry || typeof registry !== 'object') continue;
@@ -92,7 +91,7 @@ function cleanLesson(value) {
 }
 
 async function main() {
-  await mkdir(outputDirectory, { recursive: true });
+  await mkdir(runtimeDirectory, { recursive: true });
 
   const visuals = await collectVisuals();
   const learningWindow = await evaluate(learningFiles);
@@ -108,8 +107,8 @@ async function main() {
     if (!(groupedLessons.get(subject) || []).length) throw new Error(`No modern lessons extracted for ${subject}`);
   }
 
-  await writeFile(path.join(outputDirectory, 'visuals.json'), `${JSON.stringify(visuals)}\n`, 'utf8');
-  await writeFile(path.join(outputDirectory, 'learning-paths.json'), `${JSON.stringify({
+  await writeFile(path.join(runtimeDirectory, 'visuals.json'), `${JSON.stringify(visuals)}\n`, 'utf8');
+  await writeFile(path.join(runtimeDirectory, 'learning-paths.json'), `${JSON.stringify({
     version: new Date().toISOString(),
     total: lessons.length,
     subjects: Object.fromEntries(groupedLessons.entries())
