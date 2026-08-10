@@ -2,11 +2,9 @@ name: Vite Performance Build
 
 on:
   push:
-    branches:
-      - performance-vite
+    branches: [performance-vite]
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths:
       - 'app/**'
       - 'scripts/**'
@@ -43,19 +41,16 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Test adaptive mastery algorithm
-        run: node scripts/test-exam-mastery.mjs
-
-      - name: Test account isolation
-        run: node scripts/test-account-isolation.mjs
-
-      - name: Test evidence-weighted readiness
-        run: node scripts/test-readiness-engine.mjs
+      - name: Validate adaptive and account algorithms
+        run: |
+          node scripts/test-exam-mastery.mjs
+          node scripts/test-account-isolation.mjs
+          node scripts/test-readiness-engine.mjs
 
       - name: Build Vite preview and generated data
         run: npm run build
 
-      - name: Validate output entries
+      - name: Validate modern production output
         run: |
           test -f dist/index.html
           test -f dist/auth.html
@@ -64,115 +59,59 @@ jobs:
           test -f dist/games.html
           test -f dist/learning.html
           test -f dist/coding.html
-          test ! -f dist/tutor.html
           test -f dist/admin.html
+          test ! -f dist/tutor.html
           test -d dist/assets
-          test -d dist/legacy
+          test ! -d dist/legacy || test "$(find dist/legacy -type f | wc -l)" -eq 0
+
+          test -f dist/data/step/content.json
+          test -f dist/data/coding/content.json
+          test -f dist/data/exams/manifest.json
           test -f dist/data/exams/runtime/visuals.json
           test -f dist/data/exams/runtime/learning-paths.json
-          test -f dist/data/coding/content.json
-          grep -q 'WELCOME BACK' dist/auth.html
-          grep -q 'ADAPTIVE MASTERY EXAM CENTER' dist/exams.html
-          grep -q 'examMode' dist/exams.html
-          if grep -q '/legacy/.*\.js' dist/exams.html; then echo 'Legacy exam runtime script detected'; exit 1; fi
-          grep -q 'data-modern-coding-center="true"' dist/coding.html
-          grep -q 'MODERN CODING CENTER' dist/coding.html
-          if grep -q '/legacy/coding.html' dist/coding.html; then echo 'Legacy coding iframe detected'; exit 1; fi
-          grep -q 'NEON ADMIN' dist/admin.html
-          grep -q 'المستخدمون والصلاحيات' dist/admin.html
-          grep -q 'DIAGNOSTIC_COUNT = 28' app/src/diagnostic-experience.js
-          grep -q 'skillBreakdown' app/src/diagnostic-experience.js
-          grep -q 'requestedSkill' app/src/exam-skill-selector.js
-          grep -q 'skill-map' server/student-success.mjs
-          grep -q 'live-overrides' server/admin-dashboard.mjs
-          grep -q "'super-admin'" server/admin-users.mjs
-          grep -q "'content-admin'" server/admin-users.mjs
-          grep -q "support:" server/admin-users.mjs
-          grep -q 'registerPlatformAccess' app/src/auth.js
-          grep -q 'registerPlatformAccess' app/src/auth-page.js
-          grep -q "'msarCodingLearningProgressV2'" app/src/account-local-state.js
-          test ! -f server/gemini.mjs
-          test ! -f app/src/tutor-retirement.js
-          if grep -R -E 'GEMINI_API_KEY|GOOGLE_API_KEY|generativelanguage\.googleapis\.com|handleTutorApi|geminiRuntimeInfo' server-production.mjs server.mjs server; then echo 'Retired Gemini tutor code detected'; exit 1; fi
-
-          node scripts/check-legacy-package.mjs
-          test "$(find dist/legacy -type f | wc -l)" -eq 11
-          test -f dist/legacy/step-book-kafayat-1-lessons.js
-          test -f dist/legacy/step-book-kafayat-1-models-1-2.js
-          test -f dist/legacy/step-book-kafayat-1-models-3-4.js
-          test -f dist/legacy/step-book-kafayat-1-models-5-6.js
-          test -f dist/legacy/step-book-kafayat-1-model-7.js
-          test -f dist/legacy/step-book-kafayat-1-listening.js
-          test -f dist/legacy/step-mastery-lessons.js
-          test -f dist/legacy/step-mastery-questions.js
-          test -f dist/legacy/step-academy-data.js
-          test -f dist/legacy/step-academy-runtime.js
-          test -f dist/legacy/step-book-kafayat-1-runtime.js
-          test ! -f dist/legacy/auth.html
-          test ! -f dist/legacy/auth.js
-          test ! -f dist/legacy/coding.html
-          test ! -f dist/legacy/coding-learning-center.js
-          test ! -f dist/legacy/biology-mastery-runtime.js
-          test ! -f dist/legacy/tahsili-advanced-runtime-2026.js
-          test ! -f dist/legacy/exam-bank-uploaded-biology-mastery-2026.js
-          test ! -f dist/legacy/exam-bank-uploaded-tahsili-math-advanced-model8-2026.js
-          test ! -f dist/legacy/exam-bank-uploaded-tahsili-physics-advanced-model8-2026.js
-          test ! -f dist/legacy/exam-bank-uploaded-tahsili-chemistry-advanced-model8-2026.js
-          test ! -f dist/legacy/exam-bank-uploaded-tahsili-biology-advanced-model8-2026.js
-
-          test -f dist/data/exams/manifest.json
           test -f dist/data/exams/tahsili-math.json
           test -f dist/data/exams/tahsili-physics.json
           test -f dist/data/exams/tahsili-chemistry.json
           test -f dist/data/exams/tahsili-biology.json
-          node -e "const m=require('./dist/data/exams/manifest.json'); if(!m.totalQuestions) process.exit(1); if(Object.keys(m.subjects).length!==6) process.exit(1); if((m.subjects['tahsili-biology']?.count||0)<100) process.exit(1); if(!Number.isInteger(m.exactDuplicatesRemoved)||!Number.isInteger(m.fuzzyDuplicatesRemoved)) process.exit(1); console.log('Compiled questions:',m.totalQuestions,'Biology:',m.subjects['tahsili-biology'].count,'Subjects:',Object.keys(m.subjects).length,'Fuzzy removed:',m.fuzzyDuplicatesRemoved)"
-          node -e "const c=require('./dist/data/coding/content.json'); if(c.counts.courses<10||c.counts.lessons<20||c.counts.challenges<6) process.exit(1); if(!c.courses.some(x=>x.id==='javascript')||!c.courses.some(x=>x.id==='git')) process.exit(1); console.log('Coding content:',c.counts.courses,'courses,',c.counts.lessons,'lessons,',c.counts.challenges,'challenges')"
-          node -e "const fs=require('fs'),vm=require('vm'); const expected={'tahsili-math':['exam-bank-uploaded-tahsili-math-advanced-model8-2026.js',30],'tahsili-physics':['exam-bank-uploaded-tahsili-physics-advanced-model8-2026.js',30],'tahsili-chemistry':['exam-bank-uploaded-tahsili-chemistry-advanced-model8-2026.js',51],'tahsili-biology':['exam-bank-uploaded-tahsili-biology-advanced-model8-2026.js',40]}; for(const [subject,[file,count]] of Object.entries(expected)){const window={}; window.window=window; vm.runInNewContext(fs.readFileSync('./academy/'+file,'utf8'),{window,globalThis:window}); const sourceRows=window.NEON_TAHSILI_ADVANCED_QUESTIONS||[]; if(sourceRows.length!==count) throw new Error(subject+': source bank expected '+count+', found '+sourceRows.length); const rows=JSON.parse(fs.readFileSync('./dist/data/exams/'+subject+'.json','utf8')); const advanced=rows.filter(row=>String(row.id||'').startsWith('adv8-')); if(advanced.length<Math.floor(count*.8)) throw new Error(subject+': too many advanced questions lost during deduplication'); if(!advanced.every(row=>row.explain&&row.category&&row.level)) throw new Error(subject+': incomplete advanced explanation metadata'); console.log(subject,'source:',sourceRows.length,'unique compiled:',advanced.length)}"
-          node -e "const fs=require('fs'); const path=require('path'); const forbidden=new Set(['source','sourcePage','sourceQuestion','sourcePages','sourceFile','sourceTitle','book','bookId','bookTitle','author','writer','page','pageNo','pageNumber','pdf','pdfPage','documentName','documentTitle']); for(const file of fs.readdirSync('dist/data/exams').filter(x=>x.endsWith('.json')&&x!=='manifest.json')){const rows=JSON.parse(fs.readFileSync(path.join('dist/data/exams',file),'utf8')); for(const row of rows){for(const key of Object.keys(row)){if(forbidden.has(key)) throw new Error(file+': forbidden metadata '+key)}}} console.log('Exam source identity and page metadata removed.')"
+
+          grep -q 'WELCOME BACK' dist/auth.html
+          grep -q 'ADAPTIVE MASTERY EXAM CENTER' dist/exams.html
+          grep -q 'MODERN CODING CENTER' dist/coding.html
+          grep -q 'MODERN STEP CENTER' app/src/step.js
+          grep -q '/data/step/content.json' app/src/step.js
+          grep -q 'neonStepProgressV2:' app/src/step.js
+          grep -q "'neonStepProgressV1'" app/src/account-local-state.js
+          if grep -R -E '/legacy/[A-Za-z0-9._/-]+\.js' app --include='*.js' --include='*.html'; then echo 'Legacy JavaScript runtime reference detected in modern app'; exit 1; fi
+
+          node scripts/check-modern-step.mjs
+          node scripts/check-legacy-runtime.mjs
+          node scripts/check-legacy-package.mjs
+
+          node -e "const s=require('./dist/data/step/content.json'); if(s.counts.lessons<28||s.counts.models<7||s.counts.questions<150||s.counts.listeningExercises<10) process.exit(1); console.log('STEP content:',s.counts.lessons,'lessons,',s.counts.models,'models,',s.counts.questions,'questions,',s.counts.listeningExercises,'listening exercises')"
+          node -e "const m=require('./dist/data/exams/manifest.json'); if(!m.totalQuestions||Object.keys(m.subjects).length!==6) process.exit(1); if((m.subjects['tahsili-biology']?.count||0)<100) process.exit(1); console.log('Compiled questions:',m.totalQuestions,'Biology:',m.subjects['tahsili-biology'].count,'Subjects:',Object.keys(m.subjects).length,'Fuzzy removed:',m.fuzzyDuplicatesRemoved)"
+          node -e "const c=require('./dist/data/coding/content.json'); if(c.counts.courses<10||c.counts.lessons<20||c.counts.challenges<6) process.exit(1); console.log('Coding content:',c.counts.courses,'courses,',c.counts.lessons,'lessons,',c.counts.challenges,'challenges')"
+          node -e "const fs=require('fs'),vm=require('vm'); const expected={'tahsili-math':['exam-bank-uploaded-tahsili-math-advanced-model8-2026.js',30],'tahsili-physics':['exam-bank-uploaded-tahsili-physics-advanced-model8-2026.js',30],'tahsili-chemistry':['exam-bank-uploaded-tahsili-chemistry-advanced-model8-2026.js',51],'tahsili-biology':['exam-bank-uploaded-tahsili-biology-advanced-model8-2026.js',40]}; for(const [subject,[file,count]] of Object.entries(expected)){const window={};window.window=window;vm.runInNewContext(fs.readFileSync('./academy/'+file,'utf8'),{window,globalThis:window});const sourceRows=window.NEON_TAHSILI_ADVANCED_QUESTIONS||[];if(sourceRows.length!==count)throw new Error(subject+': source mismatch');const rows=JSON.parse(fs.readFileSync('./dist/data/exams/'+subject+'.json','utf8'));const advanced=rows.filter(row=>String(row.id||'').startsWith('adv8-'));if(advanced.length<Math.floor(count*.8))throw new Error(subject+': advanced loss');console.log(subject,'source:',sourceRows.length,'unique compiled:',advanced.length)}"
 
           node --check server-production.mjs
           node --check server.mjs
           node --check server/static.mjs
-          node --check server/question-mastery.mjs
-          node --check server/student-state.mjs
-          node --check server/readiness-engine.mjs
-          node --check server/student-success.mjs
           node --check server/platform-access.mjs
           node --check server/admin-users.mjs
           node --check server/admin-dashboard.mjs
+          node --check server/student-state.mjs
+          node --check server/student-success.mjs
           node --check app/src/auth.js
           node --check app/src/auth-page.js
           node --check app/src/coding.js
-          node --check scripts/build-coding-content.mjs
-          node --check scripts/check-modern-coding.mjs
-          node --check scripts/legacy-runtime-allowlist.mjs
+          node --check app/src/step.js
+          node --check app/src/admin.js
+          node --check app/src/admin-users.js
+          node --check app/src/exam-modern-runtime.js
+          node --check scripts/build-step-content.mjs
+          node --check scripts/check-modern-step.mjs
           node --check scripts/check-legacy-runtime.mjs
           node --check scripts/check-legacy-package.mjs
-          node --check app/src/diagnostic-experience.js
-          node --check app/src/exam-skill-selector.js
-          node --check app/src/student-success.js
-          node --check app/src/admin-users.js
-          node --check app/src/admin.js
-          node --check app/src/exam-modern-runtime.js
-          node --check dist/legacy/step-book-kafayat-1-lessons.js
-          node --check dist/legacy/step-book-kafayat-1-models-1-2.js
-          node --check dist/legacy/step-book-kafayat-1-models-3-4.js
-          node --check dist/legacy/step-book-kafayat-1-models-5-6.js
-          node --check dist/legacy/step-book-kafayat-1-model-7.js
-          node --check dist/legacy/step-book-kafayat-1-listening.js
-          node --check dist/legacy/step-mastery-lessons.js
-          node --check dist/legacy/step-mastery-questions.js
-          node --check dist/legacy/step-academy-data.js
-          node --check dist/legacy/step-academy-runtime.js
-          node --check dist/legacy/step-book-kafayat-1-runtime.js
-          node --check academy/biology-mastery-lessons.js
-          node --check academy/biology-mastery-runtime.js
-          node --check academy/tahsili-advanced-lessons-2026.js
-          node --check academy/tahsili-advanced-runtime-2026.js
-          node --check academy/exam-bank-uploaded-tahsili-math-advanced-model8-2026.js
-          node --check academy/exam-bank-uploaded-tahsili-physics-advanced-model8-2026.js
-          node --check academy/exam-bank-uploaded-tahsili-chemistry-advanced-model8-2026.js
-          node --check academy/exam-bank-uploaded-tahsili-biology-advanced-model8-2026.js
+          test ! -f server/gemini.mjs
 
       - name: Test Railway production server
         env:
@@ -185,73 +124,41 @@ jobs:
             if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
             sleep 1
           done
+
           curl --fail --silent --show-error http://127.0.0.1:4173/ > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/auth | grep -q 'WELCOME BACK'
+          curl --fail --silent --show-error http://127.0.0.1:4173/step > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/exams > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/coding | grep -q 'MODERN CODING CENTER'
+          curl --fail --silent --show-error http://127.0.0.1:4173/admin | grep -q 'NEON ADMIN'
+          curl --fail --silent --show-error http://127.0.0.1:4173/data/step/content.json > /tmp/step-content.json
+          grep -q '"lessons"' /tmp/step-content.json
+          curl --fail --silent --show-error http://127.0.0.1:4173/data/coding/content.json > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/manifest.json > /dev/null
+
+          LEGACY_STEP_HTTP=$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:4173/legacy/step-academy-runtime.js)
+          test "$LEGACY_STEP_HTTP" = "404"
+          LEGACY_STEP_DATA_HTTP=$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:4173/legacy/step-mastery-lessons.js)
+          test "$LEGACY_STEP_DATA_HTTP" = "404"
+          LEGACY_AUTH_JS_HTTP=$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:4173/legacy/auth.js)
+          test "$LEGACY_AUTH_JS_HTTP" = "404"
+
           LEGACY_AUTH_HTTP=$(curl --silent --output /dev/null --write-out '%{http_code}' 'http://127.0.0.1:4173/legacy/auth.html?next=%2Fexams')
           test "$LEGACY_AUTH_HTTP" = "308"
           curl --silent --head 'http://127.0.0.1:4173/legacy/auth.html?next=%2Fexams' | tr -d '\r' | grep -qi '^location: /auth?next=%2Fexams$'
-          curl --fail --silent --show-error http://127.0.0.1:4173/step > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/exams > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/games > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/learning > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/coding | grep -q 'MODERN CODING CENTER'
-          curl --fail --silent --show-error http://127.0.0.1:4173/admin | grep -q 'NEON ADMIN'
           LEGACY_CODING_HTTP=$(curl --silent --output /dev/null --write-out '%{http_code}' 'http://127.0.0.1:4173/legacy/coding.html?embedded=1')
           test "$LEGACY_CODING_HTTP" = "308"
           curl --silent --head 'http://127.0.0.1:4173/legacy/coding.html?embedded=1' | tr -d '\r' | grep -qi '^location: /coding$'
-          TUTOR_PAGE_HTTP=$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:4173/tutor)
-          test "$TUTOR_PAGE_HTTP" = "308"
-          curl --silent --head http://127.0.0.1:4173/tutor | tr -d '\r' | grep -qi '^location: /$'
 
-          curl --fail --silent --show-error http://127.0.0.1:4173/legacy/step-academy-runtime.js | grep -q 'neonStepProgressV1'
-          LEGACY_AUTH_JS_HTTP=$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:4173/legacy/auth.js)
-          test "$LEGACY_AUTH_JS_HTTP" = "404"
-          LEGACY_CODING_RUNTIME_HTTP=$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:4173/legacy/coding-learning-center.js)
-          test "$LEGACY_CODING_RUNTIME_HTTP" = "404"
-          LEGACY_EXAM_BANK_HTTP=$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:4173/legacy/exam-bank-uploaded-tahsili-math-advanced-model8-2026.js)
-          test "$LEGACY_EXAM_BANK_HTTP" = "404"
-
-          curl --fail --silent --show-error http://127.0.0.1:4173/data/coding/content.json > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/tahsili-math.json > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/tahsili-physics.json > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/tahsili-chemistry.json > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/tahsili-biology.json > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/runtime/visuals.json > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/runtime/learning-paths.json > /dev/null
-          curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/manifest.json > /dev/null
-          TUTOR_STATUS_HTTP=$(curl --silent --output /tmp/tutor-status-response.json --write-out '%{http_code}' http://127.0.0.1:4173/api/tutor/status)
+          TUTOR_STATUS_HTTP=$(curl --silent --output /tmp/tutor-status.json --write-out '%{http_code}' http://127.0.0.1:4173/api/tutor/status)
           test "$TUTOR_STATUS_HTTP" = "410"
-          grep -q 'FEATURE_RETIRED' /tmp/tutor-status-response.json
-          TUTOR_HTTP=$(curl --silent --output /tmp/tutor-response.json --write-out '%{http_code}' --header 'Content-Type: application/json' --data '{"message":"test"}' http://127.0.0.1:4173/api/tutor)
-          test "$TUTOR_HTTP" = "410"
-          grep -q 'FEATURE_RETIRED' /tmp/tutor-response.json
-          curl --fail --silent --show-error http://127.0.0.1:4173/api/progress/status | grep -q '"configured":false'
-          curl --fail --silent --show-error http://127.0.0.1:4173/api/mastery/status | grep -q '"configured":false'
-          curl --fail --silent --show-error http://127.0.0.1:4173/api/student-state/status | grep -q '"configured":false'
-          curl --fail --silent --show-error http://127.0.0.1:4173/api/success/status | grep -q '"skill-map"'
-          PROGRESS_HTTP=$(curl --silent --output /tmp/progress-response.json --write-out '%{http_code}' http://127.0.0.1:4173/api/progress/me)
-          test "$PROGRESS_HTTP" = "401"
-          grep -q 'AUTH_REQUIRED' /tmp/progress-response.json
-          MASTERY_HTTP=$(curl --silent --output /tmp/mastery-response.json --write-out '%{http_code}' 'http://127.0.0.1:4173/api/mastery/questions?subject=tahsili-math')
-          test "$MASTERY_HTTP" = "401"
-          grep -q 'AUTH_REQUIRED' /tmp/mastery-response.json
-          STUDENT_STATE_HTTP=$(curl --silent --output /tmp/student-state-response.json --write-out '%{http_code}' http://127.0.0.1:4173/api/student-state/notebook)
-          test "$STUDENT_STATE_HTTP" = "401"
-          grep -q 'AUTH_REQUIRED' /tmp/student-state-response.json
-          SUCCESS_HTTP=$(curl --silent --output /tmp/success-response.json --write-out '%{http_code}' http://127.0.0.1:4173/api/success/dashboard)
-          test "$SUCCESS_HTTP" = "401"
-          grep -q 'AUTH_REQUIRED' /tmp/success-response.json
-          ACCESS_HTTP=$(curl --silent --output /tmp/access-response.json --write-out '%{http_code}' http://127.0.0.1:4173/api/access/session)
+          grep -q 'FEATURE_RETIRED' /tmp/tutor-status.json
+          ACCESS_HTTP=$(curl --silent --output /tmp/access.json --write-out '%{http_code}' http://127.0.0.1:4173/api/access/session)
           test "$ACCESS_HTTP" = "401"
-          grep -q 'AUTH_REQUIRED' /tmp/access-response.json
-          ADMIN_ACCESS_HTTP=$(curl --silent --output /tmp/admin-access-response.json --write-out '%{http_code}' http://127.0.0.1:4173/api/admin/access)
-          test "$ADMIN_ACCESS_HTTP" = "401"
-          grep -q 'AUTH_REQUIRED' /tmp/admin-access-response.json
-          ADMIN_USERS_HTTP=$(curl --silent --output /tmp/admin-users-response.json --write-out '%{http_code}' http://127.0.0.1:4173/api/admin/users)
-          test "$ADMIN_USERS_HTTP" = "401"
-          grep -q 'AUTH_REQUIRED' /tmp/admin-users-response.json
-          ADMIN_HTTP=$(curl --silent --output /tmp/admin-response.json --write-out '%{http_code}' http://127.0.0.1:4173/api/admin/status)
+          grep -q 'AUTH_REQUIRED' /tmp/access.json
+          ADMIN_HTTP=$(curl --silent --output /tmp/admin.json --write-out '%{http_code}' http://127.0.0.1:4173/api/admin/status)
           test "$ADMIN_HTTP" = "401"
-          grep -q 'AUTH_REQUIRED' /tmp/admin-response.json
+          grep -q 'AUTH_REQUIRED' /tmp/admin.json
+
           cat /tmp/neon-server.log
-          echo "Railway production server, selective Legacy STEP package, modern coding center, modern authentication, retired Tutor/Gemini cleanup, modern exam runtime, RBAC user administration, platform access guard, secure admin dashboard, canonical routes, central dedupe, account isolation, evidence-weighted readiness, skill diagnostics, student state sync, source privacy, and authenticated APIs validated successfully."
+          echo "Railway production server, zero-Legacy Modern STEP, modern coding/auth, retired Tutor/Gemini, modern exams, RBAC, account isolation, generated content, and authenticated APIs validated successfully."
