@@ -20,6 +20,7 @@
 - عزل Local State عند تبديل Firebase UID.
 - Responsive viewport في جميع مداخل HTML الحديثة.
 - عدم تحميل أي Legacy script/iframe من الصفحات الحديثة.
+- عقد Manual UAT نفسه: لا يمر Sign-off آليًا إلا عند 15/15 `PASS`، ويرفض حالة ناقصة أو `FAIL` أو معرفًا غير معروف أو Railway غير ناجح أو وجود Critical/High regression.
 
 ## Manual UAT — REQUIRED before Ready for Review
 
@@ -43,6 +44,21 @@
 | MOBILE-01 | شاشة هاتف تقريبًا 390px | Auth/Home/STEP/Exams/Coding قابلة للاستخدام بلا قص أفقي مؤثر | PENDING |
 | DESKTOP-01 | شاشة 1366–1440px | المراكز ولوحة الإدارة سليمة بصريًا ووظيفيًا | PENDING |
 
+## طريقة تنفيذ Manual UAT وتسجيلها
+
+1. استخدم **الرأس الحالي** لـPR #1 فقط. إذا تغير HEAD أثناء الاختبار يجب إعادة الحالات المتأثرة على الرأس الجديد.
+2. نفذ الحالات الـ15 أعلاه فعليًا على Preview باستخدام حسابات الاختبار المخولة. لا تضع كلمات مرور أو Firebase tokens في GitHub.
+3. استخدم `release/manual-uat-template.json` كورقة عمل. اترك أي حالة لم تختبرها `PENDING`، وحول الحالة إلى `PASS` فقط بعد نجاحها فعليًا.
+4. بعد أن تصبح الحالات الـ15 كلها `PASS` ولا توجد Critical/High regressions، افتح GitHub Actions وشغّل Workflow **Manual UAT Sign-off** يدويًا.
+5. أدخل:
+   - `candidate_sha`: SHA الكامل للرأس الذي تم اختباره.
+   - `tester`: اسم/معرف المختبر.
+   - `uat_results_json`: محتوى JSON للحالات الـ15 بعد أن أصبحت كلها `PASS`.
+   - `no_high_severity_regressions`: `true` فقط بعد التحقق.
+   - `evidence`: مرجع أو ملاحظات الاختبار بدون أسرار.
+6. Workflow يتحقق من أن SHA هو رأس PR الحالي وأن Railway = `success` على نفس SHA، ثم ينشئ Artifact باسم `neon-manual-uat-<sha>` يحتوي `manual-uat-signoff.json`.
+7. لا تشغّل **Final Merge Gate** قبل نجاح Manual UAT Sign-off. Final Gate يبحث عن تشغيل ناجح على نفس SHA، ينزّل Artifact، ويعيد التحقق من 15/15 PASS بدل قبول Boolean يدوي عام.
+
 ## Merge policy
 
 لا يتم تحويل PR #1 من Draft إلى Ready for Review إلا عندما تتحقق الشروط التالية معًا:
@@ -50,12 +66,15 @@
 1. `Vite Performance Build` = Success.
 2. `Production Release Gate` = Success.
 3. `Automated UAT Gate` = Success.
-4. Railway Preview = Success على نفس HEAD SHA.
-5. جميع حالات Manual UAT أعلاه = PASS أو يوجد استثناء موثق ومقبول صراحة قبل الدمج.
-6. لا توجد Regression حرجة أو High severity مفتوحة.
+4. `Release Candidate Preparation` = Success.
+5. Railway Preview = Success على نفس HEAD SHA.
+6. Workflow **Manual UAT Sign-off** = Success على نفس HEAD SHA وله Artifact صالح يحتوي 15/15 PASS.
+7. لا توجد Regression حرجة أو High severity مفتوحة.
+8. Workflow **Final Merge Gate** = Success على نفس HEAD SHA وينتج RC Manifest بحالة `APPROVED`.
 
 ## Sign-off
 
-- Automated UAT: يُحدّث آليًا من GitHub Actions.
-- Manual UAT owner: مالك المشروع/حسابات الاختبار المخولة.
+- Automated UAT: GitHub Actions.
+- Manual UAT owner: مالك المشروع/المختبر المخول الذي نفذ الحالات فعليًا.
+- Manual sign-off record: Artifact غير قابل للتعديل بعد إنشائه، مربوط بالـSHA وWorkflow run والمختبر.
 - Current merge state: **DRAFT — manual UAT required**.
