@@ -4,6 +4,9 @@ import { createBrotliCompress, createGzip, constants as zlibConstants } from 'no
 
 const root = resolve(process.cwd(), 'dist');
 const redirects = new Map([
+  ['/tutor', '/'],
+  ['/tutor/', '/'],
+  ['/tutor.html', '/'],
   ['/legacy', '/'],
   ['/legacy/', '/'],
   ['/legacy/index.html', '/'],
@@ -11,7 +14,8 @@ const redirects = new Map([
   ['/legacy/learning.html', '/learning'],
   ['/legacy/coding.html', '/coding'],
   ['/legacy/exams.html', '/exams'],
-  ['/legacy/kids-games.html', '/kids-games']
+  ['/legacy/kids-games.html', '/kids-games'],
+  ['/legacy/tutor.html', '/']
 ]);
 const criticalAuthFiles = new Set([
   '/legacy/auth.html',
