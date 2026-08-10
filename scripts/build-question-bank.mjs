@@ -31,6 +31,16 @@ function normalize(value) {
     .replace(/[^a-z0-9\u0600-\u06ff]+/g, '');
 }
 
+function normalizedNumbers(value) {
+  const digits = '٠١٢٣٤٥٦٧٨٩';
+  const text = String(value || '')
+    .normalize('NFKC')
+    .replace(/[٠-٩]/g, digit => String(digits.indexOf(digit)))
+    .replace(/٫/g, '.')
+    .replace(/٬/g, '');
+  return (text.match(/-?\d+(?:\.\d+)?/g) || []).join('|');
+}
+
 function quality(question) {
   let score = 0;
   if (question.explain || question.explanation) score += 4;
@@ -73,6 +83,86 @@ function cleanQuestion(question, index) {
   return cleaned;
 }
 
+function trigramDice(left, right) {
+  if (left === right) return 1;
+  if (!left || !right || Math.min(left.length, right.length) < 3) return 0;
+  const counts = new Map();
+  for (let index = 0; index <= left.length - 3; index += 1) {
+    const gram = left.slice(index, index + 3);
+    counts.set(gram, (counts.get(gram) || 0) + 1);
+  }
+  let overlap = 0;
+  for (let index = 0; index <= right.length - 3; index += 1) {
+    const gram = right.slice(index, index + 3);
+    const count = counts.get(gram) || 0;
+    if (!count) continue;
+    overlap += 1;
+    counts.set(gram, count - 1);
+  }
+  return (2 * overlap) / ((left.length - 2) + (right.length - 2));
+}
+
+const fuzzySignatureCache = new WeakMap();
+
+function fuzzySignature(question) {
+  if (fuzzySignatureCache.has(question)) return fuzzySignatureCache.get(question);
+  const q = normalize(question.q || question.question);
+  const passage = normalize(question.passage || '');
+  const options = (question.options || []).map(normalize).sort().join('|');
+  const numbers = normalizedNumbers(`${question.q || question.question || ''} ${question.passage || ''}`);
+  const signature = { q, passage, options, numbers };
+  fuzzySignatureCache.set(question, signature);
+  return signature;
+}
+
+function nearDuplicate(left, right) {
+  if (left.subject !== right.subject) return false;
+  const a = fuzzySignature(left);
+  const b = fuzzySignature(right);
+  if (Math.min(a.q.length, b.q.length) < 32) return false;
+  const lengthRatio = Math.min(a.q.length, b.q.length) / Math.max(a.q.length, b.q.length);
+  if (lengthRatio < 0.9) return false;
+  if (a.numbers !== b.numbers) return false;
+  if (Boolean(a.passage) !== Boolean(b.passage)) return false;
+  if (a.passage && trigramDice(a.passage, b.passage) < 0.97) return false;
+  if (trigramDice(a.q, b.q) < 0.975) return false;
+  if (trigramDice(a.options, b.options) < 0.94) return false;
+  return true;
+}
+
+function fuzzyDeduplicate(questions) {
+  const accepted = [];
+  const buckets = new Map();
+  let removed = 0;
+
+  for (const question of questions) {
+    const subject = question.subject || 'unknown';
+    const bucket = buckets.get(subject) || [];
+    let match = null;
+    for (const entry of bucket) {
+      if (nearDuplicate(entry.question, question)) {
+        match = entry;
+        break;
+      }
+    }
+
+    if (!match) {
+      const index = accepted.push(question) - 1;
+      bucket.push({ question, index });
+      buckets.set(subject, bucket);
+      continue;
+    }
+
+    removed += 1;
+    if (quality(question) > quality(match.question)) {
+      accepted[match.index] = question;
+      match.question = question;
+    }
+  }
+
+  return { questions: accepted, removed };
+}
+
 function createSandbox() {
   const window = {};
   const sandbox = {
@@ -104,9 +194,6 @@ async function evaluateSources(files) {
     }
   }
 
-  // Rebuild the uploaded arithmetic image bank after all sources (including
-  // the new video banks) have loaded, so its near-duplicate filter compares
-  // against the complete quantitative bank rather than only earlier files.
   if (typeof context.window.NEON_BUILD_UPLOADED_IMAGES_ARITHMETIC_20260808 === 'function') {
     context.window.NEON_BUILD_UPLOADED_IMAGES_ARITHMETIC_20260808();
   }
@@ -117,9 +204,6 @@ async function evaluateSources(files) {
 function collectQuestionArrays(windowObject) {
   const arrays = [];
   for (const [name, value] of Object.entries(windowObject)) {
-    // RAW_* arrays are staging data for the filtered uploaded-image bank.
-    // Collecting them would re-introduce questions intentionally removed by
-    // its duplicate filter, so only the rebuilt accepted array is exported.
     if (name.startsWith('NEON_UPLOADED_IMAGES_ARITHMETIC_20260808_RAW_')) continue;
     if (!Array.isArray(value)) continue;
     if (!value.some(item => item && typeof item === 'object' && Array.isArray(item.options) && (item.q || item.question))) continue;
@@ -149,7 +233,10 @@ async function main() {
     if (!previous || quality(question) > quality(previous)) bestByKey.set(key, question);
   });
 
-  const questions = [...bestByKey.values()].sort((a, b) =>
+  const exactQuestions = [...bestByKey.values()];
+  const exactDuplicatesRemoved = candidates.length - invalid - exactQuestions.length;
+  const fuzzyResult = fuzzyDeduplicate(exactQuestions);
+  const questions = fuzzyResult.questions.sort((a, b) =>
     String(a.subject).localeCompare(String(b.subject), 'en') || String(a.id).localeCompare(String(b.id), 'en')
   );
   const groups = Map.groupBy(questions, question => question.subject || 'unknown');
@@ -163,7 +250,9 @@ async function main() {
     sourceArrays: arrays.length,
     rawCandidates: candidates.length,
     invalidQuestions: invalid,
-    duplicatesRemoved: candidates.length - invalid - questions.length,
+    exactDuplicatesRemoved,
+    fuzzyDuplicatesRemoved: fuzzyResult.removed,
+    duplicatesRemoved: exactDuplicatesRemoved + fuzzyResult.removed,
     totalQuestions: questions.length,
     subjects: {}
   };
@@ -177,7 +266,7 @@ async function main() {
 
   await writeFile(path.join(outputDirectory, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
   console.log(`Question bank built: ${questions.length} unique questions across ${groups.size} subjects.`);
-  console.log(`Removed ${manifest.duplicatesRemoved} duplicates and rejected ${invalid} invalid questions.`);
+  console.log(`Removed ${manifest.duplicatesRemoved} duplicates (${exactDuplicatesRemoved} exact + ${fuzzyResult.removed} fuzzy) and rejected ${invalid} invalid questions.`);
 }
 
 main().catch(error => {
