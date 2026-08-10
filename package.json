@@ -1,6 +1,6 @@
 {
   "name": "neon-learning-platform",
-  "version": "0.5.0",
+  "version": "0.6.0-rc.1",
   "private": true,
   "type": "module",
   "engines": {
@@ -18,10 +18,13 @@
     "check:release": "node scripts/check-release-readiness.mjs",
     "test:release": "node scripts/test-production-release.mjs",
     "test:uat": "node scripts/test-uat-readiness.mjs",
+    "check:rc": "node scripts/check-rc-readiness.mjs",
     "build:data": "node scripts/build-question-bank.mjs && node scripts/build-exam-runtime-assets.mjs && node scripts/build-coding-content.mjs && node scripts/build-step-content.mjs",
     "build": "npm run check:themes && npm run check:retired && npm run check:auth && npm run check:coding && npm run check:step && npm run check:legacy && npm run build:data && vite build && npm run verify:legacy-package && npm run check:release",
     "release:gate": "npm run build && npm run test:release",
     "uat:gate": "npm run release:gate && npm run test:uat",
+    "rc:prepare": "npm run uat:gate && npm run check:rc && node scripts/generate-rc-manifest.mjs",
+    "rc:final": "npm run uat:gate && node scripts/check-rc-readiness.mjs --final && node scripts/generate-rc-manifest.mjs --final",
     "start": "node server-production.mjs",
     "preview": "vite preview"
   },
