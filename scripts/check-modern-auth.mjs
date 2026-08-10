@@ -16,9 +16,18 @@ const authPage = await readFile('app/src/auth-page.js', 'utf8');
 const viteConfig = await readFile('vite.config.js', 'utf8');
 const staticServer = await readFile('server/static.mjs', 'utf8');
 
+const forbiddenRuntimePatterns = [
+  /location\.(?:replace|assign)\(\s*[`'"]\/legacy\/auth\.html/,
+  /location\.href\s*=\s*[`'"]\/legacy\/auth\.html/,
+  /new URL\(\s*[`'"]\/legacy\/firebase-config\.js/,
+  /runtimeImport\(\s*[`'"]\/legacy\/firebase-config\.js/,
+  /import\(\s*[`'"]\/legacy\/firebase-config\.js/
+];
+
 for (const [file, source] of [['app/src/auth.js', authRuntime], ['app/src/auth-page.js', authPage]]) {
-  if (/\/legacy\/auth\.html/.test(source)) throw new Error(`${file}: modern auth still routes through legacy/auth.html`);
-  if (/\/legacy\/firebase-config\.js/.test(source)) throw new Error(`${file}: modern auth still loads legacy Firebase config`);
+  for (const pattern of forbiddenRuntimePatterns) {
+    if (pattern.test(source)) throw new Error(`${file}: modern auth has a live Legacy dependency (${pattern})`);
+  }
 }
 
 if (!/auth:\s*fileURLToPath\(new URL\('\.\/app\/auth\.html'/.test(viteConfig)) {
