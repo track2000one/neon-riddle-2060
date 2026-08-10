@@ -26,6 +26,11 @@ function categoryLabel(category) {
   return CATEGORY_LABELS[key] || String(category || 'مهارات عامة').replace(/[-_]+/g, ' ');
 }
 
+function requestedSkill() {
+  const raw = new URLSearchParams(location.search).get('skill');
+  return raw ? normalizeCategory(raw) : '';
+}
+
 function readSelections() {
   try {
     const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -112,7 +117,6 @@ if (!ExamMasteryController.prototype.__neonSkillSelectorPatched) {
     const level = options.level || 'all';
     const requested = Math.max(1, Number(options.count || 10));
 
-    // Comprehensive simulation and automatic error review must preserve their full distribution.
     if (!select || skill === 'all' || mode === 'all' || mode === 'review') {
       return originalSelect.call(this, options);
     }
@@ -130,7 +134,6 @@ if (!ExamMasteryController.prototype.__neonSkillSelectorPatched) {
     const selected = temporarilySelect(this, focused, options, originalSelect);
     if (selected.length >= requested) return selected.slice(0, requested);
 
-    // Complete the requested session from the remaining pool without duplicating questions.
     const selectedIds = new Set(selected.map(question => String(question.id)));
     const remaining = originalSelect.call(this, { ...options, count: requested * 2 })
       .filter(question => !selectedIds.has(String(question.id)));
@@ -185,7 +188,8 @@ function renderSelector(controller) {
   const select = document.getElementById('examSkill');
   if (!select || !controller) return;
 
-  const saved = readSelections()[controller.subjectId] || 'auto';
+  const deepLinkSkill = requestedSkill();
+  const saved = deepLinkSkill || readSelections()[controller.subjectId] || 'auto';
   const counts = categoryCounts(controller, 'all', 'smart');
   const options = [...counts.entries()]
     .sort((a, b) => categoryLabel(a[0]).localeCompare(categoryLabel(b[0]), 'ar'));
@@ -195,6 +199,7 @@ function renderSelector(controller) {
     <option value="all">كل المهارات (${controller.questions.filter(q => q.active !== false).length.toLocaleString('ar-SA')})</option>
     ${options.map(([category, count]) => `<option value="${category}">${categoryLabel(category)} (${count.toLocaleString('ar-SA')})</option>`).join('')}`;
   select.value = [...select.options].some(option => option.value === saved) ? saved : 'auto';
+  if (deepLinkSkill && select.value === deepLinkSkill) saveSelection(controller.subjectId, deepLinkSkill);
   updateModePolicy();
 }
 
