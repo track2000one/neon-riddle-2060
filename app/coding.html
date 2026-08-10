@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07101f" />
+  <meta name="description" content="تعليم البرمجة في مسار نيون — دروس ومختبر تفاعلي وتمارين عملية" />
+  <title>تعليم البرمجة | مسار نيون</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="stylesheet" href="/src/styles.css" />
+  <style>
+    body{margin:0;background:#07101f;color:#f7f9ff;min-height:100vh;overflow:hidden}
+    .coding-shell{height:100vh;display:grid;grid-template-rows:auto 1fr;background:radial-gradient(circle at 20% 10%,rgba(99,235,255,.12),transparent 30%),#07101f}
+    .coding-bar{min-height:68px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:10px clamp(16px,4vw,44px);border-bottom:1px solid rgba(255,255,255,.1);background:rgba(7,16,31,.94);backdrop-filter:blur(16px);z-index:2}
+    .coding-brand{display:flex;align-items:center;gap:12px;color:#fff;text-decoration:none}.coding-brand img{width:42px;height:42px}.coding-brand strong{display:block}.coding-brand small{display:block;color:#9fb1d7;margin-top:2px}
+    .coding-nav{display:flex;gap:8px;flex-wrap:wrap}.coding-nav a{color:#cdd8f2;text-decoration:none;padding:9px 12px;border-radius:12px}.coding-nav a:hover,.coding-nav a.active{background:rgba(99,235,255,.12);color:#fff}
+    .coding-frame{width:100%;height:100%;border:0;background:#07101f}
+    @media(max-width:760px){.coding-bar{align-items:flex-start;flex-direction:column}.coding-nav{width:100%;overflow:auto;flex-wrap:nowrap}.coding-shell{grid-template-rows:auto 1fr}}
+  </style>
+</head>
+<body>
+  <div class="coding-shell">
+    <header class="coding-bar">
+      <a class="coding-brand" href="/">
+        <img src="./neon-logo.svg" alt="شعار مسار نيون" />
+        <span><strong>مسار نيون</strong><small>تعليم البرمجة</small></span>
+      </a>
+      <nav class="coding-nav" aria-label="التنقل">
+        <a href="/">الرئيسية</a>
+        <a href="/exams">الاختبارات</a>
+        <a href="/step">STEP</a>
+        <a href="/learning">المكتبة</a>
+        <a class="active" href="/coding">البرمجة</a>
+      </nav>
+    </header>
+    <iframe class="coding-frame" src="/legacy/coding.html?embedded=1" title="مركز تعليم البرمجة" loading="eager"></iframe>
+  </div>
+</body>
+</html>
