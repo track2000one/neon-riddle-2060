@@ -15,8 +15,11 @@
     "check:step": "node scripts/check-modern-step.mjs",
     "check:legacy": "node scripts/check-legacy-runtime.mjs",
     "verify:legacy-package": "node scripts/check-legacy-package.mjs",
+    "check:release": "node scripts/check-release-readiness.mjs",
+    "test:release": "node scripts/test-production-release.mjs",
     "build:data": "node scripts/build-question-bank.mjs && node scripts/build-exam-runtime-assets.mjs && node scripts/build-coding-content.mjs && node scripts/build-step-content.mjs",
-    "build": "npm run check:themes && npm run check:retired && npm run check:auth && npm run check:coding && npm run check:step && npm run check:legacy && npm run build:data && vite build && npm run verify:legacy-package",
+    "build": "npm run check:themes && npm run check:retired && npm run check:auth && npm run check:coding && npm run check:step && npm run check:legacy && npm run build:data && vite build && npm run verify:legacy-package && npm run check:release",
+    "release:gate": "npm run build && npm run test:release",
     "start": "node server-production.mjs",
     "preview": "vite preview"
   },
