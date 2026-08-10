@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { LEGACY_RUNTIME_ALLOWLIST, LEGACY_RUNTIME_OWNER, LEGACY_RUNTIME_PREFIX, legacyRuntimeUrl } from './legacy-runtime-allowlist.mjs';
+import { LEGACY_RUNTIME_ALLOWLIST, LEGACY_RUNTIME_OWNER, legacyRuntimeUrl } from './legacy-runtime-allowlist.mjs';
 
 const root = process.cwd();
 const appRoot = join(root, 'app');
@@ -8,7 +8,7 @@ const legacySource = join(root, 'academy');
 const ownerPath = join(root, LEGACY_RUNTIME_OWNER);
 const allowedUrls = new Set(LEGACY_RUNTIME_ALLOWLIST.map(legacyRuntimeUrl));
 const allowedExtensions = new Set(['.html', '.js', '.mjs', '.css']);
-const references = [];
+const runtimeReferences = [];
 
 function extension(path) {
   const index = path.lastIndexOf('.');
@@ -25,9 +25,9 @@ function walk(directory) {
 
 function inspect(path) {
   const source = readFileSync(path, 'utf8');
-  const regex = /\/legacy\/[A-Za-z0-9._/-]+/g;
+  const regex = /\/legacy\/[A-Za-z0-9._/-]+\.js\b/g;
   for (const match of source.matchAll(regex)) {
-    references.push({ file: relative(root, path).replaceAll('\\', '/'), url: match[0] });
+    runtimeReferences.push({ file: relative(root, path).replaceAll('\\', '/'), url: match[0] });
   }
 }
 
@@ -41,9 +41,9 @@ for (const fileName of LEGACY_RUNTIME_ALLOWLIST) {
 
 walk(appRoot);
 
-const unexpected = references.filter(item => item.file !== LEGACY_RUNTIME_OWNER || !allowedUrls.has(item.url));
+const unexpected = runtimeReferences.filter(item => item.file !== LEGACY_RUNTIME_OWNER || !allowedUrls.has(item.url));
 if (unexpected.length) {
-  throw new Error(`Unexpected modern Legacy runtime reference(s):\n${unexpected.map(item => `- ${item.file}: ${item.url}`).join('\n')}`);
+  throw new Error(`Unexpected modern Legacy JavaScript runtime reference(s):\n${unexpected.map(item => `- ${item.file}: ${item.url}`).join('\n')}`);
 }
 
 const ownerSource = readFileSync(ownerPath, 'utf8');
@@ -52,9 +52,16 @@ if (missingReferences.length) {
   throw new Error(`Allowlisted Legacy file(s) are not referenced by ${LEGACY_RUNTIME_OWNER}: ${missingReferences.join(', ')}`);
 }
 
+for (const htmlName of readdirSync(appRoot).filter(name => name.endsWith('.html'))) {
+  const html = readFileSync(join(appRoot, htmlName), 'utf8');
+  if (/<(?:script|iframe)[^>]+(?:src|href)=["']\/legacy\//i.test(html)) {
+    throw new Error(`Modern HTML entry must not directly load Legacy assets: app/${htmlName}`);
+  }
+}
+
 const viteSource = readFileSync(join(root, 'vite.config.js'), 'utf8');
 if (/cpSync\(legacySource[^\n]*recursive\s*:\s*true/.test(viteSource)) {
   throw new Error('Full academy -> dist/legacy recursive copy is forbidden. Use LEGACY_RUNTIME_ALLOWLIST.');
 }
 
-console.log(`Selective Legacy runtime guard passed: ${references.length} references, all owned by ${LEGACY_RUNTIME_OWNER}.`);
+console.log(`Selective Legacy runtime guard passed: ${runtimeReferences.length} JavaScript references, all owned by ${LEGACY_RUNTIME_OWNER}.`);
