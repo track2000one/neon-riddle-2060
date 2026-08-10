@@ -8,7 +8,8 @@
     { "source": "/tutor", "destination": "/", "permanent": true },
     { "source": "/tutor.html", "destination": "/", "permanent": true },
     { "source": "/legacy/tutor.html", "destination": "/", "permanent": true },
-    { "source": "/legacy/auth.html", "destination": "/auth", "permanent": true }
+    { "source": "/legacy/auth.html", "destination": "/auth", "permanent": true },
+    { "source": "/legacy/coding.html", "destination": "/coding", "permanent": true }
   ],
   "headers": [
     {
@@ -19,6 +20,12 @@
     },
     {
       "source": "/data/exams/(.*).json",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }
+      ]
+    },
+    {
+      "source": "/data/coding/(.*).json",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }
       ]
