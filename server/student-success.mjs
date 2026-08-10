@@ -1,5 +1,6 @@
 import { createPublicKey, verify as verifySignature } from 'node:crypto';
 import pg from 'pg';
+import { computeReadiness } from './readiness-engine.mjs';
 
 const { Pool } = pg;
 const databaseUrl = String(process.env.DATABASE_URL || process.env.PROGRESS_DATABASE_URL || '').trim();
@@ -272,23 +273,65 @@ function subjectName(subjectId) {
   }[subjectId] || subjectId || 'المسار المستهدف';
 }
 
-function buildPlan(profile, stats, weakSubjects) {
+async function loadSkillEvidence(client, uid) {
+  const result = await client.query(`
+    SELECT
+      skill->>'subject' AS subject_id,
+      COALESCE(NULLIF(skill->>'subjectTitle',''), skill->>'subject') AS subject_title,
+      COALESCE(NULLIF(skill->>'category',''), 'general') AS category,
+      COALESCE(NULLIF(skill->>'title',''), NULLIF(skill->>'categoryTitle',''), skill->>'category', 'مهارات عامة') AS title,
+      COALESCE(SUM(CASE WHEN (skill->>'correct') ~ '^\\d+$' THEN (skill->>'correct')::int ELSE 0 END),0)::int AS correct,
+      COALESCE(SUM(CASE WHEN (skill->>'total') ~ '^\\d+$' THEN (skill->>'total')::int ELSE 0 END),0)::int AS total,
+      MAX(a.created_at) AS latest_at
+    FROM neon_assessment_attempts a
+    CROSS JOIN LATERAL jsonb_array_elements(
+      CASE WHEN jsonb_typeof(a.details->'skillBreakdown')='array' THEN a.details->'skillBreakdown' ELSE '[]'::jsonb END
+    ) skill
+    WHERE a.firebase_uid=$1
+      AND a.created_at >= NOW() - INTERVAL '90 days'
+      AND COALESCE(skill->>'subject','') <> ''
+    GROUP BY 1,2,3,4
+  `, [uid]);
+  return result.rows.map(row => ({
+    subjectId: row.subject_id,
+    subjectTitle: row.subject_title || subjectName(row.subject_id),
+    category: row.category,
+    title: row.title,
+    correct: Number(row.correct || 0),
+    total: Number(row.total || 0),
+    latestAt: row.latest_at || null
+  }));
+}
+
+function buildPlan(profile, stats, weakSubjects, weakSkills = []) {
   const minutes = profile.dailyMinutes || 30;
   const meta = trackMeta[profile.examTrack] || trackMeta.tahsili;
   if (!stats.sessions) {
+    const diagnosticHref = profile.examTrack === 'qudurat' ? '/exams?diagnostic=qudurat' : profile.examTrack === 'tahsili' ? '/exams?diagnostic=tahsili' : meta.href;
     return [
-      { id: 'diagnostic', title: `اختبار تشخيصي في ${meta.title}`, description: 'ابدأ بقياس المستوى حتى تبنى الخطة على بياناتك الفعلية.', minutes: Math.min(25, minutes), href: meta.href, type: 'diagnostic' },
-      { id: 'orientation', title: 'استكشف تقرير نقاط القوة والضعف', description: 'بعد التشخيص ستظهر أولوياتك ومؤشر الجاهزية.', minutes: 5, href: meta.href, type: 'report' }
+      { id: 'diagnostic', title: `اختبار تشخيصي في ${meta.title}`, description: 'ابدأ بقياس المستوى حتى تبنى الخطة على بياناتك الفعلية.', minutes: Math.min(30, minutes), href: diagnosticHref, type: 'diagnostic' },
+      { id: 'orientation', title: 'استكشف تقرير نقاط القوة والضعف', description: 'بعد التشخيص ستظهر أولوياتك ومؤشر الجاهزية المبني على المهارات.', minutes: 5, href: meta.href, type: 'report' }
     ];
   }
 
-  const weak = weakSubjects[0]?.subjectId || meta.subjectId;
+  const verifiedSkill = weakSkills.find(item => Number(item.total || 0) >= 2 && item.status !== 'strong');
+  const weakSubject = weakSubjects[0]?.subjectId || meta.subjectId;
+  const focusSubject = verifiedSkill?.subjectId || weakSubject;
+  const focusedHref = verifiedSkill
+    ? `/exams?subject=${encodeURIComponent(verifiedSkill.subjectId)}&skill=${encodeURIComponent(verifiedSkill.category)}`
+    : focusSubject === 'step' ? '/step' : `/exams?subject=${encodeURIComponent(focusSubject)}`;
+  const focusedTitle = verifiedSkill
+    ? `تدريب مركز: ${verifiedSkill.title}`
+    : `تدريب مركز: ${subjectName(focusSubject)}`;
+  const focusedDescription = verifiedSkill
+    ? `${verifiedSkill.subjectTitle || subjectName(verifiedSkill.subjectId)} • دقة ${verifiedSkill.percent}% من ${verifiedSkill.total} أسئلة تشخيصية.`
+    : 'جلسة ذكية تعطي الأولوية للمادة الأقل أداءً.';
   const focusedMinutes = Math.max(10, Math.round(minutes * 0.5));
   const reviewMinutes = Math.max(5, Math.round(minutes * 0.25));
   const simulationMinutes = Math.max(5, minutes - focusedMinutes - reviewMinutes);
   return [
     { id: 'review-errors', title: 'مراجعة دفتر الأخطاء', description: 'راجع الأسئلة المستحقة وسبب الخطأ قبل بدء أسئلة جديدة.', minutes: reviewMinutes, href: '/exams#notebook', type: 'review' },
-    { id: 'focused-practice', title: `تدريب مركز: ${subjectName(weak)}`, description: 'جلسة ذكية تعطي الأولوية للمهارات الأقل أداءً.', minutes: focusedMinutes, href: weak === 'step' ? '/step' : `/exams?subject=${encodeURIComponent(weak)}`, type: 'practice' },
+    { id: 'focused-practice', title: focusedTitle, description: focusedDescription, minutes: focusedMinutes, href: focusedHref, type: 'practice' },
     { id: 'mini-simulation', title: 'محاكاة قصيرة', description: 'اختبار قصير لقياس ثبات المعلومة والسرعة تحت الوقت.', minutes: simulationMinutes, href: meta.href, type: 'simulation' }
   ];
 }
@@ -304,6 +347,7 @@ async function dashboard(identity) {
     let previousAverage = 0;
     let weakSubjects = [];
     let mastery = 0;
+    let skillEvidence = [];
 
     if (hasAttempts) {
       const currentResult = await client.query(`
@@ -329,6 +373,7 @@ async function dashboard(identity) {
         SELECT subject_id, COUNT(*)::int AS sessions, COALESCE(ROUND(AVG(score)),0)::int AS average
         FROM neon_assessment_attempts
         WHERE firebase_uid=$1 AND subject_id <> ''
+          AND subject_id NOT LIKE 'diagnostic-%'
         GROUP BY subject_id
         ORDER BY AVG(score) ASC, COUNT(*) DESC
         LIMIT 3
@@ -339,6 +384,7 @@ async function dashboard(identity) {
         average: Number(row.average || 0),
         sessions: Number(row.sessions || 0)
       }));
+      skillEvidence = await loadSkillEvidence(client, identity.uid);
     }
 
     if (hasProgress) {
@@ -352,9 +398,8 @@ async function dashboard(identity) {
     const average = Number(current.average || 0);
     const latest = Number(current.latest || 0);
     const sessions = Number(current.sessions || 0);
-    const readiness = sessions
-      ? Math.max(0, Math.min(100, Math.round(average * 0.55 + latest * 0.25 + mastery * 0.20)))
-      : mastery ? Math.round(mastery * 0.7) : 0;
+    const readinessModel = computeReadiness({ sessions, average, latest, mastery, skills: skillEvidence });
+    const readiness = readinessModel.value;
     const trend = previousAverage ? average - previousAverage : 0;
     const stats = {
       sessions,
@@ -365,6 +410,11 @@ async function dashboard(identity) {
       previousAverage,
       trend
     };
+    const skillMap = readinessModel.skills.slice(0, 16).map(item => ({
+      ...item,
+      subjectTitle: item.subjectTitle || subjectName(item.subjectId)
+    }));
+    const weakSkills = skillMap.filter(item => item.status !== 'strong').slice(0, 6);
 
     return {
       ok: true,
@@ -374,10 +424,20 @@ async function dashboard(identity) {
         daysRemaining: daysUntil(profile.examDate),
         score: profile.targetScore
       },
-      readiness: { value: readiness, label: readinessLabel(readiness), mastery },
+      readiness: {
+        value: readiness,
+        label: readinessLabel(readiness),
+        mastery,
+        skillScore: readinessModel.skillScore,
+        confidence: readinessModel.confidence,
+        skillConfidence: readinessModel.skillConfidence,
+        components: readinessModel.components
+      },
       week: stats,
       weakSubjects,
-      plan: buildPlan(profile, stats, weakSubjects)
+      skillMap,
+      weakSkills,
+      plan: buildPlan(profile, stats, weakSubjects, weakSkills)
     };
   } finally {
     client.release();
@@ -433,7 +493,7 @@ export async function handleStudentSuccessApi(req, res, requestPath, readJsonBod
     return true;
   }
   if (requestPath === '/api/success/status' && req.method === 'GET') {
-    json(res, 200, { configured: Boolean(pool), features: ['goals', 'readiness', 'daily-plan', 'weekly-report', 'question-reports', 'analytics'] }, cors);
+    json(res, 200, { configured: Boolean(pool), features: ['goals', 'readiness', 'skill-map', 'evidence-readiness', 'daily-plan', 'weekly-report', 'question-reports', 'analytics'] }, cors);
     return true;
   }
 
