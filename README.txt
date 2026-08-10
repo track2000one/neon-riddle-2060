@@ -1,18 +1,30 @@
-NEON RIDDLE 2060 — KNOWLEDGE & APTITUDE EDITION V5
-===================================================
+NEON Academy 2060
+=================
 
-التشغيل:
-1) افتح index.html مباشرة.
-2) لا يحتاج المشروع إلى npm أو خادم أو اتصال بالإنترنت.
+Modern Vite multi-page learning platform with Firebase Authentication, PostgreSQL-backed student state, readiness diagnostics, RBAC administration, and a compiled exam bank.
 
-الإضافات في V5:
-- تقسيم المكتبة إلى ثلاثة مسارات: المتعة والألغاز، المعرفة، التدريب على القدرات.
-- قسم معرفة عامة للكبار والصغار مع شرح الإجابة.
-- قسم قدرات لفظي: تناظر لفظي، إكمال جمل، مفردات، خطأ سياقي، استيعاب مقروء.
-- قسم قدرات كمي: نسب، تناسب، متوسطات، جبر، هندسة، مسائل ومتتاليات.
-- محاكاة قدرات تدريبية من 20 سؤالًا للكبار و12 سؤالًا للصغار.
-- تحليل مستقل للفظي والكمي وحفظ أفضل نتيجة لكل مستخدم.
-- المحافظة على تقدم المستخدمين السابق لأن مفاتيح LocalStorage لم تتغير.
+Primary routes
+--------------
+/              Main learning portal
+/auth          Modern Firebase login, registration, password recovery, account isolation and platform access validation
+/step          STEP learning
+/exams         Qudurat/Tahsili exam center
+/games         Learning games
+/kids-games    Children games
+/learning      Learning library
+/coding        Coding center (transition wrapper)
+/trust         Quality and transparency
+/admin         Secured administration dashboard
 
-تنبيه مهم:
-محتوى القدرات تدريبي أصلي وغير رسمي، ولا يمثل أسئلة مسرّبة أو درجة رسمية، ولا توجد للمنصة صلة رسمية بهيئة تقويم التعليم والتدريب.
+Legacy compatibility
+--------------------
+Legacy content is still copied into /legacy while migration continues. User-facing legacy routes redirect to canonical modern routes. /legacy/auth.html redirects to /auth and preserves the next query parameter. The coding center still uses an embedded legacy implementation during its transition.
+
+Tutor/Gemini
+------------
+The retired Tutor/Gemini runtime has been removed. /tutor redirects to the home page and old Tutor API clients receive FEATURE_RETIRED.
+
+Build
+-----
+npm run build
+npm run start
