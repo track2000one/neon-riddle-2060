@@ -57,6 +57,7 @@ jobs:
       - name: Validate output entries
         run: |
           test -f dist/index.html
+          test -f dist/auth.html
           test -f dist/step.html
           test -f dist/exams.html
           test -f dist/games.html
@@ -68,6 +69,7 @@ jobs:
           test -d dist/legacy
           test -f dist/data/exams/runtime/visuals.json
           test -f dist/data/exams/runtime/learning-paths.json
+          grep -q 'WELCOME BACK' dist/auth.html
           grep -q 'ADAPTIVE MASTERY EXAM CENTER' dist/exams.html
           grep -q 'examMode' dist/exams.html
           if grep -q '/legacy/.*\.js' dist/exams.html; then echo 'Legacy exam runtime script detected'; exit 1; fi
@@ -83,6 +85,7 @@ jobs:
           grep -q "'content-admin'" server/admin-users.mjs
           grep -q "support:" server/admin-users.mjs
           grep -q 'registerPlatformAccess' app/src/auth.js
+          grep -q 'registerPlatformAccess' app/src/auth-page.js
           test ! -f server/gemini.mjs
           test ! -f app/src/tutor-retirement.js
           if grep -R -E 'GEMINI_API_KEY|GOOGLE_API_KEY|generativelanguage\.googleapis\.com|handleTutorApi|geminiRuntimeInfo' server-production.mjs server.mjs server; then echo 'Retired Gemini tutor code detected'; exit 1; fi
@@ -116,6 +119,8 @@ jobs:
           node --check server/platform-access.mjs
           node --check server/admin-users.mjs
           node --check server/admin-dashboard.mjs
+          node --check app/src/auth.js
+          node --check app/src/auth-page.js
           node --check app/src/diagnostic-experience.js
           node --check app/src/exam-skill-selector.js
           node --check app/src/student-success.js
@@ -147,6 +152,10 @@ jobs:
             sleep 1
           done
           curl --fail --silent --show-error http://127.0.0.1:4173/ > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/auth | grep -q 'WELCOME BACK'
+          LEGACY_AUTH_HTTP=$(curl --silent --output /dev/null --write-out '%{http_code}' 'http://127.0.0.1:4173/legacy/auth.html?next=%2Fexams')
+          test "$LEGACY_AUTH_HTTP" = "308"
+          curl --silent --head 'http://127.0.0.1:4173/legacy/auth.html?next=%2Fexams' | tr -d '\r' | grep -qi '^location: /auth?next=%2Fexams$'
           curl --fail --silent --show-error http://127.0.0.1:4173/step > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/exams > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/games > /dev/null
@@ -199,4 +208,4 @@ jobs:
           test "$ADMIN_HTTP" = "401"
           grep -q 'AUTH_REQUIRED' /tmp/admin-response.json
           cat /tmp/neon-server.log
-          echo "Railway production server, retired Tutor/Gemini cleanup, modern exam runtime, RBAC user administration, platform access guard, secure admin dashboard, canonical routes, central dedupe, account isolation, evidence-weighted readiness, skill diagnostics, student state sync, source privacy, and authenticated APIs validated successfully."
+          echo "Railway production server, modern authentication, retired Tutor/Gemini cleanup, modern exam runtime, RBAC user administration, platform access guard, secure admin dashboard, canonical routes, central dedupe, account isolation, evidence-weighted readiness, skill diagnostics, student state sync, source privacy, and authenticated APIs validated successfully."
