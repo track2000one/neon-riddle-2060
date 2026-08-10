@@ -18,15 +18,7 @@ const redirects = new Map([
   ['/legacy/kids-games.html', '/kids-games'],
   ['/legacy/tutor.html', '/']
 ]);
-const criticalAuthFiles = new Set([
-  '/auth.html',
-  '/legacy/auth.html',
-  '/legacy/auth.js',
-  '/legacy/auth-portal-routing.js',
-  '/legacy/auth-phone.js',
-  '/legacy/auth-language-bridge.js',
-  '/legacy/firebase-config.js'
-]);
+const criticalAuthFiles = new Set(['/auth.html']);
 const mimeTypes = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
   '.mjs': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml',
@@ -59,8 +51,7 @@ function cacheControl(filePath) {
   const relative = filePath.slice(root.length).replaceAll('\\', '/');
   if (criticalAuthFiles.has(relative)) return 'no-store, no-cache, must-revalidate, max-age=0';
   if (relative.startsWith('/assets/')) return 'public, max-age=31536000, immutable';
-  if (relative.startsWith('/data/exams/') || relative.startsWith('/data/coding/')) return 'public, max-age=86400, stale-while-revalidate=604800';
-  if (relative.startsWith('/legacy/')) return 'public, max-age=3600, stale-while-revalidate=86400';
+  if (relative.startsWith('/data/exams/') || relative.startsWith('/data/coding/') || relative.startsWith('/data/step/')) return 'public, max-age=86400, stale-while-revalidate=604800';
   if (extname(filePath) === '.html') return 'public, max-age=0, must-revalidate';
   return 'public, max-age=3600';
 }
