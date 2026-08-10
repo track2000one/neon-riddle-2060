@@ -1,0 +1,51 @@
+name: Automated UAT Gate
+
+on:
+  push:
+    branches:
+      - performance-vite
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'app/**'
+      - 'server/**'
+      - 'scripts/**'
+      - 'academy/**'
+      - 'docs/UAT-MERGE-READINESS.md'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.js'
+      - 'railway.toml'
+      - 'vercel.json'
+      - '.github/workflows/uat-merge-readiness.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  automated-uat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Run UAT gate
+        run: npm run uat:gate
+
+      - name: Verify manual sign-off policy remains explicit
+        run: |
+          grep -q 'Current merge state: \*\*DRAFT — manual UAT required\*\*' docs/UAT-MERGE-READINESS.md
+          grep -q '| AUTH-01 |' docs/UAT-MERGE-READINESS.md
+          grep -q '| RBAC-03 |' docs/UAT-MERGE-READINESS.md
+          grep -q '| MOBILE-01 |' docs/UAT-MERGE-READINESS.md
+          grep -q 'Railway Preview = Success on the same HEAD SHA\|Railway Preview = Success على نفس HEAD SHA' docs/UAT-MERGE-READINESS.md
