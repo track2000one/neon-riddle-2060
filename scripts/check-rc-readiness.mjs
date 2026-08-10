@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
@@ -25,6 +25,13 @@ if (new Set(actualIds).size !== actualIds.length) fail('duplicate manual UAT cas
 const requiredChecks = ['Vite Performance Build','Production Release Gate','Automated UAT Gate','Railway Preview'];
 for (const check of requiredChecks) if (!checklist.requiredExternalChecks?.includes(check)) fail(`missing external gate ${check}`);
 
+const signoff = checklist.manualSignoff || {};
+if (signoff.template !== 'release/manual-uat-template.json') fail('manual UAT template path must remain release/manual-uat-template.json');
+if (signoff.record !== 'release/manual-uat-signoff.json') fail('manual UAT record path must remain release/manual-uat-signoff.json');
+if (signoff.recordRequiredBeforeReadyForReview !== true) fail('manual UAT record must be required before Ready for Review');
+const allowedPostTestChanges = Array.isArray(signoff.postTestAllowedChanges) ? signoff.postTestAllowedChanges : [];
+if (allowedPostTestChanges.length !== 1 || allowedPostTestChanges[0] !== signoff.record) fail('post-test changes must be restricted to the Manual UAT sign-off record only');
+
 if (checklist.mergeRequirements?.criticalRegressionsOpen !== 0 || checklist.mergeRequirements?.highRegressionsOpen !== 0) {
   fail('merge policy must require zero critical/high regressions');
 }
@@ -35,12 +42,13 @@ if (finalMode) {
   const railwayStatus = String(process.env.NEON_RAILWAY_STATUS || '').toLowerCase();
   const owner = String(process.env.NEON_SIGNOFF_OWNER || '').trim();
   const candidateSha = String(process.env.NEON_CANDIDATE_SHA || '').trim();
-  if (!manualApproved) fail('manual UAT approval was not supplied');
-  if (!regressionApproved) fail('critical/high regression clearance was not supplied');
+  if (!existsSync(join(root, signoff.record))) fail('committed Manual UAT sign-off record is missing');
+  if (!manualApproved) fail('manual UAT approval was not supplied by verified sign-off record');
+  if (!regressionApproved) fail('critical/high regression clearance was not supplied by verified sign-off record');
   if (railwayStatus !== 'success') fail(`Railway status is not success: ${railwayStatus || 'missing'}`);
   if (!owner) fail('sign-off owner is missing');
   if (!/^[0-9a-f]{40}$/i.test(candidateSha)) fail('candidate SHA must be a full 40-character commit SHA');
   console.log(`Final RC merge policy passed for ${pkg.version} at ${candidateSha} by ${owner}.`);
 } else {
-  console.log(`RC preparation policy passed for ${pkg.version}: ${requiredIds.length} manual UAT cases and ${requiredChecks.length} external gates are defined.`);
+  console.log(`RC preparation policy passed for ${pkg.version}: ${requiredIds.length} manual UAT cases, ${requiredChecks.length} external gates, and sign-off-only post-test diff enforced.`);
 }
