@@ -63,15 +63,18 @@ jobs:
           test -f dist/learning.html
           test -f dist/coding.html
           test -f dist/tutor.html
+          test -f dist/admin.html
           test -d dist/assets
           test -d dist/legacy
           grep -q 'ADAPTIVE MASTERY EXAM CENTER' dist/exams.html
           grep -q 'examMode' dist/exams.html
           grep -q 'تعليم البرمجة' dist/coding.html
+          grep -q 'NEON ADMIN' dist/admin.html
           grep -q 'DIAGNOSTIC_COUNT = 28' app/src/diagnostic-experience.js
           grep -q 'skillBreakdown' app/src/diagnostic-experience.js
           grep -q 'requestedSkill' app/src/exam-skill-selector.js
           grep -q 'skill-map' server/student-success.mjs
+          grep -q 'live-overrides' server/admin-dashboard.mjs
           test -f dist/legacy/step-mastery-lessons.js
           test -f dist/legacy/step-mastery-questions.js
           test -f dist/legacy/step-book-kafayat-1-runtime.js
@@ -96,9 +99,11 @@ jobs:
           node --check server/student-state.mjs
           node --check server/readiness-engine.mjs
           node --check server/student-success.mjs
+          node --check server/admin-dashboard.mjs
           node --check app/src/diagnostic-experience.js
           node --check app/src/exam-skill-selector.js
           node --check app/src/student-success.js
+          node --check app/src/admin.js
           node --check dist/legacy/step-mastery-lessons.js
           node --check dist/legacy/step-mastery-questions.js
           node --check dist/legacy/step-book-kafayat-1-runtime.js
@@ -129,6 +134,7 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:4173/games > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/learning > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/coding | grep -q 'تعليم البرمجة'
+          curl --fail --silent --show-error http://127.0.0.1:4173/admin | grep -q 'NEON ADMIN'
           curl --fail --silent --show-error 'http://127.0.0.1:4173/legacy/coding.html?embedded=1' | grep -q 'تعليم البرمجة'
           curl --fail --silent --show-error http://127.0.0.1:4173/tutor > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:4173/legacy/step-mastery-lessons.js > /dev/null
@@ -175,5 +181,9 @@ jobs:
             http://127.0.0.1:4173/api/success/dashboard)
           test "$SUCCESS_HTTP" = "401"
           grep -q 'AUTH_REQUIRED' /tmp/success-response.json
+          ADMIN_HTTP=$(curl --silent --output /tmp/admin-response.json --write-out '%{http_code}' \
+            http://127.0.0.1:4173/api/admin/status)
+          test "$ADMIN_HTTP" = "401"
+          grep -q 'AUTH_REQUIRED' /tmp/admin-response.json
           cat /tmp/neon-server.log
-          echo "Railway production server, canonical routes, central dedupe, account isolation, evidence-weighted readiness, skill diagnostics, student state sync, source privacy, and authenticated APIs validated successfully."
+          echo "Railway production server, canonical routes, secure admin dashboard, central dedupe, account isolation, evidence-weighted readiness, skill diagnostics, student state sync, source privacy, and authenticated APIs validated successfully."
