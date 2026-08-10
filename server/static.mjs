@@ -59,13 +59,23 @@ function cacheControl(filePath) {
   return 'public, max-age=3600';
 }
 
+function isEmbeddedLegacyRequest(req, requestPath) {
+  if (requestPath !== '/legacy/coding.html') return false;
+  try {
+    const url = new URL(req.url || '/', 'http://localhost');
+    return url.searchParams.get('embedded') === '1';
+  } catch {
+    return false;
+  }
+}
+
 export function handleStatic(req, res, requestPath) {
   if (!['GET', 'HEAD'].includes(req.method || 'GET')) {
     res.writeHead(405, { Allow: 'GET, HEAD' });
     res.end();
     return;
   }
-  const destination = redirects.get(requestPath);
+  const destination = isEmbeddedLegacyRequest(req, requestPath) ? null : redirects.get(requestPath);
   if (destination) {
     res.writeHead(308, { Location: destination, 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0', Pragma: 'no-cache', Expires: '0' });
     res.end();
