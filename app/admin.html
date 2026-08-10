@@ -4,14 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#07101f" />
-  <title>NEON Admin — إدارة بنك الأسئلة</title>
+  <title>NEON Admin — إدارة المنصة</title>
 </head>
 <body>
   <div class="admin-boot" id="adminBoot"><div class="admin-spinner"></div><strong>جارٍ التحقق من صلاحيات الإدارة…</strong></div>
   <div class="admin-app" id="adminApp" hidden>
     <header class="admin-topbar">
-      <a class="admin-brand" href="/"><span class="admin-logo">N</span><span><strong>NEON ADMIN</strong><small>Question Quality Control</small></span></a>
+      <a class="admin-brand" href="/"><span class="admin-logo">N</span><span><strong>NEON ADMIN</strong><small>Platform Governance</small></span></a>
       <div class="admin-account">
+        <span class="admin-role-badge" id="adminRoleBadge">—</span>
         <div class="account-chip" id="accountChip"><span class="account-avatar" id="accountAvatar">N</span><span><strong id="accountName">الإدارة</strong><small id="accountEmail"></small></span></div>
         <a class="admin-back" href="/">العودة للمنصة</a>
       </div>
@@ -19,7 +20,7 @@
 
     <main class="admin-shell">
       <section class="admin-hero">
-        <div><span class="admin-eyebrow">CONTENT GOVERNANCE • LIVE OVERRIDES</span><h1>لوحة إدارة بنك الأسئلة والبلاغات</h1><p>إدارة جودة المحتوى من مكان واحد مع صلاحيات محمية، سجل تدقيق، وتطبيق التصحيحات على بنك الطالب دون تعديل ملفات المصدر مباشرة.</p></div>
+        <div><span class="admin-eyebrow">PLATFORM GOVERNANCE • RBAC • LIVE OVERRIDES</span><h1>لوحة إدارة NEON</h1><p>إدارة جودة بنك الأسئلة والبلاغات والمستخدمين والصلاحيات من مكان واحد، مع حماية على مستوى الخادم وسجل تدقيق لكل إجراء إداري.</p></div>
         <div class="admin-revision"><small>إصدار المحتوى</small><strong id="contentRevision">—</strong></div>
       </section>
 
@@ -28,6 +29,7 @@
         <button data-admin-tab="questions">الأسئلة <span id="questionsBadge">—</span></button>
         <button data-admin-tab="reports">البلاغات <span id="reportsBadge">—</span></button>
         <button data-admin-tab="duplicates">المكرر المحتمل <span id="duplicatesBadge">—</span></button>
+        <button data-admin-tab="users">المستخدمون</button>
         <button data-admin-tab="audit">سجل التدقيق</button>
       </nav>
 
@@ -35,7 +37,7 @@
         <div class="metric-grid" id="metricGrid"></div>
         <div class="overview-grid">
           <article class="admin-card"><div class="card-head"><div><h2>توزيع البنك حسب المادة</h2><p>الحالة الفعلية بعد تطبيق التعديلات الإدارية.</p></div><button class="admin-soft" data-refresh="dashboard">تحديث</button></div><div class="subject-health" id="subjectHealth"></div></article>
-          <article class="admin-card admin-principles"><h2>سياسة التعديل الآمن</h2><ul><li>ملفات المصدر الأصلية تبقى كما هي.</li><li>التعديل المعتمد يُحفظ كـ Override قابل للتراجع.</li><li>كل إجراء يُسجل باسم المسؤول وتاريخه.</li><li>إخفاء السؤال يزيله من تدريب الطالب فور تحديث البنك.</li><li>إعادة الضبط تعيد السؤال إلى نسخته الأصلية.</li></ul></article>
+          <article class="admin-card admin-principles"><h2>سياسة التعديل الآمن</h2><ul><li>ملفات المصدر الأصلية تبقى كما هي.</li><li>التعديل المعتمد يُحفظ كـ Override قابل للتراجع.</li><li>كل إجراء يُسجل باسم المسؤول وتاريخه.</li><li>الأدوار والصلاحيات تتحقق على الخادم، وليس في الواجهة فقط.</li><li>إيقاف المستخدم يمنع وصوله إلى خدمات المنصة المحمية.</li></ul></article>
         </div>
       </section>
 
@@ -68,9 +70,24 @@
         </article>
       </section>
 
+      <section class="admin-panel" data-admin-panel="users">
+        <article class="admin-card">
+          <div class="card-head"><div><h2>المستخدمون والصلاحيات</h2><p>سجل مستخدمي المنصة، النشاط، التقدم، الأدوار، وحالة الوصول.</p></div></div>
+          <div class="user-metric-grid" id="userMetricGrid"></div>
+          <div class="admin-filters">
+            <input id="userSearch" type="search" placeholder="ابحث بالاسم أو البريد أو UID…" />
+            <select id="userRoleFilter"><option value="all">كل الأدوار</option><option value="student">Student</option><option value="support">Support</option><option value="content-admin">Content Admin</option><option value="super-admin">Super Admin</option></select>
+            <select id="userStatusFilter"><option value="all">كل الحالات</option><option value="active">نشط</option><option value="suspended">موقوف</option></select>
+            <button class="admin-primary" id="searchUsers">بحث</button>
+          </div>
+          <div class="table-wrap"><table class="admin-table"><thead><tr><th>المستخدم</th><th>الدور</th><th>الحالة</th><th>الأداء</th><th>الهدف</th><th>آخر نشاط</th><th>إجراء</th></tr></thead><tbody id="usersTable"></tbody></table></div>
+          <div class="admin-pagination" id="usersPagination"></div>
+        </article>
+      </section>
+
       <section class="admin-panel" data-admin-panel="audit">
         <article class="admin-card">
-          <div class="card-head"><div><h2>سجل التدقيق</h2><p>أثر كامل للتغييرات وقرارات معالجة البلاغات.</p></div><button class="admin-soft" id="refreshAudit">تحديث</button></div>
+          <div class="card-head"><div><h2>سجل التدقيق</h2><p>أثر كامل لتغييرات المحتوى والصلاحيات وقرارات معالجة البلاغات.</p></div><button class="admin-soft" id="refreshAudit">تحديث</button></div>
           <div class="audit-list" id="auditList"></div>
         </article>
       </section>
@@ -80,6 +97,8 @@
   <div class="admin-denied" id="adminDenied" hidden><div class="denied-card"><span>🔐</span><h1>صلاحية الإدارة مطلوبة</h1><p id="adminDeniedMessage">هذا الحساب لا يملك صلاحية الوصول إلى لوحة الإدارة.</p><a href="/">العودة إلى المنصة</a></div></div>
 
   <div class="admin-modal" id="questionModal" aria-hidden="true"><div class="admin-modal-card"><div class="modal-head"><div><span class="admin-eyebrow">QUESTION EDITOR</span><h2 id="questionModalTitle">تحرير السؤال</h2></div><button class="modal-close" data-close-modal>×</button></div><form id="questionForm"><input type="hidden" name="subjectId" /><input type="hidden" name="questionId" /><label class="full">نص السؤال<textarea name="q" rows="4" required></textarea></label><label class="full">القطعة / النص المرتبط<textarea name="passage" rows="3"></textarea></label><div class="option-editor full" id="optionEditor"></div><label>الإجابة الصحيحة<select name="answer" id="answerSelect"></select></label><label>التصنيف<input name="category" /></label><label>المستوى<input name="level" /></label><label>حالة النشر<select name="reviewStatus"><option value="published">منشور / معتمد</option><option value="needs-review">يحتاج مراجعة</option><option value="hidden">مخفي عن الطلاب</option></select></label><label class="full">الشرح<textarea name="explain" rows="5"></textarea></label><div class="modal-actions full"><button type="button" class="admin-danger" id="resetQuestion">إعادة النسخة الأصلية</button><span></span><button type="button" class="admin-soft" data-close-modal>إلغاء</button><button class="admin-primary" type="submit">حفظ التعديل</button></div></form></div></div>
+
+  <div class="admin-modal" id="userModal" aria-hidden="true"><div class="admin-modal-card"><div class="modal-head"><div><span class="admin-eyebrow">USER GOVERNANCE</span><h2 id="userModalTitle">تفاصيل المستخدم</h2><p id="userModalSubtitle"></p></div><button class="modal-close" data-close-user-modal>×</button></div><div class="user-detail-grid" id="userDetailSummary"></div><h3>آخر محاولات الاختبارات</h3><div class="attempt-list" id="userAttempts"></div><div class="user-access-editor" id="userAccessEditor" hidden></div></div></div>
 
   <script type="module" src="/src/admin.js"></script>
 </body>
