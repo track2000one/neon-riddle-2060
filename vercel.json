@@ -4,6 +4,11 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    { "source": "/tutor", "destination": "/", "permanent": true },
+    { "source": "/tutor.html", "destination": "/", "permanent": true },
+    { "source": "/legacy/tutor.html", "destination": "/", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",
