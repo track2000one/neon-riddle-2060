@@ -24,6 +24,14 @@
     "Automated UAT Gate",
     "Railway Preview"
   ],
+  "manualSignoff": {
+    "template": "release/manual-uat-template.json",
+    "record": "release/manual-uat-signoff.json",
+    "recordRequiredBeforeReadyForReview": true,
+    "postTestAllowedChanges": [
+      "release/manual-uat-signoff.json"
+    ]
+  },
   "mergeRequirements": {
     "manualUatApproved": true,
     "railwayPreviewSuccessOnCandidateSha": true,
