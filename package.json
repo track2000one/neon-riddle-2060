@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "vite",
     "check:themes": "node scripts/check-theme-contrast.mjs",
-    "build:data": "node scripts/build-question-bank.mjs",
+    "build:data": "node scripts/build-question-bank.mjs && node scripts/build-exam-runtime-assets.mjs",
     "build": "npm run check:themes && npm run build:data && vite build",
     "start": "node server-production.mjs",
     "preview": "vite preview"
