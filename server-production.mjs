@@ -5,6 +5,7 @@ import { closeCompetitionDatabase, handleCompetitionApi } from './server/competi
 import { closePlatformAccessDatabase, guardPlatformAccess, handlePlatformAccessApi } from './server/platform-access.mjs';
 import { closeProgressDatabase, handleProgressApi } from './server/progress.mjs';
 import { closeQuestionMasteryDatabase, handleQuestionMasteryApi } from './server/question-mastery.mjs';
+import { applySecurityHeaders } from './server/security-headers.mjs';
 import { closeStudentSuccessDatabase, handleStudentSuccessApi } from './server/student-success.mjs';
 import { closeStudentStateDatabase, handleStudentStateApi } from './server/student-state.mjs';
 import { handleStatic } from './server/static.mjs';
@@ -38,15 +39,30 @@ function readJsonBody(req) {
   });
 }
 
-function sendJson(res, status, payload) {
+function sendJson(res, status, payload, { headOnly = false } = {}) {
   const body = JSON.stringify(payload);
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
     'Content-Length': Buffer.byteLength(body),
-    'Cache-Control': 'no-store',
-    'X-Content-Type-Options': 'nosniff'
+    'Cache-Control': 'no-store'
   });
-  res.end(body);
+  res.end(headOnly ? undefined : body);
+}
+
+function handleHealth(req, res, requestPath) {
+  if (requestPath !== '/healthz') return false;
+  if (!['GET', 'HEAD'].includes(req.method || 'GET')) {
+    res.writeHead(405, { Allow: 'GET, HEAD', 'Cache-Control': 'no-store' });
+    res.end();
+    return true;
+  }
+  sendJson(res, 200, {
+    status: 'ok',
+    service: 'neon-learning-platform',
+    runtime: 'modern',
+    legacyRuntime: false
+  }, { headOnly: req.method === 'HEAD' });
+  return true;
 }
 
 function handleRetiredRoutes(req, res, requestPath) {
@@ -60,8 +76,10 @@ function handleRetiredRoutes(req, res, requestPath) {
 }
 
 const server = createServer(async (req, res) => {
+  applySecurityHeaders(res);
   try {
     const requestPath = decodeURIComponent(String(req.url || '/').split('?')[0]);
+    if (handleHealth(req, res, requestPath)) return;
     if (handleRetiredRoutes(req, res, requestPath)) return;
     if (await handlePlatformAccessApi(req, res, requestPath)) return;
     if (await guardPlatformAccess(req, res, requestPath)) return;
@@ -75,7 +93,7 @@ const server = createServer(async (req, res) => {
     handleStatic(req, res, requestPath);
   } catch (error) {
     console.error('NEON server error:', error);
-    if (!res.headersSent) res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+    if (!res.headersSent) res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' });
     res.end('حدث خطأ أثناء تحميل الصفحة');
   }
 });
@@ -106,5 +124,5 @@ process.once('SIGINT', () => shutdown('SIGINT'));
 
 server.listen(port, host, () => {
   const database = process.env.DATABASE_URL || process.env.PROGRESS_DATABASE_URL ? 'postgresql' : 'local queue';
-  console.log(`NEON listening on http://${host}:${port} | Progress: ${database} | Student state: ${database} | Access control: enabled | Admin RBAC: enabled | Competitions: enabled | Success dashboard: enabled | Tutor: retired`);
+  console.log(`NEON listening on http://${host}:${port} | Progress: ${database} | Student state: ${database} | Access control: enabled | Admin RBAC: enabled | Competitions: enabled | Success dashboard: enabled | Tutor: retired | Health: /healthz`);
 });
