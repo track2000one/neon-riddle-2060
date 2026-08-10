@@ -13,6 +13,7 @@ import './exam-experience.js';
 import './diagnostic-experience.js';
 import './diagnostic-notebook-bridge.js';
 import './student-state-sync.js';
+import { claimLocalStateOwner, canMigrateLegacyProfile } from './account-local-state.js';
 import { configureProgress, flushProgressQueue } from './progress-client.js';
 import './progress-integrations.js';
 
@@ -42,7 +43,7 @@ function seedProfile(user) {
   const name = user.displayName?.trim() || user.email?.split('@')[0] || 'الطالب';
 
   if (!profiles[user.uid]) {
-    profiles[user.uid] = previous ? clone(previous) : {
+    profiles[user.uid] = canMigrateLegacyProfile(previous) ? clone(previous) : {
       id: user.uid,
       name,
       score: 0,
@@ -133,6 +134,12 @@ export async function ensureAuth() {
         reject(new Error('Authentication required'));
         return;
       }
+
+      const ownership = claimLocalStateOwner(localStorage, user.uid);
+      if (ownership.changed) {
+        console.info(`NEON local cache isolated for account switch (${ownership.cleared.length} shared keys cleared).`);
+      }
+
       const profile = seedProfile(user);
       const session = { user, profile, auth };
       window.NEON_AUTH_USER = { uid: user.uid, email: user.email || '', displayName: profile.academy?.name || profile.name };
