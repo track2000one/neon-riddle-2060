@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 import { closeAdminDashboardDatabase, handleAdminDashboardApi } from './server/admin-dashboard.mjs';
+import { closeAdminUsersDatabase, handleAdminUsersApi } from './server/admin-users.mjs';
 import { closeCompetitionDatabase, handleCompetitionApi } from './server/competition.mjs';
 import { closePlatformAccessDatabase, guardPlatformAccess, handlePlatformAccessApi } from './server/platform-access.mjs';
 import { closeProgressDatabase, handleProgressApi } from './server/progress.mjs';
@@ -43,6 +44,7 @@ const server = createServer(async (req, res) => {
     const requestPath = decodeURIComponent(String(req.url || '/').split('?')[0]);
     if (await handlePlatformAccessApi(req, res, requestPath)) return;
     if (await guardPlatformAccess(req, res, requestPath)) return;
+    if (await handleAdminUsersApi(req, res, requestPath, readJsonBody)) return;
     if (await handleAdminDashboardApi(req, res, requestPath, readJsonBody)) return;
     if (await handleStudentStateApi(req, res, requestPath, readJsonBody)) return;
     if (await handleStudentSuccessApi(req, res, requestPath, readJsonBody)) return;
@@ -64,6 +66,7 @@ async function shutdown(signal) {
     try {
       await Promise.allSettled([
         closeAdminDashboardDatabase(),
+        closeAdminUsersDatabase(),
         closePlatformAccessDatabase(),
         closeCompetitionDatabase(),
         closeProgressDatabase(),
@@ -84,5 +87,5 @@ process.once('SIGINT', () => shutdown('SIGINT'));
 server.listen(port, host, () => {
   const database = process.env.DATABASE_URL || process.env.PROGRESS_DATABASE_URL ? 'postgresql' : 'local queue';
   const gemini = geminiRuntimeInfo.configured ? geminiRuntimeInfo.model : 'local fallback';
-  console.log(`NEON listening on http://${host}:${port} | Gemini: ${gemini} | Progress: ${database} | Student state: ${database} | Access control: enabled | Admin: secured | Competitions: enabled | Success dashboard: enabled`);
+  console.log(`NEON listening on http://${host}:${port} | Gemini: ${gemini} | Progress: ${database} | Student state: ${database} | Access control: enabled | Admin RBAC: enabled | Competitions: enabled | Success dashboard: enabled`);
 });
