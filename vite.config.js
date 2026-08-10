@@ -6,6 +6,7 @@ const projectRoot = fileURLToPath(new URL('.', import.meta.url));
 const appRoot = fileURLToPath(new URL('./app', import.meta.url));
 const legacySource = fileURLToPath(new URL('./academy', import.meta.url));
 const generatedExamSource = fileURLToPath(new URL('./generated/exams', import.meta.url));
+const generatedCodingSource = fileURLToPath(new URL('./generated/coding', import.meta.url));
 const outputDirectory = fileURLToPath(new URL('./dist', import.meta.url));
 
 function copyStaticData() {
@@ -17,6 +18,10 @@ function copyStaticData() {
       if (existsSync(generatedExamSource)) {
         mkdirSync(`${outputDirectory}/data`, { recursive: true });
         cpSync(generatedExamSource, `${outputDirectory}/data/exams`, { recursive: true });
+      }
+      if (existsSync(generatedCodingSource)) {
+        mkdirSync(`${outputDirectory}/data`, { recursive: true });
+        cpSync(generatedCodingSource, `${outputDirectory}/data/coding`, { recursive: true });
       }
     }
   };
