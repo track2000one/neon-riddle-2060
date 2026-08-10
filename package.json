@@ -10,8 +10,9 @@
     "dev": "vite",
     "check:themes": "node scripts/check-theme-contrast.mjs",
     "check:retired": "node scripts/check-retired-features.mjs",
+    "check:auth": "node scripts/check-modern-auth.mjs",
     "build:data": "node scripts/build-question-bank.mjs && node scripts/build-exam-runtime-assets.mjs",
-    "build": "npm run check:themes && npm run check:retired && npm run build:data && vite build",
+    "build": "npm run check:themes && npm run check:retired && npm run check:auth && npm run build:data && vite build",
     "start": "node server-production.mjs",
     "preview": "vite preview"
   },
