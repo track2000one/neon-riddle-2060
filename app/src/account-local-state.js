@@ -6,6 +6,7 @@ export const SHARED_LEGACY_STATE_KEYS = Object.freeze([
   'neonLearningLastLessonV1',
   'neonGamesProgressV1',
   'neonOptimizedExamHistoryV1',
+  'neonStepProgressV1',
   'msarCodingLearningProgressV2'
 ]);
 
