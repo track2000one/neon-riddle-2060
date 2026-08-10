@@ -12,8 +12,10 @@
     "check:retired": "node scripts/check-retired-features.mjs",
     "check:auth": "node scripts/check-modern-auth.mjs",
     "check:coding": "node scripts/check-modern-coding.mjs",
+    "check:legacy": "node scripts/check-legacy-runtime.mjs",
+    "verify:legacy-package": "node scripts/check-legacy-package.mjs",
     "build:data": "node scripts/build-question-bank.mjs && node scripts/build-exam-runtime-assets.mjs && node scripts/build-coding-content.mjs",
-    "build": "npm run check:themes && npm run check:retired && npm run check:auth && npm run check:coding && npm run build:data && vite build",
+    "build": "npm run check:themes && npm run check:retired && npm run check:auth && npm run check:coding && npm run check:legacy && npm run build:data && vite build && npm run verify:legacy-package",
     "start": "node server-production.mjs",
     "preview": "vite preview"
   },
