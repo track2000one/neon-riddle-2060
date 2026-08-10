@@ -12,6 +12,7 @@ import './exam-experience.js';
 import './diagnostic-experience.js';
 import './diagnostic-notebook-bridge.js';
 import './student-state-sync.js';
+import { firebaseConfig } from './firebase-config.js';
 import { claimLocalStateOwner, canMigrateLegacyProfile } from './account-local-state.js';
 import { configureProgress, flushProgressQueue } from './progress-client.js';
 import './progress-integrations.js';
@@ -120,7 +121,7 @@ function installLogoutButton() {
         window.NEON_STUDENT_STATE?.flush?.()
       ]);
       await signOutCurrentUser();
-      location.replace('/legacy/auth.html');
+      location.replace('/auth');
     } catch (error) {
       console.error('NEON sign-out error:', error);
       button.disabled = false;
@@ -136,15 +137,13 @@ function installLogoutButton() {
 export async function ensureAuth() {
   const appUrl = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`;
   const authUrl = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`;
-  const configUrl = new URL('/legacy/firebase-config.js', window.location.origin).href;
 
-  const [{ initializeApp, getApp, getApps }, { getAuth, onAuthStateChanged, signOut }, configModule] = await Promise.all([
+  const [{ initializeApp, getApp, getApps }, { getAuth, onAuthStateChanged, signOut }] = await Promise.all([
     runtimeImport(appUrl),
-    runtimeImport(authUrl),
-    runtimeImport(configUrl)
+    runtimeImport(authUrl)
   ]);
 
-  const app = getApps().length ? getApp() : initializeApp(configModule.firebaseConfig);
+  const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
   const auth = getAuth(app);
   signOutCurrentUser = () => signOut(auth);
 
@@ -153,7 +152,7 @@ export async function ensureAuth() {
       unsubscribe();
       if (!user) {
         const next = encodeURIComponent(`${location.pathname}${location.search}${location.hash}`);
-        location.replace(`/legacy/auth.html?next=${next}`);
+        location.replace(`/auth?next=${next}`);
         reject(new Error('Authentication required'));
         return;
       }
@@ -180,7 +179,7 @@ export async function ensureAuth() {
         if (error?.code === 'ACCOUNT_SUSPENDED') {
           await signOut(auth).catch(() => {});
           window.alert('تم إيقاف الوصول إلى خدمات NEON لهذا الحساب. إذا كنت تعتقد أن هذا بالخطأ فتواصل مع إدارة المنصة.');
-          location.replace('/legacy/auth.html?blocked=1');
+          location.replace('/auth?blocked=1');
         }
         reject(error);
       }
