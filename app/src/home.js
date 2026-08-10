@@ -24,7 +24,7 @@ const centers = [
   },
   {
     id: 'coding',
-    href: '/legacy/coding.html',
+    href: '/coding',
     title: 'تعليم البرمجة',
     subtitle: 'Coding',
     description: 'دروس عملية ومختبر تفاعلي لأهم تقنيات البرمجة.',
@@ -49,11 +49,11 @@ const centers = [
 ];
 
 const progressCenters = [
-  { id: 'learning', title: 'المعرفة والدروس', icon: '📚', href: '/learning', total: 240, unit: 'درس' },
-  { id: 'step', title: 'اللغة الإنجليزية STEP', icon: '💬', href: '/step', total: 20, unit: 'درس وتدريب' },
+  { id: 'learning', title: 'المعرفة والدروس', icon: '📚', href: '/learning', unit: 'درس' },
+  { id: 'step', title: 'اللغة الإنجليزية STEP', icon: '💬', href: '/step', unit: 'درس وتدريب' },
   { id: 'exams', title: 'التحصيلي والقدرات', icon: '📊', href: '/exams', unit: 'محاولة' },
-  { id: 'games', title: 'الألعاب والألغاز', icon: '🎮', href: '/games', total: 72, unit: 'نشاط' },
-  { id: 'coding', title: 'تعليم البرمجة', icon: '💻', href: '/legacy/coding.html', unit: 'درس' }
+  { id: 'games', title: 'الألعاب والألغاز', icon: '🎮', href: '/games', unit: 'نشاط' },
+  { id: 'coding', title: 'تعليم البرمجة', icon: '💻', href: '/coding', unit: 'درس' }
 ];
 
 function number(value) {
@@ -124,10 +124,13 @@ function renderStudentMetrics(profile = {}) {
   setText('metricMastery', `${number(mastery)}%`);
 }
 
-function centerPercentage(definition, progress) {
-  if (definition.total) return Math.min(100, Math.round((Number(progress.completed || 0) / definition.total) * 100));
-  if (Number(progress.mastery || 0) > 0) return Number(progress.mastery || 0);
-  return Number(progress.completed || 0) > 0 ? 100 : Number(progress.inProgress || 0) > 0 ? 25 : 0;
+function centerPercentage(progress = {}) {
+  const direct = Number(progress.progressPercent ?? progress.averageProgress ?? 0);
+  if (direct > 0) return Math.min(100, Math.round(direct));
+  if (Number(progress.mastery || 0) > 0) return Math.min(100, Math.round(Number(progress.mastery)));
+  if (Number(progress.completed || 0) > 0) return 100;
+  if (Number(progress.inProgress || 0) > 0) return 25;
+  return 0;
 }
 
 function renderProgressSummary(summary) {
@@ -149,10 +152,8 @@ function renderProgressSummary(summary) {
     const byId = new Map((summary?.centers || []).map(item => [item.centerId, item]));
     grid.innerHTML = progressCenters.map(definition => {
       const progress = byId.get(definition.id) || { completed: 0, inProgress: 0, mastery: 0, attempts: 0 };
-      const percent = centerPercentage(definition, progress);
-      const completedText = definition.total
-        ? `${number(progress.completed)} من ${number(definition.total)} ${definition.unit}`
-        : `${number(progress.completed)} مكتمل • ${number(progress.attempts)} ${definition.unit}`;
+      const percent = centerPercentage(progress);
+      const completedText = `${number(progress.completed)} مكتمل • ${number(progress.attempts)} ${definition.unit}`;
       const secondary = progress.inProgress > 0
         ? `${number(progress.inProgress)} قيد التقدم`
         : progress.mastery > 0 ? `إتقان ${number(progress.mastery)}%` : 'لم يبدأ بعد';
@@ -168,7 +169,7 @@ function renderProgressSummary(summary) {
 
   const button = document.getElementById('continueButton');
   if (button && summary?.continue?.href) {
-    button.href = summary.continue.href;
+    button.href = summary.continue.href.replace('/legacy/coding.html', '/coding');
     button.title = summary.continue.title ? `متابعة: ${summary.continue.title}` : 'متابعة آخر نشاط';
   }
 }
@@ -185,25 +186,35 @@ function showProgressOffline() {
   }
 }
 
-async function loadQuestionCount() {
-  const target = document.getElementById('heroQuestionCount');
-  if (!target) return;
+async function loadExamManifest() {
   try {
-    const response = await fetch('/data/exams/manifest.json', { cache: 'force-cache' });
-    if (!response.ok) return;
+    const response = await fetch('/data/exams/manifest.json', { cache: 'no-cache' });
+    if (!response.ok) throw new Error(`HTTP_${response.status}`);
     const manifest = await response.json();
-    target.textContent = number(manifest.totalQuestions);
-  } catch {
-    target.textContent = '١٬٥٤٨';
+    window.NEON_EXAM_MANIFEST = manifest;
+    const target = document.getElementById('heroQuestionCount');
+    if (target) target.textContent = number(manifest.totalQuestions);
+    const footer = document.querySelector('.center-card[data-center="exams"] .center-footer');
+    if (footer && Number(manifest.totalQuestions) > 0) footer.textContent = `NEON • ${number(manifest.totalQuestions)} سؤال`;
+  } catch (error) {
+    const target = document.getElementById('heroQuestionCount');
+    if (target) target.textContent = '—';
+    console.warn('Question manifest unavailable:', error?.message);
   }
+}
+
+function normalizeSavedCenter(href) {
+  if (href === '/legacy/coding.html') return '/coding';
+  return href;
 }
 
 function prepareContinueButton() {
   const button = document.getElementById('continueButton');
   if (!button) return;
-  const saved = localStorage.getItem(LAST_CENTER_KEY);
+  const saved = normalizeSavedCenter(localStorage.getItem(LAST_CENTER_KEY));
   const valid = centers.some(center => center.href === saved);
   button.href = valid ? saved : '/step';
+  if (saved === '/coding') localStorage.setItem(LAST_CENTER_KEY, '/coding');
 }
 
 async function synchronizeProgress() {
@@ -224,7 +235,7 @@ async function boot() {
     renderCards();
     prepareContinueButton();
     prefetchOnIntent();
-    loadQuestionCount().catch(error => console.warn('Question count unavailable:', error?.message));
+    loadExamManifest().catch(error => console.warn('Question count unavailable:', error?.message));
 
     const session = await ensureAuth();
     renderAccount(session);
