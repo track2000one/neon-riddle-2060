@@ -33,15 +33,15 @@ async function request(path, options = {}) {
   const response = await fetch(path, {
     ...options,
     cache: 'no-store',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...(options.headers || {}) }
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type':'application/json', ...(options.headers || {}) }
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw Object.assign(new Error(data.message || `HTTP_${response.status}`), { code: data.error });
+  if (!response.ok) throw Object.assign(new Error(data.message || `HTTP_${response.status}`), { code:data.error });
   return data;
 }
 
 function trackEvent(eventName, properties = {}) {
-  request('/api/success/event', { method: 'POST', body: JSON.stringify({ eventName, properties }) }).catch(() => {});
+  request('/api/success/event', { method:'POST', body:JSON.stringify({ eventName, properties }) }).catch(() => {});
 }
 
 function goalKey() {
@@ -50,8 +50,42 @@ function goalKey() {
 
 function localProfile() {
   return safeJson(goalKey(), {
-    examTrack: 'tahsili', examDate: '', targetScore: 80, dailyMinutes: 30, onboardingComplete: false
+    examTrack:'tahsili', examDate:'', targetScore:80, dailyMinutes:30, onboardingComplete:false
   });
+}
+
+function localSkillMap(history) {
+  const map = new Map();
+  for (const attempt of history.filter(item => Array.isArray(item?.skillBreakdown)).slice(-10)) {
+    for (const skill of attempt.skillBreakdown) {
+      const subjectId = String(skill.subject || skill.subjectId || '');
+      const category = String(skill.category || 'general');
+      if (!subjectId) continue;
+      const key = `${subjectId}|${category}`;
+      const row = map.get(key) || {
+        subjectId,
+        subjectTitle:String(skill.subjectTitle || subjectId),
+        category,
+        title:String(skill.title || skill.categoryTitle || category),
+        correct:0,
+        total:0,
+        latestAt:attempt.date || null
+      };
+      row.correct += Number(skill.correct || 0);
+      row.total += Number(skill.total || 0);
+      if (new Date(attempt.date || 0) > new Date(row.latestAt || 0)) row.latestAt = attempt.date;
+      map.set(key, row);
+    }
+  }
+  return [...map.values()].map(row => {
+    const percent = row.total ? Math.round((row.correct / row.total) * 100) : 0;
+    return {
+      ...row,
+      percent,
+      status:row.total < 2 ? 'needs-evidence' : percent >= 80 ? 'strong' : percent >= 60 ? 'developing' : 'priority',
+      priorityScore:Math.round((100 - percent) * Math.min(1, .65 + row.total / 20))
+    };
+  }).sort((a,b) => (b.priorityScore - a.priorityScore) || (a.percent - b.percent));
 }
 
 function localDashboard() {
@@ -65,24 +99,34 @@ function localDashboard() {
   const minutes = Math.round(weekRows.reduce((sum, item) => sum + Number(item.durationSeconds || 0), 0) / 60);
   const average = sessions ? Math.round(weekRows.reduce((sum, item) => sum + Number(item.score || 0), 0) / sessions) : 0;
   const latest = Number(weekRows.at(-1)?.score || 0);
-  const readiness = sessions ? Math.round(average * .7 + latest * .3) : 0;
+  const skillMap = localSkillMap(history);
+  const skillEvidence = skillMap.reduce((sum,item) => sum + Number(item.total || 0), 0);
+  const skillScore = skillEvidence ? Math.round(skillMap.reduce((sum,item) => sum + item.percent * item.total, 0) / skillEvidence) : 0;
+  const readiness = sessions
+    ? Math.round(average * (skillEvidence ? .45 : .7) + latest * (skillEvidence ? .25 : .3) + skillScore * (skillEvidence ? .30 : 0))
+    : skillEvidence ? skillScore : 0;
+  const confidence = Math.min(100, Math.round((sessions * 5 + skillEvidence) / 40 * 100));
   const examDate = profile.examDate ? new Date(`${profile.examDate}T12:00:00`) : null;
   const daysRemaining = examDate ? Math.max(0, Math.ceil((examDate - new Date()) / 86_400_000)) : null;
   const targetTitle = { tahsili:'التحصيلي العلمي', qudurat:'اختبار القدرات', step:'اختبار STEP', mixed:'خطة متعددة المسارات' }[profile.examTrack] || 'التحصيلي العلمي';
   const href = profile.examTrack === 'step' ? '/step' : '/exams';
+  const focus = skillMap.find(item => item.total >= 2 && item.status !== 'strong');
+  const focusHref = focus ? `/exams?subject=${encodeURIComponent(focus.subjectId)}&skill=${encodeURIComponent(focus.category)}` : href;
   const plan = sessions ? [
     { id:'review-errors', title:'مراجعة دفتر الأخطاء', description:'ابدأ بالأخطاء المستحقة قبل الأسئلة الجديدة.', minutes:Math.max(5,Math.round(profile.dailyMinutes*.25)), href:'/exams#notebook' },
-    { id:'focused-practice', title:`تدريب مركز في ${targetTitle}`, description:'تدريب ذكي يركز على نقاط الضعف.', minutes:Math.max(10,Math.round(profile.dailyMinutes*.5)), href },
+    { id:'focused-practice', title:focus ? `تدريب مركز: ${focus.title}` : `تدريب مركز في ${targetTitle}`, description:focus ? `${focus.subjectTitle} • دقة ${focus.percent}% من ${focus.total} أسئلة.` : 'تدريب ذكي يركز على نقاط الضعف.', minutes:Math.max(10,Math.round(profile.dailyMinutes*.5)), href:focusHref },
     { id:'mini-simulation', title:'محاكاة قصيرة', description:'قياس سريع للثبات والسرعة.', minutes:Math.max(5,Math.round(profile.dailyMinutes*.25)), href }
   ] : [
-    { id:'diagnostic', title:`اختبار تشخيصي في ${targetTitle}`, description:'ابدأ بقياس المستوى لبناء خطة فعلية.', minutes:Math.min(25,profile.dailyMinutes), href }
+    { id:'diagnostic', title:`اختبار تشخيصي في ${targetTitle}`, description:'ابدأ بقياس المستوى لبناء خريطة مهارات فعلية.', minutes:Math.min(30,profile.dailyMinutes), href:profile.examTrack === 'qudurat' ? '/exams?diagnostic=qudurat' : profile.examTrack === 'tahsili' ? '/exams?diagnostic=tahsili' : href }
   ];
   return {
     profile,
     target:{ title:targetTitle, daysRemaining, score:profile.targetScore },
-    readiness:{ value:readiness, label:readiness >= 70 ? 'جاهزية جيدة' : readiness ? 'تحتاج خطة مركزة' : 'ابدأ بالتشخيص', mastery:readiness },
+    readiness:{ value:readiness, label:readiness >= 85 ? 'جاهزية مرتفعة' : readiness >= 70 ? 'جاهزية جيدة' : readiness >= 50 ? 'جاهزية متوسطة' : readiness ? 'تحتاج خطة مركزة' : 'ابدأ بالتشخيص', mastery:readiness, skillScore, confidence },
     week:{ sessions, questions, correct, minutes, average, previousAverage:0, trend:0 },
     weakSubjects:[],
+    skillMap,
+    weakSkills:skillMap.filter(item => item.status !== 'strong').slice(0,6),
     plan
   };
 }
@@ -142,6 +186,17 @@ function planStateKey() {
   return `${PLAN_PREFIX}${activeSession?.user?.uid || 'anonymous'}:${todayKey()}`;
 }
 
+function renderSkillMap(items = []) {
+  if (!items.length) {
+    return '<div class="success-skill-empty"><strong>خريطة المهارات تنتظر أول تشخيص</strong><span>بعد التشخيص ستظهر المحاور مرتبة حسب الأولوية مع حجم العينة.</span><a href="/exams?diagnostic=tahsili">بدء التشخيص</a></div>';
+  }
+  return `<div class="success-skill-grid">${items.slice(0,10).map(item => {
+    const status = item.status || (item.total < 2 ? 'needs-evidence' : item.percent >= 80 ? 'strong' : item.percent >= 60 ? 'developing' : 'priority');
+    const label = status === 'strong' ? 'قوة' : status === 'developing' ? 'تثبيت' : status === 'priority' ? 'أولوية' : 'عينة أولية';
+    return `<a class="success-skill-item ${escapeHtml(status)}" href="/exams?subject=${encodeURIComponent(item.subjectId)}&skill=${encodeURIComponent(item.category)}"><div class="success-skill-title"><span>${escapeHtml(item.subjectTitle || item.subjectId)}</span><b>${escapeHtml(label)}</b></div><strong>${escapeHtml(item.title || item.category)}</strong><div class="success-skill-bar"><i style="width:${Number(item.percent || 0)}%"></i></div><small>${arNumber(item.percent)}% • ${arNumber(item.correct)}/${arNumber(item.total)} سؤال</small></a>`;
+  }).join('')}</div>`;
+}
+
 function renderDashboard(data) {
   currentDashboard = data;
   const section = document.getElementById('studentSuccessHub');
@@ -154,10 +209,12 @@ function renderDashboard(data) {
   const days = data.target?.daysRemaining;
   const trend = Number(week.trend || 0);
   const weak = (data.weakSubjects || []).map(item => `<span>${escapeHtml(item.title)} • ${arNumber(item.average)}%</span>`).join('');
+  const confidence = Number(readiness.confidence || 0);
+  const skillScore = Number(readiness.skillScore || 0);
 
   section.innerHTML = `
     <div class="success-head">
-      <div><span class="eyebrow">PERSONALIZED SUCCESS PATH</span><h2>خطتك الشخصية حتى الاختبار</h2><p>تجمع هدفك ونتائجك ودفتر أخطائك لتحدد ما ينبغي إنجازه اليوم بدل التصفح العشوائي.</p></div>
+      <div><span class="eyebrow">PERSONALIZED SUCCESS PATH</span><h2>خطتك الشخصية حتى الاختبار</h2><p>تجمع هدفك ونتائجك ودفتر أخطائك وخريطة مهاراتك لتحدد ما ينبغي إنجازه اليوم بدل التصفح العشوائي.</p></div>
       <button class="success-goal-button" id="editStudentGoal">تعديل الهدف</button>
     </div>
     <div class="success-grid">
@@ -165,6 +222,7 @@ function renderDashboard(data) {
         <div class="readiness-ring" style="--readiness-angle:${Number(readiness.value || 0) * 3.6}deg"><span><strong>${arNumber(readiness.value)}%</strong><small>الجاهزية</small></span></div>
         <div class="readiness-label">${escapeHtml(readiness.label || 'ابدأ بالتشخيص')}</div>
         <div class="goal-summary"><span>${escapeHtml(data.target?.title || 'المسار')}</span><span>الهدف ${arNumber(data.target?.score)}%</span><span>${days === null || days === undefined ? 'حدد موعد الاختبار' : `متبقي ${arNumber(days)} يوم`}</span></div>
+        ${confidence ? `<div class="readiness-evidence"><span>ثقة القياس <b>${arNumber(confidence)}%</b></span>${skillScore ? `<span>إتقان المهارات <b>${arNumber(skillScore)}%</b></span>` : ''}</div>` : '<div class="readiness-evidence pending">تزداد دقة الجاهزية بعد التشخيص واستمرار التدريب.</div>'}
       </article>
       <article class="success-card daily-plan-card">
         <div class="plan-header"><div><h3>خطة اليوم</h3><p>جلسة قصيرة ومتوازنة حسب مستواك ووقتك.</p></div><span class="plan-total">${arNumber(totalMinutes)} دقيقة</span></div>
@@ -172,6 +230,10 @@ function renderDashboard(data) {
           <a class="plan-task ${planState[task.id] ? 'is-complete' : ''}" href="${escapeHtml(task.href)}" data-plan-task="${escapeHtml(task.id)}">
             <span class="plan-check">${planState[task.id] ? '✓' : ''}</span><span class="plan-copy"><strong>${escapeHtml(task.title)}</strong><small>${escapeHtml(task.description)}</small></span><span class="plan-minutes">${arNumber(task.minutes)} د</span>
           </a>`).join('')}</div>
+      </article>
+      <article class="success-card success-skill-map-card">
+        <div class="success-skill-map-head"><div><h3>خريطة المهارات</h3><p>مرتبة حسب الأولوية. لا نعتمد على النسبة وحدها؛ حجم العينة وحداثة التشخيص يدخلان في التقييم.</p></div><a href="/exams?diagnostic=${profile.examTrack === 'qudurat' ? 'qudurat' : 'tahsili'}">تحديث التشخيص</a></div>
+        ${renderSkillMap(data.skillMap || [])}
       </article>
       <div class="success-lower-grid">
         <article class="success-card">
@@ -262,6 +324,7 @@ function installEvents() {
     saveGoal(event.currentTarget).catch(console.error);
   });
   window.addEventListener('neon-error-notebook-updated', () => currentDashboard && renderDashboard(currentDashboard));
+  window.addEventListener('neon-progress-summary', () => loadDashboard().catch(() => {}));
 }
 
 export async function mountStudentSuccess(session) {
