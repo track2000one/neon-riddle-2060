@@ -7,7 +7,6 @@ import { closeProgressDatabase, handleProgressApi } from './server/progress.mjs'
 import { closeQuestionMasteryDatabase, handleQuestionMasteryApi } from './server/question-mastery.mjs';
 import { closeStudentSuccessDatabase, handleStudentSuccessApi } from './server/student-success.mjs';
 import { closeStudentStateDatabase, handleStudentStateApi } from './server/student-state.mjs';
-import { geminiRuntimeInfo, handleTutorApi } from './server/gemini.mjs';
 import { handleStatic } from './server/static.mjs';
 
 const port = Number(process.env.PORT || 3000);
@@ -39,9 +38,31 @@ function readJsonBody(req) {
   });
 }
 
+function sendJson(res, status, payload) {
+  const body = JSON.stringify(payload);
+  res.writeHead(status, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Content-Length': Buffer.byteLength(body),
+    'Cache-Control': 'no-store',
+    'X-Content-Type-Options': 'nosniff'
+  });
+  res.end(body);
+}
+
+function handleRetiredRoutes(req, res, requestPath) {
+  if (!['/api/tutor', '/api/tutor/status'].includes(requestPath)) return false;
+  sendJson(res, 410, {
+    error: 'FEATURE_RETIRED',
+    feature: 'tutor',
+    message: 'تم إيقاف المعلم الذكي القديم وإزالة تكامل Gemini من خادم NEON.'
+  });
+  return true;
+}
+
 const server = createServer(async (req, res) => {
   try {
     const requestPath = decodeURIComponent(String(req.url || '/').split('?')[0]);
+    if (handleRetiredRoutes(req, res, requestPath)) return;
     if (await handlePlatformAccessApi(req, res, requestPath)) return;
     if (await guardPlatformAccess(req, res, requestPath)) return;
     if (await handleAdminUsersApi(req, res, requestPath, readJsonBody)) return;
@@ -51,7 +72,6 @@ const server = createServer(async (req, res) => {
     if (await handleQuestionMasteryApi(req, res, requestPath, readJsonBody)) return;
     if (await handleProgressApi(req, res, requestPath, readJsonBody)) return;
     if (await handleCompetitionApi(req, res, requestPath, readJsonBody)) return;
-    if (await handleTutorApi(req, res, requestPath, readJsonBody)) return;
     handleStatic(req, res, requestPath);
   } catch (error) {
     console.error('NEON server error:', error);
@@ -86,6 +106,5 @@ process.once('SIGINT', () => shutdown('SIGINT'));
 
 server.listen(port, host, () => {
   const database = process.env.DATABASE_URL || process.env.PROGRESS_DATABASE_URL ? 'postgresql' : 'local queue';
-  const gemini = geminiRuntimeInfo.configured ? geminiRuntimeInfo.model : 'local fallback';
-  console.log(`NEON listening on http://${host}:${port} | Gemini: ${gemini} | Progress: ${database} | Student state: ${database} | Access control: enabled | Admin RBAC: enabled | Competitions: enabled | Success dashboard: enabled`);
+  console.log(`NEON listening on http://${host}:${port} | Progress: ${database} | Student state: ${database} | Access control: enabled | Admin RBAC: enabled | Competitions: enabled | Success dashboard: enabled | Tutor: retired`);
 });
