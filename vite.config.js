@@ -43,7 +43,8 @@ export default defineConfig({
         learning: fileURLToPath(new URL('./app/learning.html', import.meta.url)),
         coding: fileURLToPath(new URL('./app/coding.html', import.meta.url)),
         tutor: fileURLToPath(new URL('./app/tutor.html', import.meta.url)),
-        trust: fileURLToPath(new URL('./app/trust.html', import.meta.url))
+        trust: fileURLToPath(new URL('./app/trust.html', import.meta.url)),
+        admin: fileURLToPath(new URL('./app/admin.html', import.meta.url))
       }
     }
   },
