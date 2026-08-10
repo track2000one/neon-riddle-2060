@@ -1,34 +1,39 @@
-NEON Academy 2060
-=================
+NEON Learning Platform
+======================
 
-Modern Vite multi-page learning platform with Firebase Authentication, PostgreSQL-backed student state, readiness diagnostics, RBAC administration, and a compiled exam bank.
+Modern Vite multi-page learning platform with Firebase Authentication, PostgreSQL-backed student/admin services, RBAC, adaptive assessment, modern coding, modern STEP, and generated learning data.
 
-Primary routes
---------------
-/              Main learning portal
-/auth          Modern Firebase login, registration, password recovery, account isolation and platform access validation
-/step          STEP learning
-/exams         Qudurat/Tahsili exam center
-/games         Learning games
-/kids-games    Children games
-/learning      Learning library
-/coding        Coding center (transition wrapper)
-/trust         Quality and transparency
-/admin         Secured administration dashboard
+Canonical routes
+----------------
+/
+/auth
+/step
+/exams
+/games
+/kids-games
+/learning
+/coding
+/trust
+/admin
 
-Legacy compatibility
---------------------
-Legacy content is still copied into /legacy while migration continues. User-facing legacy routes redirect to canonical modern routes. /legacy/auth.html redirects to /auth and preserves the next query parameter. The coding center still uses an embedded legacy implementation during its transition.
+Modern STEP
+-----------
+STEP now runs entirely from Vite/ES Modules and generated JSON at /data/step/content.json.
+The build extracts the maintained STEP source material from academy/ into modern JSON without publishing the old runtime files.
+Current generated content is validated in CI and includes lessons, models, questions, and listening exercises.
+STEP browser progress is scoped per Firebase UID under neonStepProgressV2:<uid>, with one-time migration from the legacy neonStepProgressV1 state when safe.
 
-Authentication
---------------
-Modern pages use app/src/firebase-config.js and app/src/auth.js. They no longer load /legacy/firebase-config.js or route unauthenticated users through /legacy/auth.html. The /auth page performs Firebase sign-in, registration, password recovery, optional mobile-profile capture, platform Access Guard validation, and local account isolation before entering the learning portal.
-
-Tutor/Gemini
-------------
-The retired Tutor/Gemini runtime has been removed. /tutor redirects to the home page and old Tutor API clients receive FEATURE_RETIRED.
+Zero-Legacy production runtime
+------------------------------
+The academy/ directory is retained as source material for build-time extraction and historical compatibility work only.
+No academy file is copied to dist/legacy in production.
+CI fails if any modern page loads /legacy/*.js or a Legacy iframe, or if any file appears under dist/legacy.
+Old canonical HTML paths such as /legacy/auth.html and /legacy/coding.html are redirects only.
 
 Build
 -----
+npm install
 npm run build
 npm run start
+
+The build validates themes, retired features, modern authentication, modern coding, modern STEP, zero-Legacy runtime, generated exam/coding/STEP content, and the production package.
