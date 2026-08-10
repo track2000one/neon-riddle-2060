@@ -5,7 +5,8 @@ export const SHARED_LEGACY_STATE_KEYS = Object.freeze([
   'neonLearningProgressV1',
   'neonLearningLastLessonV1',
   'neonGamesProgressV1',
-  'neonOptimizedExamHistoryV1'
+  'neonOptimizedExamHistoryV1',
+  'msarCodingLearningProgressV2'
 ]);
 
 export function claimLocalStateOwner(storage, uid) {
