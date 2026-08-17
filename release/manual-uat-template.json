@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "candidate": "0.6.0-rc.1",
+  "status": "PENDING",
+  "testedSha": "REPLACE_WITH_40_CHARACTER_TESTED_HEAD_SHA",
+  "tester": "",
+  "evidence": "",
+  "regressionClearance": {
+    "criticalOpen": 0,
+    "highOpen": 0
+  },
+  "cases": {
+    "AUTH-01": "PENDING",
+    "AUTH-02": "PENDING",
+    "AUTH-03": "PENDING",
+    "AUTH-04": "PENDING",
+    "ACCESS-01": "PENDING",
+    "ACCESS-02": "PENDING",
+    "RBAC-01": "PENDING",
+    "RBAC-02": "PENDING",
+    "RBAC-03": "PENDING",
+    "STATE-01": "PENDING",
+    "STEP-01": "PENDING",
+    "EXAM-01": "PENDING",
+    "CODING-01": "PENDING",
+    "MOBILE-01": "PENDING",
+    "DESKTOP-01": "PENDING"
+  },
+  "approvedCaseCount": 0,
+  "approvedAt": ""
+}

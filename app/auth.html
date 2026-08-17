@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#07101f" />
+  <meta name="description" content="تسجيل الدخول وإنشاء حساب في منصة NEON Academy" />
+  <title>NEON Academy | الحساب</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NZNC6929YS"></script>
+  <script type="module" src="./src/auth-page.js"></script>
+</head>
+<body>
+  <main class="auth-shell">
+    <section class="auth-showcase" aria-label="NEON Academy">
+      <a class="brand" href="/">
+        <img src="./neon-logo.svg" alt="NEON" />
+        <span><strong>NEON ACADEMY</strong><small>LEARN • PLAY • BUILD</small></span>
+      </a>
+      <div class="showcase-copy">
+        <p class="eyebrow">ONE SECURE LEARNING IDENTITY</p>
+        <h1>حساب واحد<br><span>لكامل تجربتك التعليمية</span></h1>
+        <p>ادخل إلى الاختبارات والتعلم والألعاب والبرمجة، مع حفظ التقدم وعزل بيانات كل مستخدم والتحقق من صلاحية الوصول قبل بدء الجلسة.</p>
+        <div class="feature-grid">
+          <article><b>01</b><strong>Firebase Authentication</strong><small>دخول وإنشاء حساب واستعادة كلمة المرور.</small></article>
+          <article><b>02</b><strong>Access Guard</strong><small>التحقق من حالة الوصول قبل دخول المنصة.</small></article>
+          <article><b>03</b><strong>Account Isolation</strong><small>منع اختلاط التقدم المحلي بين الحسابات.</small></article>
+        </div>
+      </div>
+      <div class="visual" aria-hidden="true"><div class="ring r1"></div><div class="ring r2"></div><div class="core">N</div></div>
+    </section>
+
+    <section class="auth-card">
+      <div class="mobile-brand"><img src="./neon-logo.svg" alt="NEON" /><strong>NEON</strong></div>
+      <div id="blockedBanner" class="status-banner danger hidden" role="alert"></div>
+      <div class="auth-tabs" role="tablist" aria-label="خيارات الحساب">
+        <button class="auth-tab active" type="button" data-view="login">تسجيل الدخول</button>
+        <button class="auth-tab" type="button" data-view="register">إنشاء حساب</button>
+        <button class="auth-tab" type="button" data-view="reset">استعادة كلمة المرور</button>
+      </div>
+
+      <div id="signedInPanel" class="signed-panel hidden">
+        <div class="signed-icon">✓</div>
+        <p class="eyebrow">SESSION ACTIVE</p>
+        <h2>أنت مسجل الدخول</h2>
+        <p id="signedInText" class="muted"></p>
+        <a id="continueLink" class="primary-button" href="/">متابعة إلى المنصة</a>
+        <button id="signedOutButton" class="secondary-button" type="button">تسجيل الخروج</button>
+      </div>
+
+      <form id="loginForm" class="auth-form active-form" data-form="login" novalidate>
+        <header><p class="eyebrow">WELCOME BACK</p><h2>مرحبًا بعودتك</h2><p>استخدم بريدك وكلمة المرور للمتابعة.</p></header>
+        <label for="loginEmail">البريد الإلكتروني</label>
+        <div class="input-wrap"><span>✉</span><input id="loginEmail" type="email" autocomplete="username" required placeholder="name@example.com" /></div>
+        <label for="loginPassword">كلمة المرور</label>
+        <div class="input-wrap"><span>◆</span><input id="loginPassword" type="password" autocomplete="current-password" required minlength="6" placeholder="••••••••" /><button class="password-toggle" type="button" data-toggle-password="loginPassword" aria-label="إظهار كلمة المرور">◉</button></div>
+        <div class="form-options"><label class="remember-row"><input id="rememberLogin" type="checkbox" checked /><span>تذكر تسجيل الدخول</span></label><button class="text-button" type="button" data-switch="reset">نسيت كلمة المرور؟</button></div>
+        <button id="loginButton" class="primary-button" type="submit"><span>تسجيل الدخول</span><b>←</b></button>
+        <div id="loginMessage" class="form-message" role="alert"></div>
+        <p class="form-foot">ليس لديك حساب؟ <button type="button" data-switch="register">أنشئ حسابًا جديدًا</button></p>
+      </form>
+
+      <form id="registerForm" class="auth-form" data-form="register" novalidate>
+        <header><p class="eyebrow">NEW STUDENT ACCOUNT</p><h2>إنشاء حساب جديد</h2><p>أنشئ هويتك التعليمية ثم ابدأ التعلم مباشرة.</p></header>
+        <label for="registerName">الاسم الكامل</label>
+        <div class="input-wrap"><span>♟</span><input id="registerName" type="text" autocomplete="name" maxlength="60" required placeholder="اكتب اسمك" /></div>
+        <label for="registerEmail">البريد الإلكتروني</label>
+        <div class="input-wrap"><span>✉</span><input id="registerEmail" type="email" autocomplete="email" required placeholder="name@example.com" /></div>
+        <label for="registerPhone">رقم الجوال <small>اختياري</small></label>
+        <div class="input-wrap"><span>☎</span><input id="registerPhone" type="tel" inputmode="tel" autocomplete="tel" dir="ltr" maxlength="18" placeholder="05XXXXXXXX أو +9665XXXXXXXX" /></div>
+        <small class="field-note">يحفظ في ملف الطالب فقط، ولا يعد موثقًا برسالة SMS حاليًا.</small>
+        <label for="registerPassword">كلمة المرور</label>
+        <div class="input-wrap"><span>◆</span><input id="registerPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="8 أحرف على الأقل" /><button class="password-toggle" type="button" data-toggle-password="registerPassword" aria-label="إظهار كلمة المرور">◉</button></div>
+        <div class="password-meter"><span id="passwordMeterBar"></span></div><small id="passwordStrengthText" class="field-note">استخدم 8 أحرف على الأقل، ويفضل أرقامًا ورموزًا.</small>
+        <label for="registerConfirm">تأكيد كلمة المرور</label>
+        <div class="input-wrap"><span>◆</span><input id="registerConfirm" type="password" autocomplete="new-password" required minlength="8" placeholder="أعد كتابة كلمة المرور" /><button class="password-toggle" type="button" data-toggle-password="registerConfirm" aria-label="إظهار كلمة المرور">◉</button></div>
+        <label class="terms-row"><input id="registerTerms" type="checkbox" required /><span>أوافق على استخدام الحساب لأغراض التعلم وحفظ الجلسة.</span></label>
+        <button id="registerButton" class="primary-button" type="submit"><span>إنشاء الحساب</span><b>←</b></button>
+        <div id="registerMessage" class="form-message" role="alert"></div>
+        <p class="form-foot">لديك حساب؟ <button type="button" data-switch="login">سجّل الدخول</button></p>
+      </form>
+
+      <form id="resetForm" class="auth-form" data-form="reset" novalidate>
+        <header><p class="eyebrow">PASSWORD RECOVERY</p><h2>استعادة كلمة المرور</h2><p>سنرسل رابط إعادة التعيين إلى بريدك المسجل.</p></header>
+        <label for="resetEmail">البريد الإلكتروني</label>
+        <div class="input-wrap"><span>✉</span><input id="resetEmail" type="email" autocomplete="email" required placeholder="name@example.com" /></div>
+        <button id="resetButton" class="primary-button" type="submit"><span>إرسال رابط الاستعادة</span><b>←</b></button>
+        <div id="resetMessage" class="form-message" role="alert"></div>
+        <div class="reset-help"><strong>لم تصل الرسالة؟</strong><p>تحقق من البريد غير المرغوب فيه وتأكد من كتابة البريد المسجل بالحساب.</p></div>
+        <p class="form-foot"><button type="button" data-switch="login">العودة إلى تسجيل الدخول</button></p>
+      </form>
+
+      <footer><a href="/">المنصة الرئيسية</a><span>•</span><a href="/trust">الجودة والشفافية</a></footer>
+    </section>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

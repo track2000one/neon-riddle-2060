@@ -1,0 +1,164 @@
+name: Vite Performance Build
+
+on:
+  push:
+    branches: [performance-vite]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'scripts/**'
+      - 'server/**'
+      - 'academy/exam-*.js'
+      - 'academy/step-*.js'
+      - 'academy/biology-*.js'
+      - 'academy/tahsili-*.js'
+      - 'academy/coding-learning-center.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.js'
+      - 'vercel.json'
+      - 'railway.toml'
+      - 'server.mjs'
+      - 'server-production.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Validate adaptive and account algorithms
+        run: |
+          node scripts/test-exam-mastery.mjs
+          node scripts/test-account-isolation.mjs
+          node scripts/test-readiness-engine.mjs
+
+      - name: Build Vite preview and generated data
+        run: npm run build
+
+      - name: Validate modern production output
+        run: |
+          test -f dist/index.html
+          test -f dist/auth.html
+          test -f dist/step.html
+          test -f dist/exams.html
+          test -f dist/games.html
+          test -f dist/learning.html
+          test -f dist/coding.html
+          test -f dist/admin.html
+          test ! -f dist/tutor.html
+          test -d dist/assets
+          test ! -d dist/legacy || test "$(find dist/legacy -type f | wc -l)" -eq 0
+
+          test -f dist/data/step/content.json
+          test -f dist/data/coding/content.json
+          test -f dist/data/exams/manifest.json
+          test -f dist/data/exams/runtime/visuals.json
+          test -f dist/data/exams/runtime/learning-paths.json
+          test -f dist/data/exams/tahsili-math.json
+          test -f dist/data/exams/tahsili-physics.json
+          test -f dist/data/exams/tahsili-chemistry.json
+          test -f dist/data/exams/tahsili-biology.json
+
+          grep -q 'WELCOME BACK' dist/auth.html
+          grep -q 'ADAPTIVE MASTERY EXAM CENTER' dist/exams.html
+          grep -q 'MODERN CODING CENTER' dist/coding.html
+          grep -q 'MODERN STEP CENTER' app/src/step.js
+          grep -q '/data/step/content.json' app/src/step.js
+          grep -q 'neonStepProgressV2:' app/src/step.js
+          grep -q "'neonStepProgressV1'" app/src/account-local-state.js
+          if grep -R -E '/legacy/[A-Za-z0-9._/-]+\.js' app --include='*.js' --include='*.html'; then echo 'Legacy JavaScript runtime reference detected in modern app'; exit 1; fi
+
+          node scripts/check-modern-step.mjs
+          node scripts/check-legacy-runtime.mjs
+          node scripts/check-legacy-package.mjs
+
+          node -e "const s=require('./dist/data/step/content.json'); if(s.counts.lessons<28||s.counts.models<7||s.counts.questions<150||s.counts.listeningExercises<10) process.exit(1); console.log('STEP content:',s.counts.lessons,'lessons,',s.counts.models,'models,',s.counts.questions,'questions,',s.counts.listeningExercises,'listening exercises')"
+          node -e "const m=require('./dist/data/exams/manifest.json'); if(!m.totalQuestions||Object.keys(m.subjects).length!==6) process.exit(1); if((m.subjects['tahsili-biology']?.count||0)<100) process.exit(1); console.log('Compiled questions:',m.totalQuestions,'Biology:',m.subjects['tahsili-biology'].count,'Subjects:',Object.keys(m.subjects).length,'Fuzzy removed:',m.fuzzyDuplicatesRemoved)"
+          node -e "const c=require('./dist/data/coding/content.json'); if(c.counts.courses<10||c.counts.lessons<20||c.counts.challenges<6) process.exit(1); console.log('Coding content:',c.counts.courses,'courses,',c.counts.lessons,'lessons,',c.counts.challenges,'challenges')"
+          node -e "const fs=require('fs'),vm=require('vm'); const expected={'tahsili-math':['exam-bank-uploaded-tahsili-math-advanced-model8-2026.js',30],'tahsili-physics':['exam-bank-uploaded-tahsili-physics-advanced-model8-2026.js',30],'tahsili-chemistry':['exam-bank-uploaded-tahsili-chemistry-advanced-model8-2026.js',51],'tahsili-biology':['exam-bank-uploaded-tahsili-biology-advanced-model8-2026.js',40]}; for(const [subject,[file,count]] of Object.entries(expected)){const window={};window.window=window;vm.runInNewContext(fs.readFileSync('./academy/'+file,'utf8'),{window,globalThis:window});const sourceRows=window.NEON_TAHSILI_ADVANCED_QUESTIONS||[];if(sourceRows.length!==count)throw new Error(subject+': source mismatch');const rows=JSON.parse(fs.readFileSync('./dist/data/exams/'+subject+'.json','utf8'));const advanced=rows.filter(row=>String(row.id||'').startsWith('adv8-'));if(advanced.length<Math.floor(count*.8))throw new Error(subject+': advanced loss');console.log(subject,'source:',sourceRows.length,'unique compiled:',advanced.length)}"
+
+          node --check server-production.mjs
+          node --check server.mjs
+          node --check server/static.mjs
+          node --check server/platform-access.mjs
+          node --check server/admin-users.mjs
+          node --check server/admin-dashboard.mjs
+          node --check server/student-state.mjs
+          node --check server/student-success.mjs
+          node --check app/src/auth.js
+          node --check app/src/auth-page.js
+          node --check app/src/coding.js
+          node --check app/src/step.js
+          node --check app/src/admin.js
+          node --check app/src/admin-users.js
+          node --check app/src/exam-modern-runtime.js
+          node --check scripts/build-step-content.mjs
+          node --check scripts/check-modern-step.mjs
+          node --check scripts/check-legacy-runtime.mjs
+          node --check scripts/check-legacy-package.mjs
+          test ! -f server/gemini.mjs
+
+      - name: Test Railway production server
+        env:
+          PORT: 4173
+        run: |
+          npm run start > /tmp/neon-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+
+          curl --fail --silent --show-error http://127.0.0.1:4173/ > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/auth | grep -q 'WELCOME BACK'
+          curl --fail --silent --show-error http://127.0.0.1:4173/step > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/exams > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/coding | grep -q 'MODERN CODING CENTER'
+          curl --fail --silent --show-error http://127.0.0.1:4173/admin | grep -q 'NEON ADMIN'
+          curl --fail --silent --show-error http://127.0.0.1:4173/data/step/content.json > /tmp/step-content.json
+          grep -q '"lessons"' /tmp/step-content.json
+          curl --fail --silent --show-error http://127.0.0.1:4173/data/coding/content.json > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:4173/data/exams/manifest.json > /dev/null
+
+          LEGACY_STEP_HTTP=$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:4173/legacy/step-academy-runtime.js)
+          test "$LEGACY_STEP_HTTP" = "404"
+          LEGACY_STEP_DATA_HTTP=$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:4173/legacy/step-mastery-lessons.js)
+          test "$LEGACY_STEP_DATA_HTTP" = "404"
+          LEGACY_AUTH_JS_HTTP=$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:4173/legacy/auth.js)
+          test "$LEGACY_AUTH_JS_HTTP" = "404"
+
+          LEGACY_AUTH_HTTP=$(curl --silent --output /dev/null --write-out '%{http_code}' 'http://127.0.0.1:4173/legacy/auth.html?next=%2Fexams')
+          test "$LEGACY_AUTH_HTTP" = "308"
+          curl --silent --head 'http://127.0.0.1:4173/legacy/auth.html?next=%2Fexams' | tr -d '\r' | grep -qi '^location: /auth?next=%2Fexams$'
+          LEGACY_CODING_HTTP=$(curl --silent --output /dev/null --write-out '%{http_code}' 'http://127.0.0.1:4173/legacy/coding.html?embedded=1')
+          test "$LEGACY_CODING_HTTP" = "308"
+          curl --silent --head 'http://127.0.0.1:4173/legacy/coding.html?embedded=1' | tr -d '\r' | grep -qi '^location: /coding$'
+
+          TUTOR_STATUS_HTTP=$(curl --silent --output /tmp/tutor-status.json --write-out '%{http_code}' http://127.0.0.1:4173/api/tutor/status)
+          test "$TUTOR_STATUS_HTTP" = "410"
+          grep -q 'FEATURE_RETIRED' /tmp/tutor-status.json
+          ACCESS_HTTP=$(curl --silent --output /tmp/access.json --write-out '%{http_code}' http://127.0.0.1:4173/api/access/session)
+          test "$ACCESS_HTTP" = "401"
+          grep -q 'AUTH_REQUIRED' /tmp/access.json
+          ADMIN_HTTP=$(curl --silent --output /tmp/admin.json --write-out '%{http_code}' http://127.0.0.1:4173/api/admin/status)
+          test "$ADMIN_HTTP" = "401"
+          grep -q 'AUTH_REQUIRED' /tmp/admin.json
+
+          cat /tmp/neon-server.log
+          echo "Railway production server, zero-Legacy Modern STEP, modern coding/auth, retired Tutor/Gemini, modern exams, RBAC, account isolation, generated content, and authenticated APIs validated successfully."

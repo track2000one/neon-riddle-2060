@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07101f" />
+  <meta name="description" content="مركز البرمجة في NEON — مسارات ودروس وتحديات ومختبر تفاعلي حديث" />
+  <title>تعليم البرمجة | NEON</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+</head>
+<body class="coding-body">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="NEON">
+      <img class="brand-logo" src="./neon-logo.svg" alt="شعار NEON" />
+      <span><strong>NEON</strong><small>LEARN • PLAY • BUILD</small></span>
+    </a>
+    <nav class="quick-nav" aria-label="التنقل">
+      <a href="/">المراكز</a>
+      <a href="/step">English STEP</a>
+      <a href="/exams">التحصيلي والقدرات</a>
+      <a href="/learning">المعرفة والدروس</a>
+      <a class="active" href="/coding">البرمجة</a>
+    </nav>
+    <div class="account-chip" id="accountChip" aria-live="polite">
+      <span class="account-avatar" id="accountAvatar">N</span>
+      <span><strong id="accountName">حساب الطالب</strong><small id="accountEmail">جارٍ التحقق…</small></span>
+    </div>
+  </header>
+
+  <main class="coding-main" data-modern-coding-center="true">
+    <section class="coding-hero">
+      <article class="coding-hero-copy">
+        <span class="eyebrow">MODERN CODING CENTER</span>
+        <h1>تعلّم البرمجة<br><span>ثم ابنِ بنفسك</span></h1>
+        <p>مسارات قصيرة ومتدرجة تبدأ بالمفهوم والمثال، ثم تحقق سريع وتحدٍ عملي داخل مختبر معزول وآمن.</p>
+        <div class="hero-tags"><span>HTML • CSS • JavaScript</span><span>Python • Java • C++ • C#</span><span>Dart • SQL • Git</span></div>
+      </article>
+      <aside class="coding-progress-card">
+        <div class="progress-head"><div><span>تقدمك في المسارات</span><strong id="codingProgressPercent">0%</strong></div><span><b id="codingXpCount">0</b> XP</span></div>
+        <div class="progress-track" aria-label="نسبة التقدم"><div id="codingProgressBar"></div></div>
+        <div class="mini-stats">
+          <article><strong id="codingCourseCount">0</strong><small>مسارات</small></article>
+          <article><strong id="codingLessonCount">0</strong><small>دروس</small></article>
+          <article><strong id="codingChallengeCount">0</strong><small>تحديات</small></article>
+          <article><strong id="codingCompletedCount">0</strong><small>مكتمل</small></article>
+        </div>
+      </aside>
+    </section>
+
+    <div class="coding-tabs" role="tablist" aria-label="أقسام مركز البرمجة">
+      <button class="active" type="button" data-coding-tab="learn">المسار التعليمي</button>
+      <button type="button" data-coding-tab="practice">التدريب والتحديات</button>
+      <button type="button" data-coding-tab="lab">المختبر التفاعلي</button>
+    </div>
+
+    <section class="coding-panel active" data-coding-panel="learn">
+      <div class="coding-course-rail" id="codingCourseRail" aria-label="المسارات البرمجية"></div>
+      <div class="coding-learning-layout">
+        <aside class="coding-lesson-sidebar">
+          <div class="coding-course-summary" id="codingCourseSummary"></div>
+          <div id="codingLessonList"></div>
+        </aside>
+        <article class="coding-lesson-view" id="codingLessonView"></article>
+      </div>
+    </section>
+
+    <section class="coding-panel" data-coding-panel="practice">
+      <div class="coding-challenge-grid" id="codingChallengeGrid"></div>
+    </section>
+
+    <section class="coding-panel" data-coding-panel="lab">
+      <div class="coding-lab">
+        <div class="lab-toolbar">
+          <div class="language-list" id="codingLanguageList" aria-label="لغات المختبر"></div>
+          <div class="lab-actions">
+            <button id="resetCodeButton" type="button">استعادة</button>
+            <button id="checkChallengeButton" type="button">فحص التحدي</button>
+            <button id="runCodeButton" class="run-button" type="button">▶ تشغيل</button>
+          </div>
+        </div>
+        <section class="active-challenge-card" id="activeChallengeCard" hidden>
+          <span>🎯</span>
+          <div><h3 id="activeChallengeTitle"></h3><p id="activeChallengeDescription"></p><p id="challengeCheckResult"></p></div>
+          <div class="challenge-checks"><strong>متطلبات التحدي</strong><ul id="challengeCheckList"></ul></div>
+        </section>
+        <div class="lab-grid">
+          <section class="editor-pane">
+            <header class="editor-head"><span><b id="activeLanguageIcon">JS</b><strong id="activeLanguageTitle">JavaScript</strong></span><small>ACCOUNT-SCOPED DRAFT</small></header>
+            <textarea id="codeEditor" spellcheck="false" autocomplete="off" aria-label="محرر الكود"></textarea>
+          </section>
+          <section class="output-pane">
+            <header class="output-head"><strong>المعاينة المعزولة</strong><small>Sandbox • no same-origin access</small></header>
+            <div class="preview-wrap"><iframe id="livePreview" title="معاينة الكود" sandbox="allow-scripts"></iframe></div>
+            <div class="console"><strong>CONSOLE</strong><pre id="consoleOutput">Workspace ready…</pre></div>
+            <div class="code-feedback" id="codeFeedback">اختر لغة ثم اكتب الكود واضغط تشغيل.</div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="coding-footer">NEON • LEARN • PRACTICE • BUILD</footer>
+  <div class="coding-toast" id="codingToast" role="status" aria-live="polite"></div>
+  <div class="coding-boot-overlay" id="codingBootOverlay"><div class="coding-boot-card"><div class="coding-loader"></div><strong>جارٍ تجهيز مركز البرمجة الحديث…</strong></div></div>
+  <script type="module" src="/src/coding.js"></script>
+</body>
+</html>

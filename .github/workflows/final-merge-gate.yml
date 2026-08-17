@@ -1,0 +1,109 @@
+name: Final Merge Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'release/manual-uat-signoff.json'
+
+permissions:
+  contents: read
+  statuses: read
+  pull-requests: read
+
+jobs:
+  final-merge-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      NEON_CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Confirm exact checkout
+        run: |
+          echo "$NEON_CANDIDATE_SHA" | grep -Eq '^[0-9a-fA-F]{40}$'
+          test "$(git rev-parse HEAD)" = "$NEON_CANDIDATE_SHA"
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+
+      - name: Verify committed Manual UAT sign-off
+        run: node scripts/verify-manual-uat-signoff.mjs release/manual-uat-signoff.json
+
+      - name: Prove runtime code did not change after Manual UAT
+        run: |
+          git merge-base --is-ancestor "$NEON_TESTED_SHA" "$NEON_CANDIDATE_SHA"
+          CHANGED=$(git diff --name-only "$NEON_TESTED_SHA..$NEON_CANDIDATE_SHA")
+          printf 'Files changed since tested SHA:\n%s\n' "$CHANGED"
+          test "$CHANGED" = "release/manual-uat-signoff.json"
+
+      - name: Verify candidate is still current PR #1 HEAD
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_JSON=$(curl -fsSL \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/1")
+          ACTUAL_HEAD=$(printf '%s' "$PR_JSON" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>process.stdout.write(JSON.parse(s).head.sha))")
+          echo "Current PR head: $ACTUAL_HEAD"
+          test "$ACTUAL_HEAD" = "$NEON_CANDIDATE_SHA"
+
+      - name: Verify Railway Preview success on sign-off head
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          RAILWAY_STATE="pending"
+          for attempt in $(seq 1 30); do
+            STATUS_JSON=$(curl -fsSL \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/${NEON_CANDIDATE_SHA}/status")
+            RAILWAY_STATE=$(printf '%s' "$STATUS_JSON" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const j=JSON.parse(s);const x=(j.statuses||[]).find(v=>String(v.context||'').includes('neon-academy-frontend-preview'));process.stdout.write(String(x?.state||'missing'))})")
+            echo "Railway attempt $attempt: $RAILWAY_STATE"
+            if [ "$RAILWAY_STATE" = "success" ]; then break; fi
+            if [ "$RAILWAY_STATE" = "failure" ] || [ "$RAILWAY_STATE" = "error" ]; then exit 1; fi
+            sleep 10
+          done
+          test "$RAILWAY_STATE" = "success"
+          echo "NEON_RAILWAY_STATUS=$RAILWAY_STATE" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Run final RC gate
+        run: npm run rc:final
+
+      - name: Upload approved RC evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: neon-approved-${{ github.event.pull_request.head.sha }}
+          path: |
+            artifacts/release-candidate-manifest.json
+            release/manual-uat-signoff.json
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Publish final approval summary
+        run: |
+          echo '## NEON Final Merge Gate' >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Status: **APPROVED for Ready for Review**' >> "$GITHUB_STEP_SUMMARY"
+          echo "Tested runtime SHA: \`$NEON_TESTED_SHA\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Sign-off HEAD SHA: \`$NEON_CANDIDATE_SHA\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Manual UAT tester: **$NEON_SIGNOFF_OWNER**" >> "$GITHUB_STEP_SUMMARY"
+          echo 'Manual UAT cases: **15/15 PASS**' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Post-UAT diff: **sign-off record only**' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Railway Preview: **Success on sign-off HEAD**' >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat artifacts/release-candidate-manifest.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

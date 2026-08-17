@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07101f" />
+  <meta name="description" content="مركز الألعاب والألغاز في منصة NEON" />
+  <title>الألعاب والألغاز | NEON</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+</head>
+<body class="center-body games-body">
+  <div class="page-glow glow-one"></div>
+  <div class="page-glow glow-two"></div>
+
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="NEON">
+      <img class="brand-logo" src="./neon-logo.svg" alt="شعار NEON" />
+      <span><strong>NEON</strong><small>LEARN • PLAY • BUILD</small></span>
+    </a>
+    <nav class="quick-nav" aria-label="التنقل">
+      <a href="/">المراكز</a>
+      <a href="/step">English STEP</a>
+      <a href="/exams">التحصيلي والقدرات</a>
+      <a class="active" href="/games">الألعاب والألغاز</a>
+    </nav>
+    <div class="account-chip" id="accountChip" aria-live="polite">
+      <span class="account-avatar" id="accountAvatar">N</span>
+      <span><strong id="accountName">حساب الطالب</strong><small id="accountEmail">جارٍ التحقق…</small></span>
+    </div>
+  </header>
+
+  <main class="games-main">
+    <section class="games-hero">
+      <div>
+        <span class="eyebrow">INTERACTIVE GAME CENTER</span>
+        <h1>الألعاب والألغاز</h1>
+        <p>ألغاز منطقية، غرف هروب، تحديات يومية ومسابقات تنمّي التفكير والسرعة والانتباه في تجربة تفاعلية ممتعة.</p>
+        <div class="games-actions">
+          <button class="game-primary" id="dailyChallengeButton">🔥 ابدأ تحدي اليوم</button>
+          <a class="game-secondary" href="#gameTracks">استكشف المسارات</a>
+        </div>
+      </div>
+      <div class="games-hero-stats">
+        <article><strong>6</strong><small>مسارات</small></article>
+        <article><strong>72</strong><small>نشاطًا</small></article>
+        <article><strong id="gamesPlayed">0</strong><small>محاولة</small></article>
+        <article><strong id="gamesBest">0</strong><small>أفضل نتيجة</small></article>
+      </div>
+    </section>
+
+    <section class="game-track-section" id="gameTracks">
+      <div class="games-section-heading">
+        <div><span class="eyebrow">CHOOSE YOUR WORLD</span><h2>مسارات اللعب</h2><p>اختر مسارًا لعرض تحدياته، ثم ابدأ اللعب فورًا.</p></div>
+      </div>
+      <div class="game-track-grid" id="gameTrackGrid"></div>
+    </section>
+
+    <section class="game-modules" id="gameModules" hidden>
+      <div class="games-section-heading compact">
+        <div><span class="eyebrow" id="moduleEyebrow">GAME MODULES</span><h2 id="moduleTitle">التحديات</h2><p id="moduleDescription"></p></div>
+        <label class="game-search"><span>⌕</span><input id="moduleSearch" type="search" placeholder="ابحث عن تحدٍ…" /></label>
+      </div>
+      <div class="game-module-grid" id="gameModuleGrid"></div>
+    </section>
+
+    <section class="game-runner" id="gameRunner" hidden aria-live="polite"></section>
+  </main>
+
+  <footer>NEON • PLAY • THINK • MASTER</footer>
+  <div class="boot-overlay" id="bootOverlay"><div class="loader"></div><p>جارٍ تجهيز مركز الألعاب…</p></div>
+  <script type="module" src="/src/games.js"></script>
+  <script type="module" src="/src/games-expansion-runtime.js"></script>
+  <script type="module" src="/src/games-expansion-interactive.js"></script>
+  <script type="module" src="/src/games-mastery-system.js"></script>
+  <script type="module" src="/src/games-competition-system.js"></script>
+</body>
+</html>

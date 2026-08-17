@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07101f" />
+  <meta name="description" content="مكتبة ألعاب الأطفال التعليمية والترفيهية في NEON" />
+  <title>ألعاب الأطفال | NEON</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+</head>
+<body>
+  <div class="page-glow glow-one"></div>
+  <div class="page-glow glow-two"></div>
+
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="العودة إلى NEON">
+      <span class="brand-mark">N</span>
+      <span><strong>NEON</strong><small>LEARN • PLAY • BUILD</small></span>
+    </a>
+    <nav class="quick-nav" aria-label="التنقل">
+      <a href="/">الرئيسية</a>
+      <a class="active" href="/kids-games">ألعاب الأطفال</a>
+      <a href="/games">الألعاب والألغاز</a>
+      <a href="/learning">المكتبة</a>
+    </nav>
+    <div class="account-chip" id="accountChip" aria-live="polite">
+      <span class="account-avatar" id="accountAvatar">ط</span>
+      <span><strong id="accountName">جارٍ التحقق…</strong><small id="accountEmail">حساب الطالب</small></span>
+    </div>
+  </header>
+
+  <main class="kids-page">
+    <section class="kids-hero">
+      <div>
+        <span class="eyebrow">NEON KIDS LEARNING GAMES</span>
+        <h1>مكتبة ألعاب الأطفال</h1>
+        <p>18 تجربة تعليمية وترفيهية تجمع اللغة والرياضيات والعلوم والبرمجة والإبداع والمهارات الحياتية.</p>
+        <div class="hero-pills"><span>✓ مناسبة للعمر</span><span>✓ تقدم محفوظ</span><span>✓ ملخص للوالد والمعلم</span></div>
+      </div>
+      <div class="kids-hero-orb" aria-hidden="true">🎮</div>
+    </section>
+
+    <section class="kids-toolbar" aria-label="البحث والتصفية">
+      <div class="kids-tabs" role="group" aria-label="نوع اللعبة">
+        <button class="active" data-filter="all" type="button">الكل</button>
+        <button data-filter="educational" type="button">تعليمية</button>
+        <button data-filter="entertainment" type="button">ترفيهية</button>
+      </div>
+      <label class="kids-search"><span>⌕</span><input id="gameSearch" type="search" placeholder="ابحث بالعربية أو الإنجليزية..." /></label>
+      <label class="kids-age"><span>العمر</span><select id="ageFilter"><option value="all">كل الأعمار</option><option value="3-5">3–5 سنوات</option><option value="6-8">6–8 سنوات</option><option value="9-11">9–11 سنة</option><option value="12-14">12–14 سنة</option></select></label>
+      <div class="result-count"><b id="resultCount">18</b><span>لعبة</span></div>
+    </section>
+
+    <section id="gamesGrid" class="kids-grid" aria-live="polite"></section>
+  </main>
+
+  <div id="gameModal" class="kids-modal" aria-hidden="true">
+    <section class="kids-modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" type="button" aria-label="إغلاق">×</button>
+      <div id="modalContent"></div>
+    </section>
+  </div>
+
+  <footer>NEON • KIDS • LEARN • PLAY</footer>
+  <div class="boot-overlay" id="bootOverlay"><div class="loader"></div><p>جارٍ تجهيز ألعاب الأطفال…</p></div>
+  <script type="module" src="/src/kids-games-page.js"></script>
+</body>
+</html>

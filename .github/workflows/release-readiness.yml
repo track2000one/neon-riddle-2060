@@ -1,0 +1,60 @@
+name: Production Release Gate
+
+on:
+  push:
+    branches:
+      - performance-vite
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'app/**'
+      - 'scripts/**'
+      - 'server/**'
+      - 'academy/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.js'
+      - 'railway.toml'
+      - 'vercel.json'
+      - 'server-production.mjs'
+      - '.github/workflows/release-readiness.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  release-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.12.0'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Run production release gate
+        run: npm run release:gate
+
+      - name: Verify health contract source
+        run: |
+          grep -q "requestPath !== '/healthz'" server-production.mjs
+          grep -q "RAILWAY_GIT_COMMIT_SHA" server-production.mjs
+          grep -q "healthcheckPath = \"/healthz\"" railway.toml
+          grep -q "X-Frame-Options" server/security-headers.mjs
+          grep -q "Permissions-Policy" server/security-headers.mjs
+
+      - name: Validate live Railway preview on exact branch SHA
+        if: github.event_name == 'push'
+        env:
+          NEON_LIVE_URL: https://neon-academy-frontend-preview-production.up.railway.app
+          NEON_EXPECTED_SHA: ${{ github.sha }}
+          NEON_LIVE_WAIT_ATTEMPTS: '60'
+          NEON_LIVE_WAIT_DELAY_MS: '5000'
+        run: npm run test:live

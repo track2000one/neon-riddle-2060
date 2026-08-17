@@ -1,0 +1,199 @@
+/* Rebalanced coding-center layout: wider canvas, two-column lesson body, cleaner header. */
+body.center-page[data-center="coding"] .site-header{
+  width:min(1960px,calc(100% - 20px))!important;
+  padding-inline:18px!important;
+}
+
+body.center-page[data-center="coding"] .student-chip{
+  display:none!important;
+}
+
+body.center-page[data-center="coding"] .main-nav [data-scroll="teacher"]{
+  display:none!important;
+}
+
+body.center-page[data-center="coding"] #coding{
+  width:min(1960px,calc(100% - 24px))!important;
+}
+
+body.center-page[data-center="coding"] #coding>.section-heading,
+body.center-page[data-center="coding"] .coding-course-hero,
+body.center-page[data-center="coding"] .coding-stat-grid,
+body.center-page[data-center="coding"] .coding-hub-tabs,
+body.center-page[data-center="coding"] .coding-tab-panel{
+  width:100%;
+}
+
+body.center-page[data-center="coding"] .coding-course-rail{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:12px!important;
+  overflow:visible!important;
+  padding-bottom:4px!important;
+}
+
+body.center-page[data-center="coding"] .coding-course-chip{
+  min-width:0!important;
+  width:100%;
+}
+
+body.center-page[data-center="coding"] .coding-learning-layout{
+  grid-template-columns:minmax(320px,380px) minmax(0,1fr)!important;
+  gap:20px!important;
+}
+
+body.center-page[data-center="coding"] .coding-lesson-sidebar{
+  width:100%;
+}
+
+body.center-page[data-center="coding"] .coding-lesson-view{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:start;
+  gap:18px!important;
+  padding:28px!important;
+}
+
+body.center-page[data-center="coding"] .coding-lesson-head,
+body.center-page[data-center="coding"] .coding-lesson-actions{
+  grid-column:1/-1;
+}
+
+body.center-page[data-center="coding"] :is(.coding-explain,.coding-example,.coding-quiz,.coding-task){
+  margin-top:0!important;
+  height:100%;
+}
+
+body.center-page[data-center="coding"] .coding-example{
+  display:flex;
+  flex-direction:column;
+}
+
+body.center-page[data-center="coding"] .coding-example pre{
+  flex:1;
+  min-height:200px!important;
+}
+
+body.center-page[data-center="coding"] .coding-quiz-options{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+
+body.center-page[data-center="coding"] .coding-layout{
+  grid-template-columns:minmax(260px,310px) minmax(0,1.18fr) minmax(0,1fr)!important;
+  gap:18px!important;
+  min-height:720px!important;
+}
+
+body.center-page[data-center="coding"] .language-panel,
+body.center-page[data-center="coding"] .editor-panel,
+body.center-page[data-center="coding"] .preview-panel{
+  min-width:0;
+}
+
+body.center-page[data-center="coding"] #codeEditor{
+  min-height:550px!important;
+}
+
+body.center-page[data-center="coding"] #livePreview{
+  min-height:500px!important;
+}
+
+body.center-page[data-center="coding"] .console-output{
+  min-height:150px!important;
+}
+
+@media (min-width:1500px){
+  body.center-page[data-center="coding"] .site-header{
+    min-height:94px!important;
+  }
+  body.center-page[data-center="coding"] .brand strong{
+    font-size:20px!important;
+  }
+  body.center-page[data-center="coding"] .brand small{
+    font-size:11px!important;
+  }
+  body.center-page[data-center="coding"] .nav-link{
+    font-size:14px!important;
+    padding:12px 15px!important;
+  }
+  body.center-page[data-center="coding"] #coding>.section-heading{
+    padding:34px 42px!important;
+  }
+  body.center-page[data-center="coding"] .coding-course-hero{
+    padding:38px 44px!important;
+  }
+  body.center-page[data-center="coding"] .coding-lesson-view{
+    padding:34px!important;
+  }
+}
+
+@media (max-width:1350px){
+  body.center-page[data-center="coding"] .coding-course-rail{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  body.center-page[data-center="coding"] .coding-learning-layout{
+    grid-template-columns:minmax(280px,330px) minmax(0,1fr)!important;
+  }
+  body.center-page[data-center="coding"] .coding-layout{
+    grid-template-columns:minmax(230px,270px) minmax(0,1fr)!important;
+  }
+  body.center-page[data-center="coding"] .preview-panel{
+    grid-column:1/-1!important;
+  }
+}
+
+@media (max-width:980px){
+  body.center-page[data-center="coding"] .site-header{
+    width:100%!important;
+    margin:0!important;
+  }
+  body.center-page[data-center="coding"] #coding{
+    width:calc(100% - 16px)!important;
+  }
+  body.center-page[data-center="coding"] .coding-course-rail{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  body.center-page[data-center="coding"] .coding-learning-layout{
+    grid-template-columns:1fr!important;
+  }
+  body.center-page[data-center="coding"] .coding-lesson-sidebar{
+    position:static!important;
+    max-height:none!important;
+  }
+  body.center-page[data-center="coding"] .coding-lesson-view{
+    grid-template-columns:1fr!important;
+    padding:22px!important;
+  }
+  body.center-page[data-center="coding"] .coding-lesson-head,
+  body.center-page[data-center="coding"] .coding-lesson-actions{
+    grid-column:auto;
+  }
+  body.center-page[data-center="coding"] .coding-layout{
+    grid-template-columns:1fr!important;
+    min-height:0!important;
+  }
+  body.center-page[data-center="coding"] .preview-panel{
+    grid-column:auto!important;
+  }
+  body.center-page[data-center="coding"] .language-list{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+}
+
+@media (max-width:600px){
+  body.center-page[data-center="coding"] .coding-course-rail{
+    grid-template-columns:1fr;
+  }
+  body.center-page[data-center="coding"] .coding-stat-grid{
+    grid-template-columns:1fr!important;
+  }
+  body.center-page[data-center="coding"] .coding-lesson-view{
+    padding:16px!important;
+  }
+  body.center-page[data-center="coding"] .coding-quiz-options,
+  body.center-page[data-center="coding"] .language-list{
+    grid-template-columns:1fr!important;
+  }
+}
