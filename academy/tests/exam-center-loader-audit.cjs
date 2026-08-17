@@ -17,12 +17,14 @@ if (!match) throw new Error('Could not locate EXAM_ASSETS in center-page.js');
 const files = [...match[1].matchAll(/'([^']+\.js)'/g)].map(m => m[1]);
 console.log('center EXAM_ASSETS:', files.length);
 
+// This audit targets question-bank assembly. Visual-only files are deliberately skipped
+// because the base visual registry is frozen and extension visual files mutate it in-browser.
 for (const file of files) {
-  if (file === 'exam-bank.js') continue;
+  if (file.startsWith('exam-visuals')) continue;
   try {
     run(file);
   } catch (error) {
-    console.error('FAILED ASSET:', file, error && error.stack || error);
+    console.error('FAILED QUESTION ASSET:', file, error && error.stack || error);
     process.exit(1);
   }
 }
