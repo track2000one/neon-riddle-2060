@@ -5,26 +5,22 @@ import { firebaseConfig } from './firebase-config.js';
 const PROFILE_KEY = 'neonRiddleGrandProfilesV4';
 const SETTINGS_KEY = 'neonRiddleGrandSettingsV4';
 const AI_LOAD_TIMEOUT_MS = 15000;
-const ASSET_REV = '20260817-1958';
+const ASSET_REV = window.NEON_ASSET_REV || '20260817-2030-r2';
+document.documentElement.dataset.neonBuild = ASSET_REV;
+const EXAM_DATA_ASSETS = Array.from(window.NEON_EXAM_DATA_ASSETS || []);
+const EXAM_RUNTIME_ASSETS = Array.from(window.NEON_EXAM_RUNTIME_ASSETS || []);
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 let academyLoaded = false;
 let academyBootFinished = false;
 
 const ACADEMY_SCRIPTS = [
-  'academy-i18n-dict-1.js', 'academy-i18n-dict-2.js', 'academy-i18n-dict-3.js', 'academy-i18n-dict-4.js', 'academy-i18n.js', 'step-nav-bootstrap.js', 'portal-cards.js',
-  'exam-practice-tah-math.js', 'exam-practice-tah-physics.js', 'exam-practice-tah-chemistry.js', 'exam-practice-tah-biology.js', 'exam-practice-qud-verbal.js', 'exam-practice-qud-quant.js',
-  'exam-bank-tahsili-math.js', 'exam-bank-tahsili-physics.js', 'exam-bank-tahsili-chemistry-1.js', 'exam-bank-tahsili-chemistry-2.js', 'exam-bank-tahsili-biology.js', 'exam-bank-qudurat-verbal.js', 'exam-bank-qudurat-quant.js',
-  'exam-bank-curated-tahsili-math-2026.js', 'exam-bank-curated-tahsili-physics-2026.js', 'exam-bank-curated-tahsili-chemistry-2026.js', 'exam-bank-curated-tahsili-biology-2026.js', 'exam-bank-curated-qudurat-verbal-2026.js', 'exam-bank-curated-qudurat-quant-2026.js', 'exam-bank-uploaded-video-verbal-bank1-2026.js', 'exam-bank-uploaded-video-quant-2026-02.js', 'exam-bank-uploaded-video-tahsili-math-model8-2026.js', 'exam-bank-uploaded-video-tahsili-math-model12-2026.js',
-  'exam-visuals.js', 'exam-visuals-page06-07.js', 'exam-visuals-page08-09.js', 'exam-visuals-page10-11.js', 'exam-visuals-page18-23.js', 'exam-visuals-page24-29.js', 'exam-visuals-page30-41.js', 'exam-visuals-page42-49.js', 'exam-visuals-video-bank.js', 'exam-visuals-video-compilations-2026.js', 'exam-visuals-uploaded-tahsili-math-model8-2026.js', 'exam-visuals-uploaded-tahsili-math-model12-2026.js',
-  'exam-bank-imported-quant-a.js', 'exam-bank-imported-quant-b.js', 'exam-bank-imported-quant-c.js', 'exam-bank-imported-verbal-a.js', 'exam-bank-imported-verbal-b.js', 'exam-bank-imported-reading.js', 'exam-bank-imported-noon-quant.js', 'exam-bank-imported-noon-verbal-a.js', 'exam-bank-imported-noon-verbal-b.js', 'exam-bank-imported-visual-quant.js', 'exam-bank-imported-visual-quant-page06-07.js', 'exam-bank-imported-visual-quant-page08-09.js', 'exam-bank-imported-visual-quant-page10-11.js', 'exam-bank-imported-visual-quant-page18-23.js', 'exam-bank-imported-visual-quant-page24-29.js', 'exam-bank-imported-visual-quant-page30-35.js', 'exam-bank-imported-visual-quant-page36-41.js', 'exam-bank-imported-visual-quant-page42-45.js', 'exam-bank-imported-visual-quant-page46-49.js', 'exam-bank-imported-video-quant-a.js', 'exam-bank-imported-video-quant-b.js', 'exam-bank-imported-video-compilations-2026-a.js', 'exam-bank-imported-video-compilations-2026-b.js', 'exam-bank-imported-2026.js',
-  'exam-bank-uploaded-pdf-tahsili-mock001-math-2026.js', 'exam-bank-uploaded-pdf-tahsili-mock001-physics-2026.js', 'exam-bank-uploaded-pdf-tahsili-mock001-chemistry-2026.js', 'exam-bank-uploaded-pdf-tahsili-mock001-biology-2026.js',
-  'exam-bank-uploaded-images-tahsili-talo-math-2026.js', 'exam-bank-uploaded-images-tahsili-talo-physics-2026.js', 'exam-bank-uploaded-images-tahsili-talo-chemistry-2026.js', 'exam-bank-uploaded-images-tahsili-talo-biology-2026.js',
-  'exam-bank-uploaded-images-daily-physics-2026.js', 'exam-bank-uploaded-images-daily-chemistry-2026.js',
-  'exam-bank-uploaded-pdf-qudurat-43-44-verbal-2026.js', 'exam-bank-uploaded-pdf-qudurat-43-44-quant-2026.js',
-  'exam-bank-uploaded-pdf-qqtahsili-00004-chemistry-2026.js',
+  'academy-i18n-dict-1.js', 'academy-i18n-dict-2.js', 'academy-i18n-dict-3.js', 'academy-i18n-dict-4.js', 'academy-i18n.js',
+  'step-nav-bootstrap.js', 'portal-cards.js',
+  ...EXAM_DATA_ASSETS,
   'step-academy-data.js', 'step-academy-runtime.js',
-  'exam-bank.js', 'exam-bank-curated-meta-2026.js', 'exam-bank-bilingual-practice.js', 'academy-performance-bootstrap.js', 'exam-dedupe-enhanced.js', 'recent-exam-import-repair.js', 'exam-center-ui.js', 'exam-center-source-patch.js', 'exam-source-visibility-policy.js', 'exam-bilingual-runtime.js', 'academy.js', 'academy-performance-guard.js', 'academy-ai-render-throttle.js'
+  ...EXAM_RUNTIME_ASSETS,
+  'academy.js', 'academy-performance-guard.js', 'academy-ai-render-throttle.js'
 ];
 
 function versioned(src) {
@@ -214,6 +210,9 @@ function loadRealAiTeacher() {
 
 async function loadAcademy() {
   if (academyLoaded) return;
+  if (!EXAM_DATA_ASSETS.length || !EXAM_RUNTIME_ASSETS.length) {
+    throw new Error('Exam asset manifest is missing');
+  }
   academyLoaded = true;
   preloadAcademyAssets();
 
@@ -222,8 +221,6 @@ async function loadAcademy() {
       await loadClassicScript(src);
     }
 
-    // The core academy is ready here. The AI tutor is an enhancement and must
-    // never keep the entire interface hidden when its external module is slow.
     finishAcademyLoading();
     loadRealAiTeacher();
   } catch (error) {
