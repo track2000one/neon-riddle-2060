@@ -42,3 +42,5 @@ if (!qq.length) {
   console.error('Expected at least one QqTahsili question to be accepted, got 0');
   process.exitCode = 1;
 }
+
+// This test is intentionally kept in CI so future question imports cannot silently disappear.
