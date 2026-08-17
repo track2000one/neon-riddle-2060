@@ -34,11 +34,12 @@ jobs:
           grep -q "exam-center-runtime-fix.js" academy/exam-assets-manifest.js
           grep -q "exam-bank-uploaded-pdf-qqtahsili-00004-chemistry-2026.js" academy/exam-assets-manifest.js
           grep -q "exam-bank-uploaded-zip8887777-20260808-5.js" academy/exam-assets-manifest.js
+          grep -q "exam-bank-smoke-verification-20260817.js" academy/exam-assets-manifest.js
           grep -q "cache:'no-store'" academy/center-page.js
           grep -q "neonAcademyCenterShellV4" academy/center-page.js
-          grep -q "20260817-2030-r2" academy/exam-assets-manifest.js
-          grep -q "20260817-2030-r2" academy/exams.html
-          grep -q "20260817-2030-r2" academy/exam-center.html
+          grep -q "20260817-2133-r3" academy/exam-assets-manifest.js
+          grep -q "20260817-2133-r3" academy/exams.html
+          grep -q "20260817-2133-r3" academy/exam-center.html
       - name: Verify recent imports
         run: node academy/tests/exam-recent-import-smoke.cjs
       - name: Audit canonical exam loader
