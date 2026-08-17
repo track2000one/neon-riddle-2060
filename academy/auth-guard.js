@@ -2,10 +2,15 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.16.0/fireba
 import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import { firebaseConfig } from './firebase-config.js';
 
+const MANIFEST_BOOT_REV = '20260817-2030-r2';
+if (!window.NEON_EXAM_DATA_ASSETS || !window.NEON_EXAM_RUNTIME_ASSETS) {
+  await import(`./exam-assets-manifest.js?v=${MANIFEST_BOOT_REV}`);
+}
+
 const PROFILE_KEY = 'neonRiddleGrandProfilesV4';
 const SETTINGS_KEY = 'neonRiddleGrandSettingsV4';
 const AI_LOAD_TIMEOUT_MS = 15000;
-const ASSET_REV = window.NEON_ASSET_REV || '20260817-2030-r2';
+const ASSET_REV = window.NEON_ASSET_REV || MANIFEST_BOOT_REV;
 document.documentElement.dataset.neonBuild = ASSET_REV;
 const EXAM_DATA_ASSETS = Array.from(window.NEON_EXAM_DATA_ASSETS || []);
 const EXAM_RUNTIME_ASSETS = Array.from(window.NEON_EXAM_RUNTIME_ASSETS || []);
