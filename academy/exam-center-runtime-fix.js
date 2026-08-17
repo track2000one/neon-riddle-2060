@@ -16,7 +16,16 @@
     for (const href of ['exam-center.css', 'exam-visuals.css']) {
       const requestHref = versioned(href);
       const absolute = new URL(requestHref, document.baseURI).href;
-      if ([...document.querySelectorAll('link[rel="stylesheet"]')].some(link => link.href === absolute)) continue;
+      const links = [...document.querySelectorAll('link[rel="stylesheet"]')];
+      if (links.some(link => link.href === absolute)) continue;
+      const existing = links.find(link => {
+        try { return new URL(link.href, document.baseURI).pathname.endsWith(`/${href}`); }
+        catch { return false; }
+      });
+      if (existing) {
+        existing.href = requestHref;
+        continue;
+      }
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = requestHref;
