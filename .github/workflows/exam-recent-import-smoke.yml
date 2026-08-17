@@ -6,6 +6,7 @@ on:
     paths:
       - 'academy/auth-guard.js'
       - 'academy/center-page.js'
+      - 'academy/exams.html'
       - 'academy/recent-exam-import-repair.js'
       - 'academy/exam-bank-tahsili-chemistry-1.js'
       - 'academy/exam-bank-tahsili-chemistry-2.js'
@@ -36,6 +37,14 @@ jobs:
           grep -q "exam-bank-uploaded-pdf-qqtahsili-00004-chemistry-2026.js" academy/auth-guard.js
           grep -q "recent-exam-import-repair.js" academy/auth-guard.js
           grep -q "versioned(src)" academy/auth-guard.js
+      - name: Verify standalone exam center cache and bank wiring
+        run: |
+          grep -q "exam-bank-uploaded-pdf-qqtahsili-00004-chemistry-2026.js" academy/center-page.js
+          grep -q "recent-exam-import-repair.js" academy/center-page.js
+          grep -q "neonAcademyCenterShellV3" academy/center-page.js
+          grep -q "cache:'no-store'" academy/center-page.js
+          grep -q "20260817-2004" academy/center-page.js
+          grep -q "20260817-2004" academy/exams.html
       - name: Verify recent imports
         run: node academy/tests/exam-recent-import-smoke.cjs
       - name: Audit standalone exam center loader
