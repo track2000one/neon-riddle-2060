@@ -39,7 +39,8 @@
     ...(window.NEON_TAHSILI_BIOLOGY_QUESTIONS || []),
     ...(window.NEON_QUDURAT_VERBAL_QUESTIONS || []),
     ...(window.NEON_QUDURAT_QUANT_QUESTIONS || []),
-    ...(window.NEON_IMPORTED_EXAM_QUESTIONS_2026 || [])
+    ...(window.NEON_IMPORTED_EXAM_QUESTIONS_2026 || []),
+    ...(window.NEON_IMPORTED_ZIP8887777_20260808 || [])
   ];
 
   const bank = {
@@ -70,7 +71,10 @@
           { id:'algebra', title:'الجبر' },
           { id:'geometry', title:'الهندسة' },
           { id:'statistics-probability', title:'الإحصاء والاحتمال' },
-          { id:'speed-work', title:'السرعة والعمل' }
+          { id:'speed-work', title:'السرعة والعمل' },
+          { id:'motion', title:'الحركة والمسافة والزمن' },
+          { id:'sequences', title:'المتتابعات والأنماط العددية' },
+          { id:'visual-patterns', title:'الأنماط البصرية' }
         ]
       }
     },
