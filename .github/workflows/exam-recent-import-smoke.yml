@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
       - name: Check academy JavaScript syntax
         run: |
           for file in academy/*.js; do
@@ -30,15 +30,17 @@ jobs:
         run: |
           grep -q "NEON_EXAM_DATA_ASSETS" academy/auth-guard.js
           grep -q "NEON_EXAM_DATA_ASSETS" academy/center-page.js
+          grep -q "exam-option-semantics-guard.js" academy/exam-assets-manifest.js
+          grep -q "exam-option-semantics-restore.js" academy/exam-assets-manifest.js
           grep -q "exam-center-shell-reset.js" academy/exam-assets-manifest.js
           grep -q "exam-center-runtime-fix.js" academy/exam-assets-manifest.js
           grep -q "exam-bank-uploaded-pdf-qqtahsili-00004-chemistry-2026.js" academy/exam-assets-manifest.js
           grep -q "exam-bank-uploaded-zip8887777-20260808-5.js" academy/exam-assets-manifest.js
           grep -q "cache:'no-store'" academy/center-page.js
           grep -q "neonAcademyCenterShellV4" academy/center-page.js
-          grep -q "20260817-2030-r2" academy/exam-assets-manifest.js
-          grep -q "20260817-2030-r2" academy/exams.html
-          grep -q "20260817-2030-r2" academy/exam-center.html
+          grep -q "20260817-2030-r3" academy/exam-assets-manifest.js
+          grep -q "20260817-2030-r3" academy/exams.html
+          grep -q "20260817-2030-r3" academy/exam-center.html
       - name: Verify recent imports
         run: node academy/tests/exam-recent-import-smoke.cjs
       - name: Audit canonical exam loader
