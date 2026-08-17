@@ -27,8 +27,8 @@ function randomizeOptions(container) {
   const previousSignature = lastOrders.get(key);
   let signature = randomized.map(button => button.dataset.answer).join(',');
 
-  // Do not leave the answers in their source order, and do not repeat the
-  // immediately previous order when the same question is presented again.
+  // Avoid repeating the same placement when the same question is presented
+  // again. On first presentation also avoid leaving the source order unchanged.
   if (signature === sourceSignature || (previousSignature && signature === previousSignature)) {
     randomized = rotate(randomized);
     signature = randomized.map(button => button.dataset.answer).join(',');
@@ -38,7 +38,11 @@ function randomizeOptions(container) {
     signature = randomized.map(button => button.dataset.answer).join(',');
   }
 
-  randomized.forEach(button => container.appendChild(button));
+  randomized.forEach((button, displayIndex) => {
+    const badge = button.querySelector('span');
+    if (badge) badge.textContent = String.fromCharCode(65 + displayIndex);
+    container.appendChild(button);
+  });
   container.dataset.optionOrderRandomized = 'true';
   if (key) lastOrders.set(key, signature);
 }
