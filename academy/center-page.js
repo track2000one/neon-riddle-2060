@@ -26,7 +26,8 @@
     'exam-bank-uploaded-pdf-tahsili-mock001-math-2026.js','exam-bank-uploaded-pdf-tahsili-mock001-physics-2026.js','exam-bank-uploaded-pdf-tahsili-mock001-chemistry-2026.js','exam-bank-uploaded-pdf-tahsili-mock001-biology-2026.js',
     'exam-bank-uploaded-images-tahsili-talo-math-2026.js','exam-bank-uploaded-images-tahsili-talo-physics-2026.js','exam-bank-uploaded-images-tahsili-talo-chemistry-2026.js','exam-bank-uploaded-images-tahsili-talo-biology-2026.js',
     'exam-bank-uploaded-images-daily-physics-2026.js','exam-bank-uploaded-images-daily-chemistry-2026.js',
-    'exam-bank-uploaded-pdf-qudurat-43-44-verbal-2026.js','exam-bank-uploaded-pdf-qudurat-43-44-quant-2026.js'
+    'exam-bank-uploaded-pdf-qudurat-43-44-verbal-2026.js','exam-bank-uploaded-pdf-qudurat-43-44-quant-2026.js',
+    'exam-bank-uploaded-pdf-qqtahsili-00004-chemistry-2026.js'
   ];
 
   document.title=`${meta.title} | NEON Academy 2060`;
