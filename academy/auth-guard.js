@@ -5,6 +5,7 @@ import { firebaseConfig } from './firebase-config.js';
 const PROFILE_KEY = 'neonRiddleGrandProfilesV4';
 const SETTINGS_KEY = 'neonRiddleGrandSettingsV4';
 const AI_LOAD_TIMEOUT_MS = 15000;
+const ASSET_REV = '20260817-1958';
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 let academyLoaded = false;
@@ -21,9 +22,15 @@ const ACADEMY_SCRIPTS = [
   'exam-bank-uploaded-images-tahsili-talo-math-2026.js', 'exam-bank-uploaded-images-tahsili-talo-physics-2026.js', 'exam-bank-uploaded-images-tahsili-talo-chemistry-2026.js', 'exam-bank-uploaded-images-tahsili-talo-biology-2026.js',
   'exam-bank-uploaded-images-daily-physics-2026.js', 'exam-bank-uploaded-images-daily-chemistry-2026.js',
   'exam-bank-uploaded-pdf-qudurat-43-44-verbal-2026.js', 'exam-bank-uploaded-pdf-qudurat-43-44-quant-2026.js',
+  'exam-bank-uploaded-pdf-qqtahsili-00004-chemistry-2026.js',
   'step-academy-data.js', 'step-academy-runtime.js',
-  'exam-bank.js', 'exam-bank-curated-meta-2026.js', 'exam-bank-bilingual-practice.js', 'academy-performance-bootstrap.js', 'exam-dedupe-enhanced.js', 'exam-center-ui.js', 'exam-center-source-patch.js', 'exam-source-visibility-policy.js', 'exam-bilingual-runtime.js', 'academy.js', 'academy-performance-guard.js', 'academy-ai-render-throttle.js'
+  'exam-bank.js', 'exam-bank-curated-meta-2026.js', 'exam-bank-bilingual-practice.js', 'academy-performance-bootstrap.js', 'exam-dedupe-enhanced.js', 'recent-exam-import-repair.js', 'exam-center-ui.js', 'exam-center-source-patch.js', 'exam-source-visibility-policy.js', 'exam-bilingual-runtime.js', 'academy.js', 'academy-performance-guard.js', 'academy-ai-render-throttle.js'
 ];
+
+function versioned(src) {
+  if (/^(?:https?:|data:|blob:)/i.test(src)) return src;
+  return `${src}${src.includes('?') ? '&' : '?'}v=${ASSET_REV}`;
+}
 
 function tr(ar, en) {
   return window.NEON_I18N?.pick?.(ar, en) || ar;
@@ -116,7 +123,7 @@ function preloadAcademyAssets() {
   const fragment = document.createDocumentFragment();
 
   ACADEMY_SCRIPTS.forEach(src => {
-    const href = new URL(src, document.baseURI).href;
+    const href = new URL(versioned(src), document.baseURI).href;
     if (classic.has(href)) return;
 
     const link = document.createElement('link');
@@ -127,7 +134,7 @@ function preloadAcademyAssets() {
     classic.add(href);
   });
 
-  const aiHref = new URL('real-ai-teacher-bilingual.js', document.baseURI).href;
+  const aiHref = new URL(versioned('real-ai-teacher-bilingual.js'), document.baseURI).href;
   if (![...document.querySelectorAll('link[rel="modulepreload"]')].some(link => link.href === aiHref)) {
     const link = document.createElement('link');
     link.rel = 'modulepreload';
@@ -140,7 +147,8 @@ function preloadAcademyAssets() {
 
 function loadClassicScript(src) {
   return new Promise((resolve, reject) => {
-    const absolute = new URL(src, document.baseURI).href;
+    const requestSrc = versioned(src);
+    const absolute = new URL(requestSrc, document.baseURI).href;
     const existing = [...document.scripts].find(script => script.src === absolute);
 
     if (existing?.dataset.loaded === 'true') return resolve();
@@ -152,7 +160,7 @@ function loadClassicScript(src) {
     }
 
     const script = document.createElement('script');
-    script.src = src;
+    script.src = requestSrc;
     script.async = false;
     script.onload = () => {
       script.dataset.loaded = 'true';
@@ -175,7 +183,7 @@ function loadRealAiTeacher() {
 
   const script = document.createElement('script');
   script.type = 'module';
-  script.src = 'real-ai-teacher-bilingual.js';
+  script.src = versioned('real-ai-teacher-bilingual.js');
 
   const showAiLoadError = () => {
     if (settled) return;
