@@ -8,6 +8,7 @@ on:
       - 'academy/center-page.js'
       - 'academy/exams.html'
       - 'academy/recent-exam-import-repair.js'
+      - 'academy/exam-center-shell-reset.js'
       - 'academy/exam-bank-tahsili-chemistry-1.js'
       - 'academy/exam-bank-tahsili-chemistry-2.js'
       - 'academy/exam-bank-imported-2026.js'
@@ -30,6 +31,7 @@ jobs:
           node --check academy/exam-bank-imported-2026.js
           node --check academy/exam-bank-uploaded-pdf-qqtahsili-00004-chemistry-2026.js
           node --check academy/recent-exam-import-repair.js
+          node --check academy/exam-center-shell-reset.js
           node --check academy/center-page.js
           node --input-type=module --check < academy/auth-guard.js
       - name: Verify main academy loader includes recent bank
@@ -41,6 +43,7 @@ jobs:
         run: |
           grep -q "exam-bank-uploaded-pdf-qqtahsili-00004-chemistry-2026.js" academy/center-page.js
           grep -q "recent-exam-import-repair.js" academy/center-page.js
+          grep -q "exam-center-shell-reset.js" academy/center-page.js
           grep -q "neonAcademyCenterShellV3" academy/center-page.js
           grep -q "cache:'no-store'" academy/center-page.js
           grep -q "20260817-2004" academy/center-page.js
