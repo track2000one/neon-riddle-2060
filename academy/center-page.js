@@ -2,7 +2,7 @@
 'use strict';
 const center=document.body.dataset.center||'learning';
 const meta={step:{title:'اللغة الإنجليزية STEP',target:'#stepAcademy'},exams:{title:'مركز التحصيلي والقدرات',target:'#test-center'},coding:{title:'تعليم البرمجة',target:'#coding'},games:{title:'الألعاب والألغاز',target:'#library'},learning:{title:'المعرفة والدروس',target:'#library'}}[center]||{title:'NEON Academy 2060',target:'main'};
-const ASSET_REV=window.NEON_ASSET_REV||'20260817-2030-r2',SHELL_CACHE_KEY=`neonAcademyCenterShellV4:${ASSET_REV}`,SCRIPT_CACHE=new Map();
+const ASSET_REV=window.NEON_ASSET_REV||'20260817-2030-r3',SHELL_CACHE_KEY=`neonAcademyCenterShellV4:${ASSET_REV}`,SCRIPT_CACHE=new Map();
 const EXAM_ASSETS=Array.from(window.NEON_EXAM_DATA_ASSETS||[]);
 const EXAM_RUNTIME_ASSETS=Array.from(window.NEON_EXAM_RUNTIME_ASSETS||[]);
 document.documentElement.dataset.neonBuild=ASSET_REV;
