@@ -99,6 +99,7 @@
     'exam-center-shell-reset.js',
     'exam-center-ui.js',
     'exam-center-source-patch.js',
+    'exam-center-runtime-fix.js',
     'exam-source-visibility-policy.js',
     'exam-bilingual-runtime.js',
   ]);
