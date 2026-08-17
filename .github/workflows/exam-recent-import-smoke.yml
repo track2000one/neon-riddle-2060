@@ -1,0 +1,28 @@
+name: Recent exam import smoke test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'academy/exam-bank-tahsili-chemistry-1.js'
+      - 'academy/exam-bank-tahsili-chemistry-2.js'
+      - 'academy/exam-bank-imported-2026.js'
+      - 'academy/exam-bank-uploaded-pdf-qqtahsili-00004-chemistry-2026.js'
+      - 'academy/tests/exam-recent-import-smoke.cjs'
+      - '.github/workflows/exam-recent-import-smoke.yml'
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check JavaScript syntax
+        run: |
+          node --check academy/exam-bank-imported-2026.js
+          node --check academy/exam-bank-uploaded-pdf-qqtahsili-00004-chemistry-2026.js
+      - name: Verify recent imports
+        run: node academy/tests/exam-recent-import-smoke.cjs
