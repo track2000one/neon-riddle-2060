@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const BUILD_REV = '20260817-2030-r2';
+  const BUILD_REV = '20260817-2133-r3';
   const DATA_ASSETS = Object.freeze([
     'exam-practice-tah-math.js',
     'exam-practice-tah-physics.js',
@@ -88,6 +88,7 @@
     'exam-bank-uploaded-pdf-qudurat-43-44-verbal-2026.js',
     'exam-bank-uploaded-pdf-qudurat-43-44-quant-2026.js',
     'exam-bank-uploaded-pdf-qqtahsili-00004-chemistry-2026.js',
+    'exam-bank-smoke-verification-20260817.js',
   ]);
   const RUNTIME_ASSETS = Object.freeze([
     'exam-bank.js',
