@@ -2,7 +2,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.16.0/fireba
 import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import { firebaseConfig } from './firebase-config.js';
 
-const MANIFEST_BOOT_REV = '20260817-2030-r2';
+const MANIFEST_BOOT_REV = '20260817-2145-r4';
 if (!window.NEON_EXAM_DATA_ASSETS || !window.NEON_EXAM_RUNTIME_ASSETS) {
   await import(`./exam-assets-manifest.js?v=${MANIFEST_BOOT_REV}`);
 }
