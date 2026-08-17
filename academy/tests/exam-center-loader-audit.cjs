@@ -11,18 +11,15 @@ function run(file) {
   vm.runInThisContext(code, { filename: file });
 }
 
-// Match the standalone exams center: catalog first, then EXAM_ASSETS, then exam-bank.js.
 run('catalog.js');
 const baseAcademyExamCount = (window.NEON_ACADEMY?.questionBank || []).filter(q => q.area === 'exams').length;
 console.log('base catalog exam questions:', baseAcademyExamCount);
 
-const centerSource = fs.readFileSync(path.join(academyDir, 'center-page.js'), 'utf8');
-const match = centerSource.match(/const EXAM_ASSETS=\[(.*?)\];/s);
-if (!match) throw new Error('Could not locate EXAM_ASSETS in center-page.js');
-const files = [...match[1].matchAll(/'([^']+\.js)'/g)].map(m => m[1]);
-console.log('center EXAM_ASSETS:', files.length);
+run('exam-assets-manifest.js');
+const files = Array.from(window.NEON_EXAM_DATA_ASSETS || []);
+if (!files.length) throw new Error('Exam data manifest is empty');
+console.log('exam data manifest:', files.length);
 
-// This audit targets question-bank assembly. Visual-only files are deliberately skipped.
 for (const file of files) {
   if (file.startsWith('exam-visuals')) continue;
   try {
@@ -38,6 +35,9 @@ const nasser = imported.filter(q => String(q.source || '').includes('ناصر 20
 const qq = imported.filter(q => String(q.source || '').includes('QqTahsili-00004.pdf'));
 console.log('imported total before bank:', imported.length);
 console.log('recent imported:', { nasser: nasser.length, qq: qq.length, total: nasser.length + qq.length });
+const zipImported = window.NEON_IMPORTED_ZIP8887777_20260808 || [];
+const arithmeticImages = window.NEON_UPLOADED_IMAGES_ARITHMETIC_20260808 || [];
+console.log('additional source coverage:', { zip: zipImported.length, arithmeticImages: arithmeticImages.length });
 
 run('exam-bank.js');
 const bank = window.NEON_EXAM_BANK;
@@ -57,7 +57,12 @@ console.log('recent present in academy:', recentInAcademy.length);
 console.log('final academy exam count:', finalAcademyExamCount);
 console.log('expected count without recent batches:', finalAcademyExamCount - recentInAcademy.length);
 console.log('chemistry total in academy:', academy.questionBank.filter(q => q.area === 'exams' && q.subject === 'tahsili-chemistry').length);
+const zipInBank = bank.questions.filter(q => String(q.id || '').startsWith('zip8887777-')).length;
+console.log('zip questions in final bank:', zipInBank);
 
+if (zipImported.length !== 215) throw new Error(`Expected 215 ZIP questions, got ${zipImported.length}`);
+if (arithmeticImages.length < 300) throw new Error(`Arithmetic image bank did not load correctly: ${arithmeticImages.length}`);
+if (zipInBank < 200) throw new Error(`ZIP question integration is incomplete: ${zipInBank}`);
 if (nasser.length !== 28) throw new Error(`Expected 28 Nasser imported questions, got ${nasser.length}`);
 if (qq.length !== 98) throw new Error(`Expected 98 QQ imported questions, got ${qq.length}`);
 if (recentInBank.length !== 126) throw new Error(`Expected 126 recent questions in final bank, got ${recentInBank.length}`);
