@@ -7,7 +7,12 @@
 
   function contentReady(){
     if(center==='step')return Boolean(document.querySelector('#stepAcademy .step-shell'));
-    if(center==='exams')return Boolean(document.querySelector('#test-center .exam-family-grid'));
+    if(center==='exams'){
+      const section=document.querySelector('#test-center .exam-family-grid')?.closest('#test-center');
+      const diagnostics=window.NEON_EXAM_CENTER_DIAGNOSTICS;
+      const visible=Number(section?.dataset.activeExamQuestions||-1);
+      return Boolean(section&&diagnostics&&visible===Number(diagnostics.activeExamQuestions)&&section.dataset.build===String(window.NEON_ASSET_REV||'unversioned'));
+    }
     if(center==='coding')return Boolean(document.querySelector('#coding #languageList > *'));
     if(center==='games'||center==='learning')return Boolean(document.querySelector('#library #lessonGrid > *'));
     return Boolean(document.querySelector('main'));
