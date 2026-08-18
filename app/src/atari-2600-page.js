@@ -89,7 +89,6 @@ function setGameplayLock(locked, { announce = false } = {}) {
     state.lockedScrollY = window.scrollY || window.pageYOffset || 0;
     document.documentElement.classList.add('gameplay-lock');
     document.body.classList.add('gameplay-lock');
-    document.body.style.top = `-${state.lockedScrollY}px`;
     $('#atariEmulatorFrame')?.focus();
     if (announce) setStatus('وضع اللعب مفعّل. الأسهم مخصصة للعبة الآن، واضغط Esc للعودة إلى تمرير الصفحة.', 'success');
     return;
@@ -97,10 +96,13 @@ function setGameplayLock(locked, { announce = false } = {}) {
 
   document.documentElement.classList.remove('gameplay-lock');
   document.body.classList.remove('gameplay-lock');
-  document.body.style.top = '';
   const restoreY = state.lockedScrollY;
   state.lockedScrollY = 0;
-  window.scrollTo(0, restoreY);
+  window.requestAnimationFrame(() => {
+    if (Math.abs((window.scrollY || 0) - restoreY) > 1) {
+      window.scrollTo({ top: restoreY, left: 0, behavior: 'auto' });
+    }
+  });
   if (announce) setStatus('تم إلغاء وضع اللعب. يمكنك تمرير الصفحة بشكل طبيعي.', 'info');
 }
 
