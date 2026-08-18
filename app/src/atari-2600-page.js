@@ -16,7 +16,16 @@ const catalog = [
   { id: 'pac-man', title: 'Pac-Man', genre: 'متاهة', category: 'strategy', glyph: '◒', hint: 'تنقل داخل متاهة وجمع عناصر مع إدارة المسار.' }
 ];
 
-const state = { query: '', category: 'all', selected: null, pendingFile: null, playerReady: false };
+const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End']);
+const state = {
+  query: '',
+  category: 'all',
+  selected: null,
+  pendingFile: null,
+  playerReady: false,
+  gameplayLocked: false,
+  lockedScrollY: 0
+};
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
 
@@ -67,6 +76,34 @@ function setStatus(message, type = 'info') {
   box.textContent = message;
 }
 
+function setGameplayLock(locked, { announce = false } = {}) {
+  const shouldLock = Boolean(locked);
+  if (state.gameplayLocked === shouldLock) {
+    if (shouldLock) $('#atariEmulatorFrame')?.focus();
+    return;
+  }
+
+  state.gameplayLocked = shouldLock;
+
+  if (shouldLock) {
+    state.lockedScrollY = window.scrollY || window.pageYOffset || 0;
+    document.documentElement.classList.add('gameplay-lock');
+    document.body.classList.add('gameplay-lock');
+    document.body.style.top = `-${state.lockedScrollY}px`;
+    $('#atariEmulatorFrame')?.focus();
+    if (announce) setStatus('وضع اللعب مفعّل. الأسهم مخصصة للعبة الآن، واضغط Esc للعودة إلى تمرير الصفحة.', 'success');
+    return;
+  }
+
+  document.documentElement.classList.remove('gameplay-lock');
+  document.body.classList.remove('gameplay-lock');
+  document.body.style.top = '';
+  const restoreY = state.lockedScrollY;
+  state.lockedScrollY = 0;
+  window.scrollTo(0, restoreY);
+  if (announce) setStatus('تم إلغاء وضع اللعب. يمكنك تمرير الصفحة بشكل طبيعي.', 'info');
+}
+
 function validateRom(file) {
   if (!file) return 'لم يتم اختيار ملف.';
   const extension = (file.name.split('.').pop() || '').toLowerCase();
@@ -102,6 +139,7 @@ function launchRom(file) {
 }
 
 function resetPlayer() {
+  setGameplayLock(false);
   state.pendingFile = null;
   state.playerReady = false;
   const frame = $('#atariEmulatorFrame');
@@ -146,9 +184,27 @@ function bindRomPicker() {
   zone.addEventListener('drop', event => launchRom(event.dataTransfer?.files?.[0]));
 }
 
+function bindGameplayFocus() {
+  const frame = $('#atariEmulatorFrame');
+  const screenFrame = document.querySelector('.screen-frame');
+
+  screenFrame?.addEventListener('pointerdown', () => {
+    if (!frame?.hidden && state.pendingFile) setGameplayLock(true);
+  });
+
+  window.addEventListener('keydown', event => {
+    if (!state.gameplayLocked) return;
+    if (SCROLL_KEYS.has(event.key)) event.preventDefault();
+    if (event.key === 'Escape') setGameplayLock(false, { announce: true });
+  }, { capture: true });
+}
+
 function bindPlayerActions() {
   $('#playerResetButton')?.addEventListener('click', resetPlayer);
-  $('#focusPlayerButton')?.addEventListener('click', () => $('#atariEmulatorFrame')?.focus());
+  $('#focusPlayerButton')?.addEventListener('click', () => {
+    setGameplayLock(true, { announce: true });
+    $('#atariEmulatorFrame')?.focus();
+  });
 
   window.addEventListener('message', event => {
     if (event.origin !== window.location.origin) return;
@@ -156,6 +212,10 @@ function bindPlayerActions() {
     if (data.type === 'msar-atari-player-ready') {
       state.playerReady = true;
       sendPendingFile();
+      return;
+    }
+    if (data.type === 'msar-atari-lock') {
+      setGameplayLock(Boolean(data.locked), { announce: data.reason === 'escape' });
       return;
     }
     if (data.type === 'msar-atari-status') {
@@ -167,9 +227,11 @@ function bindPlayerActions() {
 
   window.addEventListener('gamepadconnected', () => { $('#gamepadState').textContent = 'يد تحكم متصلة'; });
   window.addEventListener('gamepaddisconnected', () => { $('#gamepadState').textContent = 'لا توجد يد تحكم'; });
+  window.addEventListener('beforeunload', () => setGameplayLock(false));
 }
 
 renderCatalog();
 bindFilters();
 bindRomPicker();
+bindGameplayFocus();
 bindPlayerActions();
