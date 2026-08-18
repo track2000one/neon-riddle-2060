@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#07101f">
+  <meta name="description" content="مختبر Atari 2600 التجريبي في Msar Neon — كتالوج ألعاب كلاسيكية ومحاكاة داخل المتصفح باستخدام ROM يختاره المستخدم.">
+  <title>Atari 2600 Retro Lab | Msar Neon</title>
+  <link rel="stylesheet" href="academy.css">
+  <link rel="stylesheet" href="atari-2600.css?v=20260818-1">
+</head>
+<body class="atari-page">
+  <div class="atari-world" aria-hidden="true"><i></i><i></i><i></i></div>
+
+  <header class="atari-topbar">
+    <a class="atari-back" href="kids-games.html"><span>←</span> مكتبة ألعاب الأطفال</a>
+    <div class="atari-brand"><b>MSAR NEON</b><span>RETRO SYSTEMS LAB</span></div>
+    <span class="atari-beta">EXPERIMENTAL • 2600</span>
+  </header>
+
+  <main class="atari-shell">
+    <section class="atari-hero" aria-labelledby="atariTitle">
+      <div class="atari-hero-copy">
+        <span class="atari-eyebrow">CLASSIC COMPUTING • BROWSER EMULATION</span>
+        <h1 id="atariTitle"><span lang="en">Atari 2600</span><br>مكتبة المحاكاة الكلاسيكية</h1>
+        <p>مرحلة تجريبية داخل منصة Msar Neon تجمع كتالوجًا من أشهر عناوين جهاز Atari 2600 مع مشغّل محاكاة يعمل داخل المتصفح. اختر اللعبة ثم استخدم ملف ROM تملك حق استخدامه.</p>
+        <div class="atari-hero-actions">
+          <a href="#atariCatalog" class="atari-primary">استكشف الكتالوج</a>
+          <a href="#atariPlayerSection" class="atari-secondary">فتح المحاكي</a>
+        </div>
+        <div class="atari-hero-notes">
+          <span>12 عنوانًا تجريبيًا</span>
+          <span>Stella 2014 Core</span>
+          <span>بدون ROM مرفق</span>
+        </div>
+      </div>
+
+      <div class="atari-console-art" aria-label="رسم تجريدي مستوحى من أجهزة الألعاب الكلاسيكية">
+        <div class="console-top">
+          <div class="console-switches"><i></i><i></i><i></i><i></i></div>
+          <strong>VIDEO COMPUTER SYSTEM</strong>
+        </div>
+        <div class="console-slats"></div>
+        <div class="console-wood"><span>2600</span></div>
+        <div class="joystick"><i></i><b></b><em></em></div>
+      </div>
+    </section>
+
+    <section class="atari-info-strip" aria-label="معلومات التجربة">
+      <article><b>01</b><span>اختر عنوانًا من الكتالوج</span></article>
+      <article><b>02</b><span>حمّل ROM من جهازك</span></article>
+      <article><b>03</b><span>العب داخل المتصفح</span></article>
+      <article><b>LOCAL</b><span>لا نخزن ROM في المنصة</span></article>
+    </section>
+
+    <section id="atariCatalog" class="atari-section">
+      <div class="atari-section-heading">
+        <div><span class="atari-eyebrow">CURATED RETRO CATALOG</span><h2>كتالوج Atari 2600</h2><p>العناوين هنا مداخل للكتالوج فقط؛ لا تتضمن ملفات اللعبة الأصلية أو لقطات شاشة منها.</p></div>
+        <div class="atari-count"><b id="atariVisibleCount">12</b><span>عنوان ظاهر</span></div>
+      </div>
+
+      <div class="atari-toolbar">
+        <label class="atari-search"><span>⌕</span><input id="atariSearch" type="search" placeholder="ابحث عن لعبة أو نوع..." autocomplete="off"></label>
+        <div id="atariCategoryFilters" class="atari-filters" role="group" aria-label="تصفية كتالوج Atari">
+          <button class="active" type="button" data-category="all">الكل</button>
+          <button type="button" data-category="arcade">أركيد</button>
+          <button type="button" data-category="action">أكشن</button>
+          <button type="button" data-category="strategy">استراتيجية</button>
+          <button type="button" data-category="adventure">مغامرات</button>
+        </div>
+      </div>
+
+      <div id="atariCatalogGrid" class="atari-catalog-grid"></div>
+    </section>
+
+    <section id="atariPlayerSection" class="atari-section atari-player-section">
+      <div class="atari-section-heading">
+        <div><span class="atari-eyebrow">STELLA 2014 • EMULATORJS</span><h2>منطقة المحاكاة</h2><p>المحاكي يُحمّل عند اختيار ROM فقط، ويعمل باستخدام نواة Atari 2600 داخل المتصفح.</p></div>
+        <span class="atari-core-badge">CORE: ATARI2600</span>
+      </div>
+
+      <div class="atari-player-layout">
+        <aside class="atari-rom-panel">
+          <div class="atari-selected-game"><small>اللعبة المختارة</small><strong id="selectedGameTitle">أي لعبة متوافقة</strong><p id="selectedGameMeta">اختر لعبة من الكتالوج أو حمّل ROM مباشرة.</p></div>
+
+          <div id="romDropzone" class="rom-dropzone" role="button" tabindex="0" aria-controls="romInput">
+            <input id="romInput" type="file" accept=".a26,.bin,.rom,.zip,.7z,.rar" hidden>
+            <span class="rom-icon">▣</span>
+            <b>اسحب ROM هنا</b>
+            <p>أو اضغط لاختيار ملف من جهازك</p>
+            <small>A26 • BIN • ROM • ZIP • 7Z • RAR</small>
+          </div>
+
+          <div class="atari-file-meta">
+            <span><small>الملف</small><b id="loadedRomName">لا يوجد</b></span>
+            <span><small>الحجم</small><b id="loadedRomSize">—</b></span>
+            <span><small>يد التحكم</small><b id="gamepadState">لا توجد يد تحكم</b></span>
+          </div>
+
+          <div id="atariStatus" class="atari-status" data-type="info">المحاكي جاهز. اختر ROM من جهازك للبدء.</div>
+
+          <div class="atari-player-buttons">
+            <button id="focusPlayerButton" type="button">تركيز على شاشة اللعب</button>
+            <button id="playerResetButton" type="button" disabled>إغلاق ROM</button>
+          </div>
+        </aside>
+
+        <div class="atari-screen-frame">
+          <div class="atari-screen-toolbar"><span><i></i> NEON CRT DISPLAY</span><small>4:3 CLASSIC MODE</small></div>
+          <div class="atari-screen">
+            <div id="playerPlaceholder" class="player-placeholder">
+              <div class="pixel-logo">2600</div>
+              <h3>جاهز للمحاكاة</h3>
+              <p>اختر عنوانًا ثم حمّل ROM الخاص بك لبدء الجلسة.</p>
+            </div>
+            <iframe id="atariEmulatorFrame" title="محاكي Atari 2600" sandbox="allow-scripts allow-same-origin allow-pointer-lock" allow="gamepad; fullscreen" allowfullscreen hidden></iframe>
+          </div>
+          <div class="crt-controls" aria-hidden="true"><i></i><i></i><span>POWER</span><span>SELECT</span><span>RESET</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="atari-section atari-guidance">
+      <article><span>⌨</span><div><h3>لوحة المفاتيح ويد التحكم</h3><p>يمكن استخدام لوحة المفاتيح أو يد تحكم يدعمها المتصفح. افتح إعدادات المحاكي لتخصيص الأزرار لكل لعبة.</p></div></article>
+      <article><span>◈</span><div><h3>خصوصية المرحلة التجريبية</h3><p>كود Msar Neon لا يرفع ملف ROM إلى خادم المنصة؛ يتم تمريره للمحاكي من جلسة المتصفح. المحرك نفسه يُحمّل حاليًا من CDN خارجي.</p></div></article>
+      <article><span>§</span><div><h3>الاستخدام القانوني</h3><p>لا تتضمن المكتبة ROMs تجارية. استخدم فقط النسخ التي تملكها أو لديك ترخيص صريح لاستخدامها. أسماء الألعاب مذكورة لأغراض الفهرسة والتوافق.</p></div></article>
+    </section>
+  </main>
+
+  <footer class="atari-footer">
+    <span>MSAR NEON • Atari 2600 Experimental Lab</span>
+    <span>Emulation layer: <a href="https://emulatorjs.org/" target="_blank" rel="noopener noreferrer">EmulatorJS</a> • GPL-3.0</span>
+  </footer>
+
+  <script src="atari-2600.js?v=20260818-1"></script>
+</body>
+</html>
