@@ -16,7 +16,7 @@ const catalog = [
   { id: 'pac-man', title: 'Pac-Man', genre: 'متاهة', category: 'strategy', glyph: '◒', hint: 'تنقل داخل متاهة وجمع عناصر مع إدارة المسار.' }
 ];
 
-const state = { query: '', category: 'all', selected: null, objectUrl: null };
+const state = { query: '', category: 'all', selected: null, pendingFile: null, playerReady: false };
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
 
@@ -75,38 +75,42 @@ function validateRom(file) {
   return '';
 }
 
-function safeName(file) {
-  return String(file.name || 'atari2600').replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9._ -]/g, '_').slice(0, 80) || 'atari2600';
-}
-
-function playerDocument(romUrl, file) {
-  const rom = JSON.stringify(romUrl).replace(/</g, '\\u003c');
-  const name = JSON.stringify(safeName(file)).replace(/</g, '\\u003c');
-  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;height:100%;overflow:hidden;background:#000}#game{width:100%;height:100%;min-height:420px}</style></head><body><div id="game"></div><script>window.EJS_player='#game';window.EJS_core='atari2600';window.EJS_gameUrl=${rom};window.EJS_gameName=${name};window.EJS_pathtodata='https://cdn.emulatorjs.org/stable/data/';window.EJS_startOnLoaded=true;<\/script><script src="https://cdn.emulatorjs.org/stable/data/loader.js"><\/script></body></html>`;
+function sendPendingFile() {
+  if (!state.playerReady || !state.pendingFile) return;
+  const frame = $('#atariEmulatorFrame');
+  if (!frame?.contentWindow) return;
+  frame.contentWindow.postMessage({ type: 'msar-atari-load', file: state.pendingFile }, window.location.origin);
+  setStatus('تم تسليم ROM المحلي للمحاكي. جارٍ تشغيل Stella 2014…', 'info');
 }
 
 function launchRom(file) {
   const error = validateRom(file);
   if (error) { setStatus(error, 'error'); return; }
-  if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
-  state.objectUrl = URL.createObjectURL(file);
+
+  state.pendingFile = file;
   const frame = $('#atariEmulatorFrame');
   const placeholder = $('#playerPlaceholder');
-  frame.srcdoc = playerDocument(state.objectUrl, file);
+  if (!frame) return;
+
   frame.hidden = false;
   if (placeholder) placeholder.hidden = true;
   $('#loadedRomName').textContent = file.name;
   $('#loadedRomSize').textContent = `${Math.max(1, Math.round(file.size / 1024)).toLocaleString('ar-SA')} KB`;
   $('#playerResetButton').disabled = false;
-  setStatus('تم تجهيز ROM داخل جلسة المتصفح. إذا لم يبدأ تلقائيًا استخدم زر التشغيل داخل المحاكي.', 'success');
+  setStatus('تم اختيار ROM. جارٍ تجهيز إطار المحاكاة الآمن…', 'info');
+  sendPendingFile();
 }
 
 function resetPlayer() {
+  state.pendingFile = null;
+  state.playerReady = false;
   const frame = $('#atariEmulatorFrame');
-  if (frame) { frame.srcdoc = ''; frame.hidden = true; }
+  if (frame) {
+    frame.hidden = true;
+    frame.src = `/atari-2600-player?reset=${Date.now()}`;
+  }
   const placeholder = $('#playerPlaceholder');
   if (placeholder) placeholder.hidden = false;
-  if (state.objectUrl) { URL.revokeObjectURL(state.objectUrl); state.objectUrl = null; }
   const input = $('#romInput');
   if (input) input.value = '';
   $('#loadedRomName').textContent = 'لا يوجد';
@@ -145,13 +149,27 @@ function bindRomPicker() {
 function bindPlayerActions() {
   $('#playerResetButton')?.addEventListener('click', resetPlayer);
   $('#focusPlayerButton')?.addEventListener('click', () => $('#atariEmulatorFrame')?.focus());
+
+  window.addEventListener('message', event => {
+    if (event.origin !== window.location.origin) return;
+    const data = event.data || {};
+    if (data.type === 'msar-atari-player-ready') {
+      state.playerReady = true;
+      sendPendingFile();
+      return;
+    }
+    if (data.type === 'msar-atari-status') {
+      const level = data.level === 'error' ? 'error' : data.level === 'success' ? 'success' : 'info';
+      const detail = data.detail ? ` — ${data.detail}` : '';
+      setStatus(`${data.message || 'تحديث من المحاكي'}${detail}`, level);
+    }
+  });
+
   window.addEventListener('gamepadconnected', () => { $('#gamepadState').textContent = 'يد تحكم متصلة'; });
   window.addEventListener('gamepaddisconnected', () => { $('#gamepadState').textContent = 'لا توجد يد تحكم'; });
-  window.addEventListener('beforeunload', () => { if (state.objectUrl) URL.revokeObjectURL(state.objectUrl); });
 }
 
 renderCatalog();
 bindFilters();
 bindRomPicker();
 bindPlayerActions();
-resetPlayer();
