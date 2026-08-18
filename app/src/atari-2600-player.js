@@ -1,11 +1,16 @@
 const CDN_VERSION = '4.2.3';
 const DATA_PATH = `https://cdn.emulatorjs.org/${CDN_VERSION}/data/`;
+const PLAYER_SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End']);
 let started = false;
 let startupTimer = null;
 
 function notify(type, payload = {}) {
   try { window.parent.postMessage({ type, ...payload }, window.location.origin); }
   catch {}
+}
+
+function notifyLock(locked, reason = '') {
+  notify('msar-atari-lock', { locked: Boolean(locked), reason });
 }
 
 function fail(message, detail = '') {
@@ -35,9 +40,14 @@ function boot(file) {
   window.EJS_ready = () => notify('msar-atari-status', { level: 'success', message: 'تم تحميل واجهة المحاكي بنجاح.' });
   window.EJS_onGameStart = () => {
     clearTimeout(startupTimer);
+    notifyLock(true, 'game-start');
+    window.focus();
     notify('msar-atari-status', { level: 'success', message: 'تم تشغيل ROM بنجاح عبر Stella 2014.' });
   };
-  window.EJS_onExit = () => notify('msar-atari-status', { level: 'info', message: 'تم إيقاف جلسة المحاكاة.' });
+  window.EJS_onExit = () => {
+    notifyLock(false, 'exit');
+    notify('msar-atari-status', { level: 'info', message: 'تم إيقاف جلسة المحاكاة.' });
+  };
 
   const loader = document.createElement('script');
   loader.src = `${DATA_PATH}loader.js`;
@@ -52,6 +62,24 @@ function boot(file) {
     });
   }, 18000);
 }
+
+window.addEventListener('keydown', event => {
+  if (!started) return;
+  if (PLAYER_SCROLL_KEYS.has(event.key)) event.preventDefault();
+  if (event.key === 'Escape') notifyLock(false, 'escape');
+}, { capture: true });
+
+window.addEventListener('pointerdown', () => {
+  if (started) notifyLock(true, 'pointer');
+});
+
+window.addEventListener('focus', () => {
+  if (started) notifyLock(true, 'focus');
+});
+
+window.addEventListener('blur', () => {
+  if (started) notifyLock(false, 'blur');
+});
 
 window.addEventListener('message', event => {
   if (event.origin !== window.location.origin) return;
