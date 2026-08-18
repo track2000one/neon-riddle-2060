@@ -33,7 +33,7 @@
         <h1 id="atariTitle"><span lang="en">Atari 2600</span><br />مكتبة المحاكاة الكلاسيكية</h1>
         <p>مرحلة تجريبية داخل Msar Neon تجمع كتالوجًا من عناوين Atari 2600 مع مشغل محاكاة يعمل داخل المتصفح. اختر اللعبة ثم استخدم ملف ROM تملك حق استخدامه.</p>
         <div class="atari-actions"><a class="primary" href="#catalog">استكشف الكتالوج</a><a href="#player">فتح المحاكي</a></div>
-        <div class="atari-pills"><span>12 عنوانًا تجريبيًا</span><span>Stella / Atari 2600</span><span>بدون ROM مرفق</span></div>
+        <div class="atari-pills"><span>12 عنوانًا تجريبيًا</span><span>Stella 2014</span><span>بدون ROM مرفق</span></div>
       </div>
       <div class="retro-console" aria-hidden="true">
         <div class="console-face"><span>VIDEO COMPUTER SYSTEM</span><i></i><i></i><i></i><i></i></div>
@@ -56,7 +56,7 @@
     </section>
 
     <section id="player" class="atari-section player-section">
-      <div class="section-head"><div><span class="atari-eyebrow">BROWSER EMULATOR</span><h2>منطقة المحاكاة</h2><p>المحاكي يبدأ بعد اختيار ملف ROM فقط، ولا يتم رفع الملف إلى خادم Msar Neon.</p></div><span class="core-badge">CORE: ATARI2600</span></div>
+      <div class="section-head"><div><span class="atari-eyebrow">BROWSER EMULATOR</span><h2>منطقة المحاكاة</h2><p>المحاكي يبدأ بعد اختيار ملف ROM فقط، ولا يتم رفع الملف إلى خادم Msar Neon.</p></div><span class="core-badge">CORE: STELLA2014</span></div>
       <div class="player-layout">
         <aside class="rom-panel">
           <div class="selected-game"><small>اللعبة المختارة</small><strong id="selectedGameTitle">أي لعبة متوافقة</strong><p id="selectedGameMeta">اختر لعبة من الكتالوج أو حمّل ROM مباشرة.</p></div>
@@ -65,11 +65,11 @@
           <div id="atariStatus" class="atari-status" data-type="info">المحاكي جاهز. اختر ROM من جهازك للبدء.</div>
           <div class="player-buttons"><button id="focusPlayerButton" type="button">تركيز على شاشة اللعب</button><button id="playerResetButton" type="button" disabled>إغلاق ROM</button></div>
         </aside>
-        <div class="screen-frame"><div class="screen-bar"><span>● NEON CRT DISPLAY</span><small>4:3 CLASSIC MODE</small></div><div class="screen"><div id="playerPlaceholder" class="player-placeholder"><b>2600</b><h3>جاهز للمحاكاة</h3><p>اختر عنوانًا ثم حمّل ROM الخاص بك.</p></div><iframe id="atariEmulatorFrame" title="محاكي Atari 2600" sandbox="allow-scripts allow-same-origin allow-pointer-lock" allow="gamepad; fullscreen" allowfullscreen hidden></iframe></div></div>
+        <div class="screen-frame"><div class="screen-bar"><span>● NEON CRT DISPLAY</span><small>EmulatorJS 4.2.3 • 4:3</small></div><div class="screen"><div id="playerPlaceholder" class="player-placeholder"><b>2600</b><h3>جاهز للمحاكاة</h3><p>اختر عنوانًا ثم حمّل ROM الخاص بك.</p></div><iframe id="atariEmulatorFrame" src="/atari-2600-player" title="محاكي Atari 2600" allow="gamepad; fullscreen" allowfullscreen hidden></iframe></div></div>
       </div>
     </section>
 
-    <section class="legal-notes"><article><b>⌨</b><div><h3>لوحة المفاتيح ويد التحكم</h3><p>يمكن استخدام لوحة المفاتيح أو يد تحكم يدعمها المتصفح، مع تخصيص الأزرار من داخل المحاكي.</p></div></article><article><b>◈</b><div><h3>خصوصية التجربة</h3><p>ملف ROM يبقى داخل جلسة المتصفح. محرك المحاكاة نفسه يُحمّل تجريبيًا من CDN خارجي.</p></div></article><article><b>§</b><div><h3>الاستخدام القانوني</h3><p>استخدم فقط النسخ التي تملكها أو لديك ترخيص صريح لاستخدامها.</p></div></article></section>
+    <section class="legal-notes"><article><b>⌨</b><div><h3>لوحة المفاتيح ويد التحكم</h3><p>يمكن استخدام لوحة المفاتيح أو يد تحكم يدعمها المتصفح، مع تخصيص الأزرار من داخل المحاكي.</p></div></article><article><b>◈</b><div><h3>خصوصية التجربة</h3><p>ملف ROM يبقى داخل جلسة المتصفح ويُنقل إلى إطار المحاكاة ككائن File محلي، دون إنشاء رابط Blob عابر بين الإطارات.</p></div></article><article><b>§</b><div><h3>الاستخدام القانوني</h3><p>استخدم فقط النسخ التي تملكها أو لديك ترخيص صريح لاستخدامها.</p></div></article></section>
   </main>
 
   <footer>NEON • RETRO SYSTEMS • ATARI 2600 EXPERIMENTAL LAB</footer>
