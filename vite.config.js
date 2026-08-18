@@ -49,6 +49,7 @@ export default defineConfig({
         exams: fileURLToPath(new URL('./app/exams.html', import.meta.url)),
         games: fileURLToPath(new URL('./app/games.html', import.meta.url)),
         kidsGames: fileURLToPath(new URL('./app/kids-games.html', import.meta.url)),
+        atari2600: fileURLToPath(new URL('./app/atari-2600.html', import.meta.url)),
         learning: fileURLToPath(new URL('./app/learning.html', import.meta.url)),
         coding: fileURLToPath(new URL('./app/coding.html', import.meta.url)),
         trust: fileURLToPath(new URL('./app/trust.html', import.meta.url)),
