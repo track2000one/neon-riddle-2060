@@ -29,7 +29,7 @@ function boot(file) {
   window.EJS_pathtodata = DATA_PATH;
   window.EJS_startOnLoaded = true;
   window.EJS_threads = false;
-  window.EJS_disableAutoLang = true;
+  window.EJS_disableAutoLang = false;
   window.EJS_askBeforeExit = false;
   window.EJS_DEBUG_XX = true;
   window.EJS_ready = () => notify('msar-atari-status', { level: 'success', message: 'تم تحميل واجهة المحاكي بنجاح.' });
@@ -42,7 +42,6 @@ function boot(file) {
   const loader = document.createElement('script');
   loader.src = `${DATA_PATH}loader.js`;
   loader.async = true;
-  loader.crossOrigin = 'anonymous';
   loader.onerror = () => fail('تعذر تحميل EmulatorJS من شبكة CDN.', loader.src);
   document.body.appendChild(loader);
 
