@@ -72,7 +72,6 @@
     if(meta)meta.textContent=state.selected?`${state.selected.genre} — اختر نسخة ROM التي يحق لك استخدامها.`:'اختر لعبة من الكتالوج أو حمّل ROM مباشرة.';
     $$('.atari-game-card').forEach(card=>card.classList.toggle('selected',card.dataset.gameId===id));
     $('#atariPlayerSection')?.scrollIntoView({behavior:'smooth',block:'start'});
-    setTimeout(()=>$('#romInput')?.focus({preventScroll:true}),500);
   }
 
   function setStatus(message,type='info'){
@@ -142,8 +141,13 @@
     const zone=$('#romDropzone');
     const input=$('#romInput');
     if(!zone||!input)return;
-    zone.addEventListener('click',event=>{if(!event.target.closest('a,button'))input.click();});
-    zone.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&!event.target.closest('button')){event.preventDefault();input.click();}});
+    zone.addEventListener('click',event=>{
+      if(event.target===input||event.target.closest('a,button'))return;
+      input.click();
+    });
+    zone.addEventListener('keydown',event=>{
+      if(event.key==='Enter'||event.key===' '){event.preventDefault();input.click();}
+    });
     input.addEventListener('change',()=>launchRom(input.files?.[0]));
     ['dragenter','dragover'].forEach(name=>zone.addEventListener(name,event=>{event.preventDefault();zone.classList.add('dragging');}));
     ['dragleave','drop'].forEach(name=>zone.addEventListener(name,event=>{event.preventDefault();zone.classList.remove('dragging');}));
