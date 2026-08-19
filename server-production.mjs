@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import { closeAdminDashboardDatabase, handleAdminDashboardApi } from './server/admin-dashboard.mjs';
 import { closeAdminUsersDatabase, handleAdminUsersApi } from './server/admin-users.mjs';
+import { handleAtariCoverMetadataApi } from './server/atari-cover-metadata.mjs';
 import { handleAtariGoogleDriveApi, getAtariDriveRuntimeStatus } from './server/atari-google-drive.mjs';
 import { closeCompetitionDatabase, handleCompetitionApi } from './server/competition.mjs';
 import { closePlatformAccessDatabase, guardPlatformAccess, handlePlatformAccessApi } from './server/platform-access.mjs';
@@ -92,6 +93,7 @@ const server = createServer(async (req, res) => {
     if (await handlePlatformAccessApi(req, res, requestPath)) return;
     if (await guardPlatformAccess(req, res, requestPath)) return;
     if (await handleAtariGoogleDriveApi(req, res, requestPath)) return;
+    if (await handleAtariCoverMetadataApi(req, res, requestPath)) return;
     if (await handleAdminUsersApi(req, res, requestPath, readJsonBody)) return;
     if (await handleAdminDashboardApi(req, res, requestPath, readJsonBody)) return;
     if (await handleStudentStateApi(req, res, requestPath, readJsonBody)) return;
