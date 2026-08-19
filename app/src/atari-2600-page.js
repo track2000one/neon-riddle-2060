@@ -1,5 +1,6 @@
 import './styles.css';
 import './atari-2600-page.css';
+import { ensureAuth } from './auth.js';
 
 const catalog = [
   { id: 'adventure', title: 'Adventure', genre: 'مغامرات', category: 'adventure', glyph: '◆', hint: 'استكشاف متاهات وقلاع وجمع عناصر.' },
@@ -24,7 +25,13 @@ const state = {
   pendingFile: null,
   playerReady: false,
   gameplayLocked: false,
-  lockedScrollY: 0
+  lockedScrollY: 0,
+  authSession: null,
+  driveItems: [],
+  driveNextPageToken: null,
+  driveQuery: '',
+  driveLoading: false,
+  driveConfigured: false
 };
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -35,6 +42,18 @@ function normalize(value) {
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
+}
+
+function stripExtension(name) {
+  return String(name || '').replace(/\.[^.]+$/, '');
+}
+
+function humanBytes(value) {
+  const bytes = Number(value || 0);
+  if (!Number.isFinite(bytes) || bytes <= 0) return '—';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024)).toLocaleString('ar-SA')} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function visibleGames() {
@@ -61,6 +80,33 @@ function renderCatalog() {
   grid.innerHTML = games.length ? games.map(card).join('') : '<div class="atari-card-copy"><h3>لا توجد نتيجة</h3><p>غيّر البحث أو نوع اللعبة.</p></div>';
 }
 
+function driveCard(item) {
+  const title = stripExtension(item.name);
+  const extension = String(item.extension || '').toUpperCase();
+  return `<article class="atari-card drive-card" data-drive-id="${escapeHtml(item.id)}">
+    <div class="atari-cover"><b>DRIVE</b></div>
+    <div class="atari-card-copy">
+      <small>Google Drive Private</small>
+      <h3 lang="en" title="${escapeHtml(item.name)}">${escapeHtml(title)}</h3>
+      <p>ملف Atari محفوظ في مكتبة Msar Neon الخاصة ويُجلب عبر الخادم عند التشغيل فقط.</p>
+      <div class="drive-card-meta"><span>${escapeHtml(extension || 'ROM')}</span><span>${escapeHtml(humanBytes(item.size))}</span></div>
+      <button class="drive-play-button" type="button" data-drive-play="${escapeHtml(item.id)}">تشغيل من Google Drive</button>
+    </div>
+  </article>`;
+}
+
+function renderDriveLibrary() {
+  const grid = $('#driveLibraryGrid');
+  if (!grid) return;
+  if (!state.driveItems.length) {
+    grid.innerHTML = state.driveConfigured ? '<div class="drive-empty">لا توجد ملفات مطابقة في مجلد Atari على Google Drive.</div>' : '';
+  } else {
+    grid.innerHTML = state.driveItems.map(driveCard).join('');
+  }
+  const more = $('#driveLoadMoreButton');
+  if (more) more.hidden = !state.driveNextPageToken;
+}
+
 function selectGame(id) {
   state.selected = catalog.find(game => game.id === id) || null;
   $('#selectedGameTitle').textContent = state.selected?.title || 'أي لعبة متوافقة';
@@ -69,11 +115,31 @@ function selectGame(id) {
   $('#player')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+function selectDriveItem(item) {
+  state.selected = { id: item.id, title: stripExtension(item.name), genre: 'Google Drive Private', source: 'drive' };
+  $('#selectedGameTitle').textContent = state.selected.title;
+  $('#selectedGameMeta').textContent = 'Google Drive Private — يتم جلب ROM عبر خادم NEON ثم تشغيله محليًا داخل المتصفح.';
+  $$('.atari-card').forEach(cardElement => cardElement.classList.toggle('selected', cardElement.dataset.driveId === item.id));
+}
+
 function setStatus(message, type = 'info') {
   const box = $('#atariStatus');
   if (!box) return;
   box.dataset.type = type;
   box.textContent = message;
+}
+
+function setDriveMessage(message, type = 'info') {
+  const box = $('#driveLibraryMessage');
+  if (!box) return;
+  box.dataset.type = type;
+  box.textContent = message;
+}
+
+function setDriveConnection(stateName, text) {
+  const cardElement = $('#driveConnectionCard');
+  if (cardElement) cardElement.dataset.state = stateName;
+  if ($('#driveConnectionText')) $('#driveConnectionText').textContent = text;
 }
 
 function setGameplayLock(locked, { announce = false } = {}) {
@@ -119,25 +185,28 @@ function sendPendingFile() {
   const frame = $('#atariEmulatorFrame');
   if (!frame?.contentWindow) return;
   frame.contentWindow.postMessage({ type: 'msar-atari-load', file: state.pendingFile }, window.location.origin);
-  setStatus('تم تسليم ROM المحلي للمحاكي. جارٍ تشغيل Stella 2014…', 'info');
+  setStatus('تم تسليم ROM للمحاكي. جارٍ تشغيل Stella 2014…', 'info');
 }
 
-function launchRom(file) {
+function launchRom(file, { source = 'local' } = {}) {
   const error = validateRom(file);
   if (error) { setStatus(error, 'error'); return; }
 
+  setGameplayLock(false);
   state.pendingFile = file;
+  state.playerReady = false;
   const frame = $('#atariEmulatorFrame');
   const placeholder = $('#playerPlaceholder');
   if (!frame) return;
 
   frame.hidden = false;
+  frame.src = `/atari-2600-player?session=${Date.now()}`;
   if (placeholder) placeholder.hidden = true;
   $('#loadedRomName').textContent = file.name;
-  $('#loadedRomSize').textContent = `${Math.max(1, Math.round(file.size / 1024)).toLocaleString('ar-SA')} KB`;
+  $('#loadedRomSize').textContent = humanBytes(file.size);
   $('#playerResetButton').disabled = false;
-  setStatus('تم اختيار ROM. جارٍ تجهيز إطار المحاكاة الآمن…', 'info');
-  sendPendingFile();
+  setStatus(source === 'drive' ? 'تم جلب ROM من Google Drive. جارٍ تجهيز المحاكي…' : 'تم اختيار ROM من جهازك. جارٍ تجهيز المحاكي…', 'info');
+  $('#player')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function resetPlayer() {
@@ -156,7 +225,93 @@ function resetPlayer() {
   $('#loadedRomName').textContent = 'لا يوجد';
   $('#loadedRomSize').textContent = '—';
   $('#playerResetButton').disabled = true;
-  setStatus('المحاكي جاهز. اختر ROM من جهازك للبدء.');
+  setStatus('المحاكي جاهز. اختر لعبة من Drive أو ROM من جهازك للبدء.');
+}
+
+async function authHeaders() {
+  if (!state.authSession?.user) throw new Error('AUTH_SESSION_MISSING');
+  const token = await state.authSession.user.getIdToken();
+  return { Authorization: `Bearer ${token}` };
+}
+
+async function driveJson(path) {
+  const headers = await authHeaders();
+  const response = await fetch(path, { cache: 'no-store', headers });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw Object.assign(new Error(data.message || `HTTP_${response.status}`), { status: response.status, code: data.error || 'DRIVE_REQUEST_FAILED' });
+  return data;
+}
+
+async function loadDriveLibrary({ append = false, pageToken = null } = {}) {
+  if (state.driveLoading || !state.authSession) return;
+  state.driveLoading = true;
+  const searchButton = $('#driveSearchButton');
+  const refreshButton = $('#driveRefreshButton');
+  const moreButton = $('#driveLoadMoreButton');
+  [searchButton, refreshButton, moreButton].forEach(button => { if (button) button.disabled = true; });
+
+  try {
+    const params = new URLSearchParams({ pageSize: '120' });
+    if (state.driveQuery) params.set('q', state.driveQuery);
+    if (pageToken) params.set('pageToken', pageToken);
+    const data = await driveJson(`/api/atari-drive/library?${params.toString()}`);
+    state.driveConfigured = Boolean(data.configured);
+
+    if (!data.configured) {
+      state.driveItems = [];
+      state.driveNextPageToken = null;
+      setDriveConnection('pending', 'بانتظار بيانات حساب الخدمة في Railway');
+      setDriveMessage('تم تجهيز التكامل والمجلد، لكن الخادم يحتاج GOOGLE_DRIVE_SERVICE_ACCOUNT_EMAIL و GOOGLE_DRIVE_SERVICE_ACCOUNT_PRIVATE_KEY قبل قراءة الملفات.', 'warning');
+      renderDriveLibrary();
+      return;
+    }
+
+    const incoming = Array.isArray(data.items) ? data.items : [];
+    state.driveItems = append ? [...state.driveItems, ...incoming] : incoming;
+    state.driveNextPageToken = data.nextPageToken || null;
+    setDriveConnection('connected', 'متصل بالمكتبة الخاصة');
+    setDriveMessage(state.driveItems.length ? `تمت قراءة ${state.driveItems.length.toLocaleString('ar-SA')} ملفًا من Google Drive${state.driveNextPageToken ? ' — توجد نتائج إضافية' : ''}.` : 'الاتصال بـ Google Drive يعمل، لكن لا توجد ملفات مطابقة في مجلد ROMs حاليًا.', 'success');
+    renderDriveLibrary();
+  } catch (error) {
+    state.driveConfigured = false;
+    setDriveConnection('error', 'تعذر الاتصال بالمكتبة');
+    setDriveMessage(error.message || 'تعذر قراءة Google Drive.', 'error');
+  } finally {
+    state.driveLoading = false;
+    [searchButton, refreshButton, moreButton].forEach(button => { if (button) button.disabled = false; });
+  }
+}
+
+async function playDriveItem(fileId) {
+  const item = state.driveItems.find(value => value.id === fileId);
+  if (!item || state.driveLoading) return;
+  const cardElement = document.querySelector(`.drive-card[data-drive-id="${CSS.escape(fileId)}"]`);
+  cardElement?.classList.add('is-loading');
+  selectDriveItem(item);
+  setDriveMessage(`جارٍ جلب ${item.name} من Google Drive عبر خادم NEON…`, 'info');
+
+  try {
+    const headers = await authHeaders();
+    const response = await fetch(`/api/atari-drive/rom/${encodeURIComponent(fileId)}`, { cache: 'no-store', headers });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.message || `HTTP_${response.status}`);
+    }
+    const blob = await response.blob();
+    const encodedName = response.headers.get('X-NEON-ROM-Name');
+    let fileName = item.name;
+    if (encodedName) {
+      try { fileName = decodeURIComponent(encodedName); } catch {}
+    }
+    const file = new File([blob], fileName, { type: 'application/octet-stream', lastModified: Date.now() });
+    setDriveMessage(`تم جلب ${fileName} بنجاح. انتقل إلى شاشة المحاكاة للعب.`, 'success');
+    launchRom(file, { source: 'drive' });
+  } catch (error) {
+    setDriveMessage(error.message || 'تعذر جلب ROM من Google Drive.', 'error');
+    setStatus('تعذر تشغيل اللعبة من Google Drive. يمكنك تجربة ROM محلي مؤقتًا.', 'error');
+  } finally {
+    cardElement?.classList.remove('is-loading');
+  }
 }
 
 function bindFilters() {
@@ -174,16 +329,42 @@ function bindFilters() {
   });
 }
 
+function bindDriveLibrary() {
+  const search = $('#driveSearch');
+  const runSearch = () => {
+    state.driveQuery = String(search?.value || '').trim();
+    state.driveNextPageToken = null;
+    loadDriveLibrary({ append: false });
+  };
+  $('#driveSearchButton')?.addEventListener('click', runSearch);
+  search?.addEventListener('keydown', event => {
+    if (event.key === 'Enter') { event.preventDefault(); runSearch(); }
+  });
+  $('#driveRefreshButton')?.addEventListener('click', () => {
+    state.driveQuery = '';
+    if (search) search.value = '';
+    state.driveNextPageToken = null;
+    loadDriveLibrary({ append: false });
+  });
+  $('#driveLoadMoreButton')?.addEventListener('click', () => {
+    if (state.driveNextPageToken) loadDriveLibrary({ append: true, pageToken: state.driveNextPageToken });
+  });
+  $('#driveLibraryGrid')?.addEventListener('click', event => {
+    const button = event.target.closest('[data-drive-play]');
+    if (button) playDriveItem(button.dataset.drivePlay);
+  });
+}
+
 function bindRomPicker() {
   const zone = $('#romDropzone');
   const input = $('#romInput');
   if (!zone || !input) return;
   zone.addEventListener('click', event => { if (event.target !== input) input.click(); });
   zone.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); input.click(); } });
-  input.addEventListener('change', () => launchRom(input.files?.[0]));
+  input.addEventListener('change', () => launchRom(input.files?.[0], { source: 'local' }));
   ['dragenter', 'dragover'].forEach(name => zone.addEventListener(name, event => { event.preventDefault(); zone.classList.add('dragging'); }));
   ['dragleave', 'drop'].forEach(name => zone.addEventListener(name, event => { event.preventDefault(); zone.classList.remove('dragging'); }));
-  zone.addEventListener('drop', event => launchRom(event.dataTransfer?.files?.[0]));
+  zone.addEventListener('drop', event => launchRom(event.dataTransfer?.files?.[0], { source: 'local' }));
 }
 
 function bindGameplayFocus() {
@@ -232,8 +413,23 @@ function bindPlayerActions() {
   window.addEventListener('beforeunload', () => setGameplayLock(false));
 }
 
+async function bootstrapDriveIntegration() {
+  setDriveConnection('checking', 'جارٍ التحقق من الاتصال…');
+  try {
+    state.authSession = await ensureAuth();
+    await loadDriveLibrary({ append: false });
+  } catch (error) {
+    if (!String(error?.message || '').includes('Authentication required')) {
+      setDriveConnection('error', 'تعذر بدء جلسة المنصة');
+      setDriveMessage('تعذر التحقق من جلسة المستخدم. أعد تحميل الصفحة أو سجّل الدخول من جديد.', 'error');
+    }
+  }
+}
+
 renderCatalog();
 bindFilters();
+bindDriveLibrary();
 bindRomPicker();
 bindGameplayFocus();
 bindPlayerActions();
+bootstrapDriveIntegration();
