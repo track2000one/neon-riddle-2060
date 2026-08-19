@@ -8,6 +8,7 @@
   <title>Atari 2600 Retro Lab | NEON</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="stylesheet" href="/src/atari-gameplay-lock.css" />
+  <link rel="stylesheet" href="/src/atari-drive.css" />
 </head>
 <body class="atari-page">
   <div class="page-glow glow-one"></div>
@@ -32,9 +33,9 @@
       <div class="atari-hero-copy">
         <span class="atari-eyebrow">CLASSIC COMPUTING • BROWSER EMULATION</span>
         <h1 id="atariTitle"><span lang="en">Atari 2600</span><br />مكتبة المحاكاة الكلاسيكية</h1>
-        <p>مرحلة تجريبية داخل Msar Neon تجمع كتالوجًا من عناوين Atari 2600 مع مشغل محاكاة يعمل داخل المتصفح. اختر اللعبة ثم استخدم ملف ROM تملك حق استخدامه.</p>
-        <div class="atari-actions"><a class="primary" href="#catalog">استكشف الكتالوج</a><a href="#player">فتح المحاكي</a></div>
-        <div class="atari-pills"><span>12 عنوانًا تجريبيًا</span><span>Stella 2014</span><span>بدون ROM مرفق</span></div>
+        <p>مرحلة تجريبية داخل Msar Neon تجمع كتالوجًا من عناوين Atari 2600 مع مشغل محاكاة يعمل داخل المتصفح. يمكن التشغيل من Google Drive الخاص بالمنصة أو من ملف ROM محلي.</p>
+        <div class="atari-actions"><a class="primary" href="#driveLibrary">مكتبة Google Drive</a><a href="#catalog">الكتالوج</a><a href="#player">فتح المحاكي</a></div>
+        <div class="atari-pills"><span>Google Drive Private</span><span>Stella 2014</span><span>تشغيل داخل المتصفح</span></div>
       </div>
       <div class="retro-console" aria-hidden="true">
         <div class="console-face"><span>VIDEO COMPUTER SYSTEM</span><i></i><i></i><i></i><i></i></div>
@@ -44,33 +45,56 @@
     </section>
 
     <section class="atari-steps" aria-label="طريقة الاستخدام">
-      <article><b>01</b><span>اختر عنوانًا من الكتالوج</span></article>
-      <article><b>02</b><span>حمّل ROM من جهازك</span></article>
+      <article><b>01</b><span>اختر لعبة من Drive أو الكتالوج</span></article>
+      <article><b>02</b><span>يتم جلب ROM عبر خادم NEON</span></article>
       <article><b>03</b><span>العب داخل المتصفح</span></article>
-      <article><b>LOCAL</b><span>لا نخزن ملف ROM</span></article>
+      <article><b>PRIVATE</b><span>روابط Drive لا تظهر للمستخدم</span></article>
+    </section>
+
+    <section id="driveLibrary" class="atari-section drive-library-section">
+      <div class="section-head drive-section-head">
+        <div>
+          <span class="atari-eyebrow">PRIVATE CLOUD LIBRARY</span>
+          <h2>مكتبة Google Drive</h2>
+          <p>يقرأ Msar Neon ملفات Atari من مجلد Drive خاص عبر الخادم، ثم يرسل اللعبة إلى Stella 2014 دون كشف بيانات حساب Google أو رابط الملف المباشر.</p>
+        </div>
+        <div class="drive-connection-card" id="driveConnectionCard" data-state="checking">
+          <span class="drive-dot"></span>
+          <div><small>GOOGLE DRIVE</small><strong id="driveConnectionText">جارٍ التحقق من الاتصال…</strong></div>
+        </div>
+      </div>
+
+      <div class="drive-toolbar">
+        <label class="drive-search"><span>⌕</span><input id="driveSearch" type="search" placeholder="ابحث في ملفات Atari الموجودة على Google Drive..." autocomplete="off" /></label>
+        <button id="driveSearchButton" type="button">بحث</button>
+        <button id="driveRefreshButton" type="button">تحديث المكتبة</button>
+      </div>
+      <div id="driveLibraryMessage" class="drive-library-message" data-type="info">جارٍ تجهيز اتصال المكتبة الخاصة…</div>
+      <div id="driveLibraryGrid" class="atari-grid drive-grid" aria-live="polite"></div>
+      <div class="drive-footer-actions"><button id="driveLoadMoreButton" type="button" hidden>تحميل المزيد</button></div>
     </section>
 
     <section id="catalog" class="atari-section">
-      <div class="section-head"><div><span class="atari-eyebrow">CURATED RETRO CATALOG</span><h2>كتالوج Atari 2600</h2><p>الأسماء للفهرسة والتوافق فقط، ولا تتضمن المكتبة ملفات الألعاب الأصلية.</p></div><div class="catalog-count"><b id="atariVisibleCount">12</b><span>عنوان ظاهر</span></div></div>
+      <div class="section-head"><div><span class="atari-eyebrow">CURATED RETRO CATALOG</span><h2>كتالوج Atari 2600</h2><p>الأسماء للفهرسة والتوافق فقط، ولا تتضمن هذه البطاقات ملفات الألعاب الأصلية.</p></div><div class="catalog-count"><b id="atariVisibleCount">12</b><span>عنوان ظاهر</span></div></div>
       <div class="atari-toolbar"><label><span>⌕</span><input id="atariSearch" type="search" placeholder="ابحث عن لعبة أو نوع..." /></label><div id="atariCategoryFilters" class="atari-filters"><button class="active" data-category="all" type="button">الكل</button><button data-category="arcade" type="button">أركيد</button><button data-category="action" type="button">أكشن</button><button data-category="strategy" type="button">استراتيجية</button><button data-category="adventure" type="button">مغامرات</button></div></div>
       <div id="atariCatalogGrid" class="atari-grid"></div>
     </section>
 
     <section id="player" class="atari-section player-section">
-      <div class="section-head"><div><span class="atari-eyebrow">BROWSER EMULATOR</span><h2>منطقة المحاكاة</h2><p>المحاكي يبدأ بعد اختيار ملف ROM فقط، ولا يتم رفع الملف إلى خادم Msar Neon.</p></div><span class="core-badge">CORE: STELLA2014</span></div>
+      <div class="section-head"><div><span class="atari-eyebrow">BROWSER EMULATOR</span><h2>منطقة المحاكاة</h2><p>يمكن تشغيل ROM من Google Drive الخاص بالمنصة أو اختيار ملف من جهازك. المحاكاة تتم محليًا داخل المتصفح.</p></div><span class="core-badge">CORE: STELLA2014</span></div>
       <div class="player-layout">
         <aside class="rom-panel">
-          <div class="selected-game"><small>اللعبة المختارة</small><strong id="selectedGameTitle">أي لعبة متوافقة</strong><p id="selectedGameMeta">اختر لعبة من الكتالوج أو حمّل ROM مباشرة.</p></div>
+          <div class="selected-game"><small>اللعبة المختارة</small><strong id="selectedGameTitle">أي لعبة متوافقة</strong><p id="selectedGameMeta">اختر لعبة من Google Drive أو من الكتالوج أو حمّل ROM مباشرة.</p></div>
           <div id="romDropzone" class="rom-dropzone" role="button" tabindex="0"><input id="romInput" type="file" accept=".a26,.bin,.rom,.zip,.7z,.rar" hidden /><span>▣</span><b>اسحب ROM هنا</b><p>أو اضغط لاختيار ملف من جهازك</p><small>A26 • BIN • ROM • ZIP • 7Z • RAR</small></div>
           <div class="file-meta"><span><small>الملف</small><b id="loadedRomName">لا يوجد</b></span><span><small>الحجم</small><b id="loadedRomSize">—</b></span><span><small>يد التحكم</small><b id="gamepadState">لا توجد يد تحكم</b></span></div>
-          <div id="atariStatus" class="atari-status" data-type="info">المحاكي جاهز. اختر ROM من جهازك للبدء.</div>
+          <div id="atariStatus" class="atari-status" data-type="info">المحاكي جاهز. اختر لعبة من Drive أو ROM من جهازك.</div>
           <div class="player-buttons"><button id="focusPlayerButton" type="button">تركيز على شاشة اللعب</button><button id="playerResetButton" type="button" disabled>إغلاق ROM</button></div>
         </aside>
-        <div class="screen-frame"><div class="screen-bar"><span>● NEON CRT DISPLAY</span><small>EmulatorJS 4.2.3 • ESC لفك تثبيت الصفحة</small></div><div class="screen"><div id="playerPlaceholder" class="player-placeholder"><b>2600</b><h3>جاهز للمحاكاة</h3><p>اختر عنوانًا ثم حمّل ROM الخاص بك.</p></div><iframe id="atariEmulatorFrame" src="/atari-2600-player" title="محاكي Atari 2600" allow="gamepad; fullscreen" allowfullscreen hidden></iframe></div></div>
+        <div class="screen-frame"><div class="screen-bar"><span>● NEON CRT DISPLAY</span><small>EmulatorJS 4.2.3 • ESC لفك تثبيت الصفحة</small></div><div class="screen"><div id="playerPlaceholder" class="player-placeholder"><b>2600</b><h3>جاهز للمحاكاة</h3><p>اختر لعبة من Drive أو حمّل ROM الخاص بك.</p></div><iframe id="atariEmulatorFrame" src="/atari-2600-player" title="محاكي Atari 2600" allow="gamepad; fullscreen" allowfullscreen hidden></iframe></div></div>
       </div>
     </section>
 
-    <section class="legal-notes"><article><b>⌨</b><div><h3>لوحة المفاتيح ويد التحكم</h3><p>يمكن استخدام لوحة المفاتيح أو يد تحكم يدعمها المتصفح، مع تخصيص الأزرار من داخل المحاكي.</p></div></article><article><b>◈</b><div><h3>خصوصية التجربة</h3><p>ملف ROM يبقى داخل جلسة المتصفح ويُنقل إلى إطار المحاكاة ككائن File محلي، دون إنشاء رابط Blob عابر بين الإطارات.</p></div></article><article><b>§</b><div><h3>الاستخدام القانوني</h3><p>استخدم فقط النسخ التي تملكها أو لديك ترخيص صريح لاستخدامها.</p></div></article></section>
+    <section class="legal-notes"><article><b>⌨</b><div><h3>لوحة المفاتيح ويد التحكم</h3><p>يمكن استخدام لوحة المفاتيح أو يد تحكم يدعمها المتصفح، مع تخصيص الأزرار من داخل المحاكي.</p></div></article><article><b>◈</b><div><h3>خصوصية التخزين</h3><p>بيانات اعتماد Google Drive تبقى في خادم Railway فقط. المتصفح يتعامل مع مسارات NEON الداخلية ولا يستلم مفتاح الخدمة.</p></div></article><article><b>§</b><div><h3>الاستخدام القانوني</h3><p>استخدم فقط النسخ التي تملكها أو لديك ترخيص صريح لاستخدامها، حتى عند تخزينها في Google Drive الخاص.</p></div></article></section>
   </main>
 
   <footer>NEON • RETRO SYSTEMS • ATARI 2600 EXPERIMENTAL LAB</footer>
