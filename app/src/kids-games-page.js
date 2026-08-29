@@ -4,6 +4,7 @@ import './kids-games-engine.css';
 import { ensureAuth, renderAccount } from './auth.js';
 import { games } from './kids-games-data.js';
 import { launchKidsGame } from './kids-games-engine.js';
+import { launchWorldExplorer } from './kids-world-explorer.js';
 
 const PROGRESS_KEY = 'neonKidsGamesProgressV2';
 const state = { type: 'all', age: 'all', query: '' };
@@ -135,7 +136,8 @@ function startGame(game) {
   activeGameCleanup?.();
   saveStarted(game);
   const mount = document.getElementById('modalContent');
-  activeGameCleanup = launchKidsGame({
+  const launcher = game.id === 'world-explorer' ? launchWorldExplorer : launchKidsGame;
+  activeGameCleanup = launcher({
     game,
     mount,
     onProgress: result => {
