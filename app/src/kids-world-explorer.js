@@ -148,6 +148,15 @@ function shuffle(items) {
   return copy;
 }
 
+function randomizeQuestion(item) {
+  const mixedChoices = shuffle(item.choices.map((choice, index) => ({ choice, correct: index === item.answer })));
+  return {
+    ...item,
+    choices: mixedChoices.map(entry => entry.choice),
+    answer: mixedChoices.findIndex(entry => entry.correct)
+  };
+}
+
 function runtimeShell(game) {
   return `
     <section class="kids-game-runtime world-runtime" style="--game-a:${game.colors[0]};--game-b:${game.colors[1]}">
@@ -205,7 +214,7 @@ export function launchWorldExplorer({ game, mount, onProgress }) {
   };
 
   const runQuiz = () => {
-    const questions = shuffle(QUESTIONS);
+    const questions = shuffle(QUESTIONS).map(randomizeQuestion);
     score = 0;
     let index = 0;
 
