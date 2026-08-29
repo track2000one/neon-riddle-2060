@@ -1,6 +1,7 @@
 import './styles.css';
 import './kids-games-page.css';
 import './kids-games-engine.css';
+import './kids-world-offline.js';
 import { ensureAuth, renderAccount } from './auth.js';
 import { games } from './kids-games-data.js';
 import { launchKidsGame } from './kids-games-engine.js';
