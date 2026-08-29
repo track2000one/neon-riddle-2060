@@ -9,7 +9,7 @@ const atlasGeoJson = atlasObject
   ? topoFeature(worldTopology, atlasObject)
   : { type: 'FeatureCollection', features: [] };
 
-const WORLD_COUNTRY_BORDERS = {
+export const WORLD_COUNTRY_BORDERS = {
   type: 'FeatureCollection',
   features: (atlasGeoJson.features || []).map(item => ({
     type: 'Feature',
