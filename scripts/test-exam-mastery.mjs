@@ -11,6 +11,13 @@ globalThis.window = {
 };
 
 const { ExamMasteryController } = await import('../app/src/exam-mastery.js');
+const {
+  buildJourneyStages,
+  currentJourneyStage,
+  resetMasteryRecords,
+  summarizeMastery,
+  trainingThresholds
+} = await import('../app/src/exam-training-journey-core.js');
 
 const questions = [
   { id: 'q1', subject: 'tahsili-math', category: 'algebra', level: 'practice', active: true },
@@ -54,4 +61,17 @@ assert.equal(summary.learning, 1);
 assert.equal(summary.new, 2);
 assert.equal(summary.masteryPercent, 25);
 
-console.log('Adaptive exam mastery transitions validated successfully.');
+const journeyStats = summarizeMastery([...controller.records.values()], 100);
+assert.equal(journeyStats.practiced, 2, 'Journey progress must use practiced questions as checkpoints.');
+assert.equal(journeyStats.mastered, 1);
+assert.deepEqual(trainingThresholds(100), [12, 28, 45, 62, 78]);
+assert.equal(currentJourneyStage(journeyStats).id, 1, 'A new journey must begin at the first checkpoint.');
+assert.equal(buildJourneyStages(journeyStats).length, 7, 'Every exam subject must expose the same seven-stage journey.');
+
+const resetAt = '2026-08-29T13:00:00.000Z';
+const resetRows = resetMasteryRecords([...controller.records.values()], resetAt);
+assert.equal(resetRows.length, 2, 'Only previously recorded questions need reset payloads.');
+assert.ok(resetRows.every(row => row.status === 'new' && row.attempts === 0 && row.masteryScore === 0));
+assert.ok(resetRows.every(row => row.updatedAt === resetAt && row.metadata.resetReason === 'training-journey-restart'));
+
+console.log('Adaptive exam mastery transitions and unified journey checkpoints validated successfully.');
