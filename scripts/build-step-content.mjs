@@ -14,7 +14,8 @@ const DATA_FILES = [
   'step-book-kafayat-1-model-7.js',
   'step-book-kafayat-1-listening.js',
   'step-mastery-lessons.js',
-  'step-mastery-questions.js'
+  'step-mastery-questions.js',
+  'step-uploaded-video-yaser-althunayan-20260829.js'
 ];
 
 const window = {};
