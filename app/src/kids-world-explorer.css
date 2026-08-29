@@ -29,7 +29,7 @@
 .world-globe-card,.world-country-card{border-radius:24px;border:1px solid rgba(255,255,255,.09);background:linear-gradient(150deg,rgba(13,32,66,.92),rgba(8,17,41,.96));overflow:hidden}
 .world-globe-card{position:relative;display:grid;grid-template-rows:1fr auto;min-width:0}
 .world-globe{position:relative;min-height:520px;overflow:hidden;background:radial-gradient(circle at 50% 45%,rgba(53,122,209,.2),rgba(4,11,28,.95) 63%);cursor:grab;touch-action:none}
-.world-globe:active{cursor:grabbing}.world-globe canvas{display:block}
+.world-globe:active{cursor:grabbing}.world-globe canvas{display:block;outline:none}
 .world-globe-hints{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;padding:9px 13px;border-top:1px solid rgba(255,255,255,.06);background:rgba(3,10,27,.65);color:#8ca1c2;font-size:9px}
 .world-country-card{padding:15px;min-width:0}
 .country-card-empty{height:100%;min-height:380px;display:grid;place-items:center;align-content:center;text-align:center;padding:24px}
@@ -56,8 +56,9 @@
 .world-loading h3,.world-error h3{margin:14px 0 4px;font-size:24px}.world-loading p,.world-error p{margin:0;max-width:480px;color:#8ea3c2;font-size:11px;line-height:1.8}
 .world-spinner{width:58px;height:58px;border-radius:50%;border:4px solid rgba(255,255,255,.08);border-top-color:var(--game-a);border-right-color:var(--game-b);animation:worldSpin .9s linear infinite}
 .world-error>span{font-size:60px}.world-error button{margin-top:16px;min-height:42px;padding:0 18px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--game-a),var(--game-b));color:#fff;font:inherit;font-weight:900;cursor:pointer}
-.world-globe-tooltip{direction:rtl;padding:7px 9px;border-radius:9px;background:rgba(5,14,33,.92);border:1px solid rgba(126,232,255,.22);box-shadow:0 10px 25px rgba(0,0,0,.35)}
-.world-globe-tooltip b,.world-globe-tooltip span{display:block}.world-globe-tooltip b{font-size:11px}.world-globe-tooltip span{margin-top:2px;color:#9cb0cc;font-size:8px;direction:ltr}
+.world-globe-tooltip{position:absolute;z-index:8;min-width:140px;max-width:220px;direction:rtl;padding:8px 10px;border-radius:11px;background:rgba(4,13,31,.94);border:1px solid rgba(126,232,255,.32);box-shadow:0 12px 30px rgba(0,0,0,.42),0 0 22px rgba(89,217,255,.14);backdrop-filter:blur(10px);pointer-events:none;opacity:0;transform:translateY(6px) scale(.98);transition:opacity .14s ease,transform .14s ease}
+.world-globe-tooltip.visible{opacity:1;transform:translateY(0) scale(1)}
+.world-globe-tooltip b,.world-globe-tooltip span{display:block}.world-globe-tooltip b{font-size:11px;color:#fff}.world-globe-tooltip span{margin-top:2px;color:#9cb0cc;font-size:8px;direction:ltr}
 @keyframes worldSpin{to{transform:rotate(360deg)}}
 @media(max-width:1050px){
   .kids-modal-panel:has(#modalContent.game-active){width:min(100% - 8px,1080px)}
@@ -74,4 +75,4 @@
   .world-globe{min-height:380px}.country-profile-head img{width:78px;height:52px}.country-profile-head h3{font-size:20px}
   .country-facts-grid{grid-template-columns:1fr}.world-mode-actions button{flex:1 1 calc(50% - 7px)}
 }
-@media(prefers-reduced-motion:reduce){.world-spinner{animation:none}.world-mode-actions button,.world-view-presets button{transition:none}}
+@media(prefers-reduced-motion:reduce){.world-spinner{animation:none}.world-mode-actions button,.world-view-presets button,.world-globe-tooltip{transition:none}}
