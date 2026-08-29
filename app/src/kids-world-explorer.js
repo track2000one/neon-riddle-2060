@@ -197,6 +197,8 @@ export function launchWorldExplorer({ game, mount, onProgress }) {
   let challengeTarget = null;
   let challengeRound = 0;
   let challengeScore = 0;
+  let challengeLocked = false;
+  let outsideClickHandler = null;
   const challengeTotal = 10;
   const controller = new AbortController();
 
@@ -268,6 +270,7 @@ export function launchWorldExplorer({ game, mount, onProgress }) {
 
     const available = countries.filter(country => country.cca3 !== challengeTarget?.cca3);
     challengeTarget = available[Math.floor(Math.random() * available.length)];
+    challengeLocked = false;
     challengeRound += 1;
     renderChallengePanel();
     setProgress(Math.round(((challengeRound - 1) / challengeTotal) * 100), `تحدي العثور • ${challengeRound} من ${challengeTotal}`, { score: challengeScore, total: challengeTotal });
@@ -278,6 +281,7 @@ export function launchWorldExplorer({ game, mount, onProgress }) {
     challengeRound = 0;
     challengeScore = 0;
     challengeTarget = null;
+    challengeLocked = false;
     stage.querySelectorAll('[data-world-mode]').forEach(button => button.classList.toggle('active', button.dataset.worldMode === 'challenge'));
     nextChallenge();
   };
@@ -303,7 +307,9 @@ export function launchWorldExplorer({ game, mount, onProgress }) {
 
     let challengeText = '';
     if (mode === 'challenge' && challengeTarget) {
+      if (challengeLocked) return;
       if (country.cca3 === challengeTarget.cca3) {
+        challengeLocked = true;
         challengeScore += 1;
         challengeText = '✓ ممتاز! عثرت على الدولة الصحيحة.';
         renderChallengePanel('إجابة صحيحة! استعد للدولة التالية.');
@@ -408,10 +414,11 @@ export function launchWorldExplorer({ game, mount, onProgress }) {
       }, 850);
     }));
 
-    document.addEventListener('click', event => {
+    outsideClickHandler = event => {
       if (!stage.contains(event.target)) return;
       if (!event.target.closest('.world-search-box')) searchResults && (searchResults.hidden = true);
-    });
+    };
+    document.addEventListener('click', outsideClickHandler);
   };
 
   const renderWorkspace = () => {
@@ -550,6 +557,8 @@ export function launchWorldExplorer({ game, mount, onProgress }) {
     controller.abort();
     resizeObserver?.disconnect();
     resizeObserver = null;
+    if (outsideClickHandler) document.removeEventListener('click', outsideClickHandler);
+    outsideClickHandler = null;
     if (globe) {
       try {
         globe.controls().autoRotate = false;
