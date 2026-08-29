@@ -51,10 +51,10 @@ function mountKidsCard() {
   addPrefetch(card);
 
   const count = document.getElementById('heroCenterCount');
-  if (count) count.textContent = Number(7).toLocaleString('ar-SA');
+  if (count) count.textContent = Number(6).toLocaleString('ar-SA');
 
   const heading = document.querySelector('#centers .section-heading .eyebrow');
-  if (heading) heading.textContent = 'SEVEN GRAND LEARNING CENTERS';
+  if (heading) heading.textContent = 'SIX GRAND LEARNING CENTERS';
   return true;
 }
 
