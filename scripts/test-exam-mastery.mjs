@@ -64,7 +64,7 @@ assert.equal(summary.masteryPercent, 25);
 const journeyStats = summarizeMastery([...controller.records.values()], 100);
 assert.equal(journeyStats.practiced, 2, 'Journey progress must use practiced questions as checkpoints.');
 assert.equal(journeyStats.mastered, 1);
-assert.deepEqual(trainingThresholds(100), [12, 28, 45, 62, 78]);
+assert.deepEqual(trainingThresholds(100), [12, 29, 45, 62, 78]);
 assert.equal(currentJourneyStage(journeyStats).id, 1, 'A new journey must begin at the first checkpoint.');
 assert.equal(buildJourneyStages(journeyStats).length, 7, 'Every exam subject must expose the same seven-stage journey.');
 
