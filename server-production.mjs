@@ -1,8 +1,6 @@
 import { createServer } from 'node:http';
 import { closeAdminDashboardDatabase, handleAdminDashboardApi } from './server/admin-dashboard.mjs';
 import { closeAdminUsersDatabase, handleAdminUsersApi } from './server/admin-users.mjs';
-import { handleAtariCoverMetadataApi } from './server/atari-cover-metadata.mjs';
-import { handleAtariGoogleDriveApi, getAtariDriveRuntimeStatus } from './server/atari-google-drive.mjs';
 import { closeCompetitionDatabase, handleCompetitionApi } from './server/competition.mjs';
 import { closePlatformAccessDatabase, guardPlatformAccess, handlePlatformAccessApi } from './server/platform-access.mjs';
 import { closeProgressDatabase, handleProgressApi } from './server/progress.mjs';
@@ -60,16 +58,12 @@ function handleHealth(req, res, requestPath) {
     res.end();
     return true;
   }
-  const atariDrive = getAtariDriveRuntimeStatus();
   sendJson(res, 200, {
     status: 'ok',
     service: 'neon-learning-platform',
     runtime: 'modern',
     legacyRuntime: false,
-    commitSha: deploymentCommitSha,
-    integrations: {
-      atariGoogleDrive: { configured: atariDrive.configured }
-    }
+    commitSha: deploymentCommitSha
   }, { headOnly: req.method === 'HEAD' });
   return true;
 }
@@ -92,8 +86,6 @@ const server = createServer(async (req, res) => {
     if (handleRetiredRoutes(req, res, requestPath)) return;
     if (await handlePlatformAccessApi(req, res, requestPath)) return;
     if (await guardPlatformAccess(req, res, requestPath)) return;
-    if (await handleAtariGoogleDriveApi(req, res, requestPath)) return;
-    if (await handleAtariCoverMetadataApi(req, res, requestPath)) return;
     if (await handleAdminUsersApi(req, res, requestPath, readJsonBody)) return;
     if (await handleAdminDashboardApi(req, res, requestPath, readJsonBody)) return;
     if (await handleStudentStateApi(req, res, requestPath, readJsonBody)) return;
@@ -135,6 +127,5 @@ process.once('SIGINT', () => shutdown('SIGINT'));
 
 server.listen(port, host, () => {
   const database = process.env.DATABASE_URL || process.env.PROGRESS_DATABASE_URL ? 'postgresql' : 'local queue';
-  const atariDrive = getAtariDriveRuntimeStatus();
-  console.log(`NEON listening on http://${host}:${port} | Progress: ${database} | Student state: ${database} | Access control: enabled | Admin RBAC: enabled | Atari Drive: ${atariDrive.configured ? 'configured' : 'pending credentials'} | Competitions: enabled | Success dashboard: enabled | Tutor: retired | Health: /healthz`);
+  console.log(`NEON listening on http://${host}:${port} | Progress: ${database} | Student state: ${database} | Access control: enabled | Admin RBAC: enabled | Competitions: enabled | Success dashboard: enabled | Tutor: retired | Health: /healthz`);
 });
