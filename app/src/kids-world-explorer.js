@@ -8,6 +8,30 @@ const REGION_AR = {
   Oceania: 'أوقيانوسيا', Antarctic: 'القارة القطبية الجنوبية'
 };
 
+const REGION_HUES = {
+  Africa: 35,
+  Americas: 145,
+  Asia: 194,
+  Europe: 268,
+  Oceania: 325,
+  Antarctic: 184
+};
+
+const ATLAS_NAME_ALIASES = {
+  'united states of america': 'united states',
+  'dem rep congo': 'dr congo',
+  'central african rep': 'central african republic',
+  'dominican rep': 'dominican republic',
+  'eq guinea': 'equatorial guinea',
+  'bosnia and herz': 'bosnia and herzegovina',
+  's sudan': 'south sudan',
+  'solomon is': 'solomon islands',
+  'cote d ivoire': 'ivory coast',
+  'somaliland': 'somalia'
+};
+
+const SKIP_NEAREST_ATLAS = new Set(['antarctica', 'western sahara', 'kosovo', 'n cyprus']);
+
 const VIEW_PRESETS = [
   ['العالم', 20, 15, 2.35], ['الخليج', 25, 50, 1.45], ['الوطن العربي', 25, 33, 1.85],
   ['آسيا', 32, 92, 2.05], ['أفريقيا', 5, 20, 1.9], ['أوروبا', 50, 15, 1.65],
@@ -16,6 +40,7 @@ const VIEW_PRESETS = [
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const toRad = value => value * Math.PI / 180;
+const toDeg = value => value * 180 / Math.PI;
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, char => ({
@@ -25,6 +50,7 @@ function escapeHtml(value) {
 
 function normalize(value) {
   return String(value || '').toLowerCase().normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[\u064B-\u065F\u0670]/g, '').replace(/[أإآ]/g, 'ا')
     .replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 }
@@ -51,10 +77,11 @@ function prepareCountry(raw) {
   const nameAr = countryNameAr(raw);
   const nameEn = raw.name?.common || raw.cca3;
   const capital = raw.capital?.[0] || 'لا توجد عاصمة محددة';
-  const region = REGION_AR[raw.region] || raw.region || '—';
+  const regionKey = raw.region || '';
+  const region = REGION_AR[regionKey] || regionKey || '—';
   const flag = raw.flags?.svg || raw.flags?.png || `https://flagcdn.com/w320/${String(raw.cca2 || '').toLowerCase()}.png`;
   return {
-    cca2: raw.cca2, cca3: raw.cca3, nameAr, nameEn, capital, region,
+    cca2: raw.cca2, cca3: raw.cca3, nameAr, nameEn, capital, region, regionKey,
     subregion: raw.subregion || '', languages, currencies, population: Number(raw.population) || 0,
     lat: Number.isFinite(lat) ? lat : 0, lng: Number.isFinite(lng) ? lng : 0, flag,
     searchText: normalize(`${nameAr} ${nameEn} ${raw.cca2} ${raw.cca3} ${capital}`)
@@ -110,11 +137,100 @@ function featureRings(feature) {
   return [];
 }
 
+function featureCenter(feature) {
+  let sx = 0, sy = 0, sz = 0, count = 0;
+  for (const ring of featureRings(feature)) {
+    const step = Math.max(1, Math.floor(ring.length / 90));
+    for (let index = 0; index < ring.length; index += step) {
+      const [lng, lat] = ring[index] || [];
+      if (!Number.isFinite(lng) || !Number.isFinite(lat)) continue;
+      const phi = toRad(lat);
+      const lambda = toRad(lng);
+      const cosPhi = Math.cos(phi);
+      sx += cosPhi * Math.cos(lambda);
+      sy += cosPhi * Math.sin(lambda);
+      sz += Math.sin(phi);
+      count += 1;
+    }
+  }
+  if (!count) return null;
+  const lng = toDeg(Math.atan2(sy, sx));
+  const hyp = Math.hypot(sx, sy);
+  const lat = toDeg(Math.atan2(sz, hyp));
+  return { lat, lng };
+}
+
+function angularDistance(a, b) {
+  const p1 = toRad(a.lat), p2 = toRad(b.lat);
+  const dLat = p2 - p1;
+  const dLng = toRad(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dLng / 2) ** 2;
+  return toDeg(2 * Math.atan2(Math.sqrt(h), Math.sqrt(Math.max(0, 1 - h))));
+}
+
+function linkPolygon(feature, countries, byName) {
+  const featureName = normalize(feature?.properties?.name || feature?.properties?.NAME_EN || feature?.properties?.ADMIN || '');
+  const alias = ATLAS_NAME_ALIASES[featureName] || featureName;
+  let country = byName.get(alias) || null;
+
+  if (!country && !SKIP_NEAREST_ATLAS.has(featureName)) {
+    const center = featureCenter(feature);
+    if (center) {
+      let best = null;
+      let bestDistance = Infinity;
+      for (const candidate of countries) {
+        const distance = angularDistance(center, candidate);
+        if (distance < bestDistance) { bestDistance = distance; best = candidate; }
+      }
+      if (bestDistance <= 9) country = best;
+    }
+  }
+
+  return { ...feature, __iso3: country?.cca3 || '', __country: country };
+}
+
+function hashString(value) {
+  let hash = 2166136261;
+  for (const char of String(value || '')) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return Math.abs(hash >>> 0);
+}
+
+function countryPalette(country) {
+  if (!country) return { fill: 'hsl(205 34% 42%)', hover: 'hsl(192 90% 62%)', glow: '#67e8f9' };
+  const base = REGION_HUES[country.regionKey] ?? 205;
+  const hash = hashString(country.cca3);
+  const hue = (base + (hash % 25) - 12 + 360) % 360;
+  const saturation = 67 + (hash % 12);
+  const lightness = 47 + (hash % 9);
+  return {
+    fill: `hsl(${hue} ${saturation}% ${lightness}%)`,
+    hover: `hsl(${hue} 92% 67%)`,
+    glow: `hsl(${hue} 100% 72%)`
+  };
+}
+
+function pointInPolygon(x, y, points) {
+  let inside = false;
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    const xi = points[i].x, yi = points[i].y;
+    const xj = points[j].x, yj = points[j].y;
+    const intersects = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / ((yj - yi) || 1e-9) + xi);
+    if (intersects) inside = !inside;
+  }
+  return inside;
+}
+
 function createNativeGlobe(host, countries, polygons, onCountryClick) {
   const canvas = document.createElement('canvas');
   canvas.setAttribute('aria-label', 'كرة أرضية تفاعلية');
   canvas.tabIndex = 0;
-  host.replaceChildren(canvas);
+  const tooltip = document.createElement('div');
+  tooltip.className = 'world-globe-tooltip';
+  tooltip.setAttribute('aria-hidden', 'true');
+  host.replaceChildren(canvas, tooltip);
 
   const ctx = canvas.getContext('2d', { alpha: true });
   if (!ctx) throw new Error('Canvas 2D غير مدعوم في هذا المتصفح.');
@@ -126,15 +242,19 @@ function createNativeGlobe(host, countries, polygons, onCountryClick) {
   let viewLng = 35;
   let zoom = 1;
   let selectedIso = '';
+  let hoveredIso = '';
+  let hoveredCountry = null;
   let destroyed = false;
   let frame = 0;
   let lastTime = performance.now();
   let activeTween = null;
   let projectedCountries = [];
+  let projectedPolygons = [];
   const pointerMap = new Map();
   let dragStart = null;
   let dragMoved = false;
   let pinchStart = null;
+  const mappedIso = new Set(polygons.map(feature => feature.__country?.cca3).filter(Boolean));
 
   const controls = { autoRotate: true, autoRotateSpeed: 0.35, enableDamping: true, dampingFactor: 0.08 };
 
@@ -176,10 +296,24 @@ function createNativeGlobe(host, countries, polygons, onCountryClick) {
     ctx.stroke();
   };
 
+  const visibleSegments = ring => {
+    const step = Math.max(1, Math.floor(ring.length / 500));
+    const segments = [];
+    let segment = [];
+    for (let index = 0; index < ring.length; index += step) {
+      const [lng, lat] = ring[index] || [];
+      const p = project(lat, lng);
+      if (p.visible) segment.push(p);
+      else if (segment.length) { if (segment.length >= 3) segments.push(segment); segment = []; }
+    }
+    if (segment.length >= 3) segments.push(segment);
+    return segments;
+  };
+
   const drawGrid = () => {
     ctx.save();
-    ctx.strokeStyle = 'rgba(126,232,255,.10)';
-    ctx.lineWidth = 0.7;
+    ctx.strokeStyle = 'rgba(126,232,255,.09)';
+    ctx.lineWidth = 0.65;
     for (let lat = -60; lat <= 60; lat += 30) {
       const points = [];
       for (let lng = -180; lng <= 180; lng += 4) points.push([lng, lat]);
@@ -193,53 +327,120 @@ function createNativeGlobe(host, countries, polygons, onCountryClick) {
     ctx.restore();
   };
 
-  const drawPolygons = () => {
-    for (const feature of polygons) {
-      const selected = feature.__iso3 === selectedIso;
+  const paintSegments = (segments, options = {}) => {
+    for (const points of segments) {
       ctx.save();
-      ctx.strokeStyle = selected ? 'rgba(202,249,255,.98)' : 'rgba(119,205,245,.42)';
-      ctx.lineWidth = selected ? 2.2 : 0.75;
-      if (selected) { ctx.shadowColor = '#6ee9ff'; ctx.shadowBlur = 10; }
-      for (const ring of featureRings(feature)) {
-        const step = Math.max(1, Math.floor(ring.length / 650));
-        const sampled = step === 1 ? ring : ring.filter((_, index) => index % step === 0);
-        drawCurve(sampled);
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let index = 1; index < points.length; index += 1) ctx.lineTo(points[index].x, points[index].y);
+      ctx.closePath();
+      if (options.shadowColor) {
+        ctx.shadowColor = options.shadowColor;
+        ctx.shadowBlur = options.shadowBlur || 0;
       }
+      if (options.fillStyle) {
+        ctx.globalAlpha = options.fillAlpha ?? 1;
+        ctx.fillStyle = options.fillStyle;
+        ctx.fill();
+      }
+      ctx.globalAlpha = options.strokeAlpha ?? 1;
+      ctx.strokeStyle = options.strokeStyle || 'rgba(224,246,255,.55)';
+      ctx.lineWidth = options.lineWidth || 0.75;
+      ctx.stroke();
       ctx.restore();
     }
   };
 
-  const drawCountries = () => {
+  const drawPolygons = now => {
+    projectedPolygons = [];
+    const hasFocus = Boolean(selectedIso || hoveredIso);
+
+    for (const feature of polygons) {
+      const country = feature.__country;
+      const iso = country?.cca3 || '';
+      const selected = Boolean(iso && iso === selectedIso);
+      const hovered = Boolean(iso && iso === hoveredIso);
+      const palette = countryPalette(country);
+      const segments = featureRings(feature).flatMap(visibleSegments);
+      if (country) for (const points of segments) projectedPolygons.push({ country, points });
+      const dimmed = hasFocus && !selected && !hovered;
+      paintSegments(segments, {
+        fillStyle: palette.fill,
+        fillAlpha: country ? (dimmed ? 0.34 : 0.76) : 0.18,
+        strokeStyle: country ? 'rgba(231,248,255,.62)' : 'rgba(174,210,229,.25)',
+        strokeAlpha: dimmed ? 0.34 : 0.68,
+        lineWidth: 0.72
+      });
+    }
+
+    const hoveredFeature = hoveredIso ? polygons.find(feature => feature.__iso3 === hoveredIso) : null;
+    if (hoveredFeature && hoveredIso !== selectedIso) {
+      const palette = countryPalette(hoveredFeature.__country);
+      const segments = featureRings(hoveredFeature).flatMap(visibleSegments);
+      paintSegments(segments, {
+        fillStyle: palette.hover,
+        fillAlpha: 0.86,
+        strokeStyle: '#eaffff',
+        strokeAlpha: 0.98,
+        lineWidth: 1.8,
+        shadowColor: palette.glow,
+        shadowBlur: 18
+      });
+    }
+
+    const selectedFeature = selectedIso ? polygons.find(feature => feature.__iso3 === selectedIso) : null;
+    if (selectedFeature) {
+      const pulse = 0.5 + 0.5 * Math.sin(now / 260);
+      const palette = countryPalette(selectedFeature.__country);
+      const segments = featureRings(selectedFeature).flatMap(visibleSegments);
+      paintSegments(segments, {
+        fillStyle: palette.hover,
+        fillAlpha: 0.92,
+        strokeStyle: '#ffffff',
+        strokeAlpha: 1,
+        lineWidth: 2.1 + pulse * 0.9,
+        shadowColor: palette.glow,
+        shadowBlur: 22 + pulse * 20
+      });
+    }
+  };
+
+  const drawCountries = now => {
     projectedCountries = [];
     for (const country of countries) {
       const p = project(country.lat, country.lng);
       if (!p.visible) continue;
       projectedCountries.push({ country, ...p });
       const selected = country.cca3 === selectedIso;
-      const dot = selected ? 6.5 : 2.6;
+      const hovered = country.cca3 === hoveredIso;
+      const mapped = mappedIso.has(country.cca3);
+      if (mapped && !selected && !hovered) continue;
+
+      const pulse = 0.5 + 0.5 * Math.sin(now / 240);
+      const dot = selected ? 6.3 + pulse * 1.5 : hovered ? 4.8 : 2.2;
       ctx.save();
       ctx.beginPath();
       ctx.arc(p.x, p.y, dot, 0, Math.PI * 2);
-      ctx.fillStyle = selected ? '#ffffff' : 'rgba(255,218,104,.92)';
-      ctx.shadowColor = selected ? '#7cf4ff' : 'rgba(255,215,95,.7)';
-      ctx.shadowBlur = selected ? 18 : 7;
+      ctx.fillStyle = selected ? '#ffffff' : hovered ? '#dfffff' : 'rgba(255,241,183,.76)';
+      ctx.shadowColor = selected || hovered ? '#7cf4ff' : 'rgba(255,225,120,.45)';
+      ctx.shadowBlur = selected ? 20 + pulse * 12 : hovered ? 15 : 5;
       ctx.fill();
-      if (selected) {
-        ctx.font = '800 12px system-ui, sans-serif';
+      if (selected || hovered) {
+        ctx.font = `${selected ? 800 : 700} 12px system-ui, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
         const text = country.nameAr;
         const tw = ctx.measureText(text).width;
-        ctx.fillStyle = 'rgba(5,14,33,.88)';
-        ctx.fillRect(p.x - tw / 2 - 8, p.y - 38, tw + 16, 24);
+        ctx.fillStyle = 'rgba(5,14,33,.91)';
+        ctx.fillRect(p.x - tw / 2 - 8, p.y - 39, tw + 16, 24);
         ctx.fillStyle = '#fff';
-        ctx.fillText(text, p.x, p.y - 19);
+        ctx.fillText(text, p.x, p.y - 20);
       }
       ctx.restore();
     }
   };
 
-  const draw = () => {
+  const draw = now => {
     ctx.clearRect(0, 0, width, height);
     const r = radius();
     const cx = width / 2;
@@ -267,12 +468,12 @@ function createNativeGlobe(host, countries, polygons, onCountryClick) {
     ctx.fillStyle = ocean;
     ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
     drawGrid();
-    drawPolygons();
-    drawCountries();
+    drawPolygons(now);
+    drawCountries(now);
     const shade = ctx.createRadialGradient(cx - r * .34, cy - r * .30, r * .2, cx + r * .25, cy + r * .18, r * 1.05);
-    shade.addColorStop(0, 'rgba(255,255,255,.08)');
-    shade.addColorStop(.55, 'rgba(0,0,0,0)');
-    shade.addColorStop(1, 'rgba(0,4,16,.56)');
+    shade.addColorStop(0, 'rgba(255,255,255,.07)');
+    shade.addColorStop(.58, 'rgba(0,0,0,0)');
+    shade.addColorStop(1, 'rgba(0,4,16,.50)');
     ctx.fillStyle = shade;
     ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
     ctx.restore();
@@ -293,17 +494,21 @@ function createNativeGlobe(host, countries, polygons, onCountryClick) {
     const delta = Math.min(50, now - lastTime);
     lastTime = now;
     animateView(now);
-    if (controls.autoRotate && !pointerMap.size && !activeTween) viewLng = (viewLng + delta * 0.0022 * controls.autoRotateSpeed + 540) % 360 - 180;
-    draw();
+    if (controls.autoRotate && !pointerMap.size && !activeTween && !hoveredIso) viewLng = (viewLng + delta * 0.0022 * controls.autoRotateSpeed + 540) % 360 - 180;
+    draw(now);
     frame = requestAnimationFrame(loop);
   };
 
   const hitTest = (x, y) => {
+    for (let index = projectedPolygons.length - 1; index >= 0; index -= 1) {
+      const item = projectedPolygons[index];
+      if (pointInPolygon(x, y, item.points)) return item.country;
+    }
     let best = null;
     let bestDistance = Infinity;
     for (const item of projectedCountries) {
       const distance = Math.hypot(item.x - x, item.y - y);
-      if (distance < bestDistance && distance <= 15) { best = item.country; bestDistance = distance; }
+      if (distance < bestDistance && distance <= 16) { best = item.country; bestDistance = distance; }
     }
     return best;
   };
@@ -311,6 +516,23 @@ function createNativeGlobe(host, countries, polygons, onCountryClick) {
   const pointerPosition = event => {
     const rect = canvas.getBoundingClientRect();
     return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+  };
+
+  const updateTooltip = (country, point) => {
+    hoveredCountry = country || null;
+    hoveredIso = country?.cca3 || '';
+    if (!country || !point) {
+      tooltip.classList.remove('visible');
+      tooltip.setAttribute('aria-hidden', 'true');
+      canvas.style.cursor = pointerMap.size ? 'grabbing' : 'grab';
+      return;
+    }
+    tooltip.innerHTML = `<b>${escapeHtml(country.nameAr)}</b><span>${escapeHtml(country.nameEn)} • ${escapeHtml(country.region)}</span>`;
+    tooltip.style.left = `${clamp(point.x + 16, 12, Math.max(12, width - 190))}px`;
+    tooltip.style.top = `${clamp(point.y - 12, 12, Math.max(12, height - 70))}px`;
+    tooltip.classList.add('visible');
+    tooltip.setAttribute('aria-hidden', 'false');
+    canvas.style.cursor = 'pointer';
   };
 
   const updatePinch = () => {
@@ -328,12 +550,16 @@ function createNativeGlobe(host, countries, polygons, onCountryClick) {
     dragStart = { ...p, lat: viewLat, lng: viewLng };
     dragMoved = false;
     controls.autoRotate = false;
+    updateTooltip(null);
     updatePinch();
   });
 
   canvas.addEventListener('pointermove', event => {
-    if (!pointerMap.has(event.pointerId)) return;
     const p = pointerPosition(event);
+    if (!pointerMap.has(event.pointerId)) {
+      updateTooltip(hitTest(p.x, p.y), p);
+      return;
+    }
     const previous = pointerMap.get(event.pointerId);
     pointerMap.set(event.pointerId, p);
     if (pointerMap.size === 2) { updatePinch(); return; }
@@ -357,17 +583,33 @@ function createNativeGlobe(host, countries, polygons, onCountryClick) {
       }
       dragStart = null;
       dragMoved = false;
+      updateTooltip(hitTest(p.x, p.y), p);
     }
   };
+
   canvas.addEventListener('pointerup', endPointer);
-  canvas.addEventListener('pointercancel', event => { pointerMap.delete(event.pointerId); updatePinch(); });
+  canvas.addEventListener('pointercancel', event => { pointerMap.delete(event.pointerId); updatePinch(); updateTooltip(null); });
+  canvas.addEventListener('pointerleave', () => { if (!pointerMap.size) updateTooltip(null); });
 
   canvas.addEventListener('wheel', event => {
     event.preventDefault();
     controls.autoRotate = false;
     zoom = clamp(zoom * (event.deltaY > 0 ? .92 : 1.08), .72, 1.62);
     activeTween = null;
+    updateTooltip(null);
   }, { passive: false });
+
+  canvas.addEventListener('keydown', event => {
+    if (event.key === 'ArrowLeft') viewLng -= 5;
+    else if (event.key === 'ArrowRight') viewLng += 5;
+    else if (event.key === 'ArrowUp') viewLat = clamp(viewLat + 4, -82, 82);
+    else if (event.key === 'ArrowDown') viewLat = clamp(viewLat - 4, -82, 82);
+    else if (event.key === '+' || event.key === '=') zoom = clamp(zoom * 1.08, .72, 1.62);
+    else if (event.key === '-') zoom = clamp(zoom * .92, .72, 1.62);
+    else return;
+    controls.autoRotate = false;
+    event.preventDefault();
+  });
 
   const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(resize) : null;
   resizeObserver?.observe(host);
@@ -384,17 +626,19 @@ function createNativeGlobe(host, countries, polygons, onCountryClick) {
       const deltaLng = ((rawLng - viewLng + 540) % 360) - 180;
       const altitude = Number(target?.altitude);
       const toZoom = Number.isFinite(altitude) ? clamp(2.25 / altitude, .72, 1.62) : zoom;
+      updateTooltip(null);
       if (!duration) { viewLat = toLat; viewLng += deltaLng; zoom = toZoom; activeTween = null; return this; }
       activeTween = { start: performance.now(), duration: Math.max(120, duration), fromLat: viewLat, toLat, fromLng: viewLng, deltaLng, fromZoom: zoom, toZoom };
       return this;
     },
-    zoomBy(factor) { controls.autoRotate = false; zoom = clamp(zoom * factor, .72, 1.62); activeTween = null; },
+    zoomBy(factor) { controls.autoRotate = false; zoom = clamp(zoom * factor, .72, 1.62); activeTween = null; updateTooltip(null); },
     destroy() {
       destroyed = true;
       cancelAnimationFrame(frame);
       resizeObserver?.disconnect();
       window.removeEventListener('resize', resize);
       pointerMap.clear();
+      hoveredCountry = null;
     }
   };
 }
@@ -453,14 +697,14 @@ export function launchWorldExplorer({ game, mount, onProgress }) {
     const mission = stage.querySelector('#worldMission');
     if (!mission) return;
     if (mode !== 'challenge') {
-      mission.innerHTML = `<span>وضع الاستكشاف الحر</span><b>اختر أي دولة لتعرف معلوماتها</b><small>يمكنك أيضًا البحث باسم الدولة بالعربية أو الإنجليزية.</small>`;
+      mission.innerHTML = `<span>وضع الاستكشاف الحر</span><b>مرّر المؤشر فوق الدولة ثم اضغط عليها لمعرفة معلوماتها</b><small>الدول ملوّنة حسب القارات، والدولة المحددة تضيء تلقائيًا.</small>`;
       return;
     }
     if (!challengeTarget) {
       mission.innerHTML = `<span>تحدي العثور على الدولة</span><b>أكملت الجولة 🎉</b><small>نتيجتك ${challengeScore.toLocaleString('ar-SA')} من ${challengeTotal.toLocaleString('ar-SA')}</small>`;
       return;
     }
-    mission.innerHTML = `<span>تحدي ${challengeRound.toLocaleString('ar-SA')} من ${challengeTotal.toLocaleString('ar-SA')}</span><b>🎯 اعثر على: ${escapeHtml(challengeTarget.nameAr)}</b><small>${message ? escapeHtml(message) : 'حرّك الكرة واضغط على الدولة الصحيحة.'}</small>`;
+    mission.innerHTML = `<span>تحدي ${challengeRound.toLocaleString('ar-SA')} من ${challengeTotal.toLocaleString('ar-SA')}</span><b>🎯 اعثر على: ${escapeHtml(challengeTarget.nameAr)}</b><small>${message ? escapeHtml(message) : 'حرّك الكرة واضغط على جسم الدولة الصحيحة.'}</small>`;
   };
 
   const nextChallenge = () => {
@@ -507,7 +751,7 @@ export function launchWorldExplorer({ game, mount, onProgress }) {
       if (country.cca3 === challengeTarget.cca3) {
         challengeLocked = true; challengeScore += 1;
         challengeText = '✓ ممتاز! عثرت على الدولة الصحيحة.';
-        renderChallengePanel('إجابة صحيحة! استعد للدولة التالية.');
+        renderChallengePanel('إجابة صحيحة! الدولة تضيء الآن، استعد للدولة التالية.');
         window.setTimeout(() => { if (!destroyed && mode === 'challenge') nextChallenge(); }, 1050);
       } else {
         challengeText = `هذه ${country.nameAr}. حاول العثور على ${challengeTarget.nameAr}.`;
@@ -585,12 +829,12 @@ export function launchWorldExplorer({ game, mount, onProgress }) {
 
   const renderWorkspace = () => {
     stage.innerHTML = `<section class="world-3d-explorer" aria-label="الكرة الأرضية التعليمية ثلاثية الأبعاد">
-      <div class="world-3d-intro"><div><span class="runtime-kicker">3D • 360° • جميع دول العالم</span><h3>حرّك الكرة الأرضية واكتشف الدول بنفسك</h3><p>اسحب للتدوير، استخدم عجلة الفأرة أو إصبعين للتكبير والتصغير، ثم اضغط على أي دولة لعرض معلوماتها.</p></div>
+      <div class="world-3d-intro"><div><span class="runtime-kicker">3D • 360° • جميع دول العالم</span><h3>حرّك الكرة الأرضية واكتشف الدول بنفسك</h3><p>كل قارة لها طيف لوني خاص، وكل دولة لها درجة مختلفة. مرّر المؤشر لتضيء الدولة، واضغط عليها لتثبيت الإضاءة وعرض معلوماتها.</p></div>
       <div class="world-mode-actions"><button class="active" type="button" data-world-mode="explore">🧭 استكشاف حر</button><button type="button" data-world-mode="challenge">🎯 تحدي العثور</button><button class="active" type="button" data-world-spin>⏸ إيقاف الدوران</button><button type="button" data-world-zoom-in>＋ تكبير</button><button type="button" data-world-zoom-out>－ تصغير</button><button type="button" data-world-directory>☷ جميع الدول</button></div></div>
       <div class="world-search-row"><div class="world-search-box"><span>⌕</span><input id="worldCountrySearch" type="search" autocomplete="off" placeholder="ابحث عن دولة: السعودية، اليابان، Brazil..." aria-label="البحث عن دولة"><div id="worldSearchResults" class="world-search-results" hidden></div></div>
       <div class="world-view-presets">${VIEW_PRESETS.map(([label, lat, lng, altitude]) => `<button type="button" data-view-lat="${lat}" data-view-lng="${lng}" data-view-altitude="${altitude}">${label}</button>`).join('')}</div></div>
       <div id="worldMission" class="world-mission"></div>
-      <div class="world-3d-grid"><div class="world-globe-card"><div id="worldGlobe" class="world-globe" role="application" aria-label="كرة أرضية ثلاثية الأبعاد قابلة للدوران">${loadingMarkup()}</div><div class="world-globe-hints"><span>↔ اسحب للدوران 360°</span><span>＋/－ قرّب وأبعد</span><span>● اضغط على الدولة</span></div></div><aside id="worldCountryCard" class="world-country-card" aria-live="polite">${countryCard(null)}</aside></div>
+      <div class="world-3d-grid"><div class="world-globe-card"><div id="worldGlobe" class="world-globe" role="application" aria-label="كرة أرضية ثلاثية الأبعاد قابلة للدوران">${loadingMarkup()}</div><div class="world-globe-hints"><span>↔ اسحب للدوران 360°</span><span>＋/－ قرّب وأبعد</span><span>✨ مرّر فوق الدولة</span><span>◉ اضغط على جسم الدولة</span></div></div><aside id="worldCountryCard" class="world-country-card" aria-live="polite">${countryCard(null)}</aside></div>
       <section id="worldDirectoryPanel" class="world-directory-panel"><header><div><span>جميع دول العالم</span><b id="worldCountryCount">${countries.length.toLocaleString('ar-SA')} دولة</b></div><small>بديل سريع للدول الصغيرة التي يصعب الضغط عليها على الكرة.</small></header><div id="worldDirectory" class="world-directory"></div></section>
     </section>`;
     renderChallengePanel(); renderDirectory(); bindInterface();
@@ -608,26 +852,28 @@ export function launchWorldExplorer({ game, mount, onProgress }) {
       countries = rawCountries.filter(raw => raw?.cca3 && (raw.unMember || raw.cca3 === 'PSE' || raw.cca3 === 'VAT')).map(prepareCountry).sort((a, b) => a.nameAr.localeCompare(b.nameAr, 'ar'));
       if (!countries.length) throw new Error('قاعدة بيانات الدول فارغة.');
 
-      setProgress(4, `تم تجهيز ${countries.length} دولة • تجهيز الكرة 3D محليًا…`);
+      setProgress(4, `تم تجهيز ${countries.length} دولة • تجهيز الخريطة الملونة…`);
       renderWorkspace();
 
       let geoResult = null;
       try { geoResult = await fetchJson(GEOJSON_URL, controller.signal, 9000); } catch (geoError) { console.warn('World Explorer borders fallback:', geoError); }
       if (destroyed) return;
-      const byIso3 = new Map(countries.map(country => [country.cca3, country]));
-      polygons = (geoResult?.features || []).map(feature => {
-        const iso3 = String(feature.id || feature.properties?.iso_a3 || feature.properties?.ISO_A3 || '').toUpperCase();
-        return { ...feature, __iso3: iso3, __country: byIso3.get(iso3) || null };
-      });
+      const byName = new Map();
+      for (const country of countries) {
+        byName.set(normalize(country.nameEn), country);
+        byName.set(normalize(country.cca3), country);
+      }
+      polygons = (geoResult?.features || []).map(feature => linkPolygon(feature, countries, byName));
       const globeHost = stage.querySelector('#worldGlobe');
       globe = createNativeGlobe(globeHost, countries, polygons, country => selectCountry(country, false));
       globe.pointOfView({ lat: 23, lng: 35, altitude: 2.25 }, 0);
       const controls = globe.controls(); controls.autoRotate = true; controls.autoRotateSpeed = 0.35;
-      setProgress(5, `جاهز للاستكشاف • ${countries.length} دولة${polygons.length ? '' : ' • عرض النقاط التفاعلية'}`);
+      const mappedCount = new Set(polygons.map(feature => feature.__country?.cca3).filter(Boolean)).size;
+      setProgress(5, `جاهز للاستكشاف • ${countries.length} دولة • ${mappedCount} دولة بحدود تفاعلية`);
     } catch (error) {
       if (destroyed || error?.name === 'AbortError') return;
       console.error('World Explorer 3D failed:', error);
-      stage.innerHTML = errorMarkup('تعذر الوصول إلى قاعدة بيانات الدول حاليًا. أعد المحاولة بعد لحظات. الكرة نفسها أصبحت تعمل محليًا ولا تعتمد على مكتبة خرائط خارجية.');
+      stage.innerHTML = errorMarkup('تعذر تجهيز بيانات الكرة الأرضية حاليًا. أعد المحاولة بعد لحظات.');
       stage.querySelector('[data-world-retry]')?.addEventListener('click', setupGlobe, { once: true });
       setProgress(0, 'تعذر تحميل بيانات الدول');
     }
