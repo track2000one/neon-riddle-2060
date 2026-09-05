@@ -1,24 +1,24 @@
-/* Final professional subject-card layout for /exams */
+/* Compact unified subject cards for /exams */
 body.center-body main{
-  width:calc(100% - clamp(24px,4vw,72px))!important;
+  width:calc(100% - clamp(24px,4vw,64px))!important;
   max-width:none!important;
   margin-inline:auto!important;
-  padding-top:clamp(34px,4vw,56px)!important;
+  padding-top:clamp(28px,3vw,44px)!important;
 }
 
 body.center-body .exam-hero,
-body.center-body .exam-subjects,
 body.center-body .exam-setup{
-  width:100%;
-  max-width:none;
+  width:min(1180px,100%);
+  margin-inline:auto;
 }
 
 .exam-subjects{
+  width:min(1120px,100%)!important;
+  margin:clamp(18px,2vw,26px) auto 0!important;
   display:grid!important;
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  gap:clamp(18px,2vw,30px)!important;
+  gap:clamp(16px,1.6vw,22px)!important;
   align-items:stretch!important;
-  margin-top:clamp(18px,2vw,28px)!important;
 }
 
 .exam-subject.glass-reference-card{
@@ -34,56 +34,58 @@ body.center-body .exam-setup{
     "title title"
     "desc desc"
     "count arrow";
-  grid-template-rows:minmax(0,1fr) auto auto minmax(48px,auto) auto;
-  gap:clamp(8px,1vw,14px) clamp(12px,1.2vw,18px);
-  min-height:0!important;
-  aspect-ratio:.92 / 1;
-  padding:clamp(20px,2.1vw,32px)!important;
-  border-radius:clamp(22px,2vw,30px)!important;
+  grid-template-rows:145px auto auto minmax(42px,1fr) auto;
+  gap:7px 12px;
+  height:clamp(350px,28vw,390px)!important;
+  min-height:350px!important;
+  padding:17px 18px 16px!important;
+  border-radius:23px!important;
   text-align:center!important;
   background:
-    radial-gradient(circle at 50% 13%,color-mix(in srgb,var(--card-accent) 16%,transparent),transparent 34%),
-    linear-gradient(160deg,rgba(15,44,84,.98),rgba(8,29,63,.99) 54%,rgba(5,20,48,.995))!important;
-  border:1px solid color-mix(in srgb,var(--card-accent) 58%,rgba(255,255,255,.16))!important;
+    radial-gradient(circle at 50% 13%,color-mix(in srgb,var(--card-accent) 14%,transparent),transparent 35%),
+    linear-gradient(160deg,rgba(15,44,84,.98),rgba(8,29,63,.99) 55%,rgba(5,20,48,.995))!important;
+  border:1px solid color-mix(in srgb,var(--card-accent) 54%,rgba(255,255,255,.15))!important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.08),
-    inset 0 0 0 1px rgba(255,255,255,.022),
-    0 18px 46px rgba(0,0,0,.26),
-    0 0 24px color-mix(in srgb,var(--card-accent) 9%,transparent)!important;
-  transition:transform .24s ease,border-color .24s ease,box-shadow .24s ease,background .24s ease;
+    inset 0 1px 0 rgba(255,255,255,.075),
+    0 14px 34px rgba(0,0,0,.24),
+    0 0 18px color-mix(in srgb,var(--card-accent) 7%,transparent)!important;
+  transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease,background .22s ease;
 }
 
 .exam-subject.glass-reference-card::before{
   content:"";
   position:absolute;
-  inset:8px;
+  inset:6px;
   z-index:0;
-  border-radius:calc(clamp(22px,2vw,30px) - 7px);
-  border:1px solid rgba(255,255,255,.045);
-  background:linear-gradient(145deg,rgba(255,255,255,.025),transparent 35%,transparent 70%,color-mix(in srgb,var(--card-accent) 3%,transparent));
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.04);
+  background:linear-gradient(145deg,rgba(255,255,255,.02),transparent 38%,transparent 72%,color-mix(in srgb,var(--card-accent) 3%,transparent));
   pointer-events:none;
 }
 
 .exam-subject.glass-reference-card::after{
   content:"";
   position:absolute;
-  inset:-18% 18% 48%;
+  width:190px;
+  height:190px;
+  left:50%;
+  top:-20px;
+  translate:-50% 0;
   z-index:0;
   border-radius:50%;
-  background:radial-gradient(circle,color-mix(in srgb,var(--card-accent) 18%,transparent),transparent 67%);
-  filter:blur(22px);
+  background:radial-gradient(circle,color-mix(in srgb,var(--card-accent) 16%,transparent),transparent 68%);
+  filter:blur(18px);
   pointer-events:none;
 }
 
 .exam-subject.glass-reference-card>*{position:relative;z-index:2}
 
-.exam-subject .exam-subject-icon.neon-subject-icon{
+.exam-subject .exam-subject-icon.neon-subject-icon.generated-crystal-art{
   grid-area:icon;
   justify-self:center;
   align-self:center;
-  width:62%!important;
-  height:auto!important;
-  aspect-ratio:1.16/1;
+  width:168px!important;
+  height:140px!important;
   margin:0!important;
   display:grid!important;
   place-items:center;
@@ -93,49 +95,58 @@ body.center-body .exam-setup{
   outline:0!important;
   box-shadow:none!important;
   transform:none!important;
-  transition:transform .26s ease,filter .26s ease;
+  transition:transform .24s ease,filter .24s ease;
 }
 
-.exam-subject .exam-subject-icon.neon-subject-icon::before,
-.exam-subject .exam-subject-icon.neon-subject-icon::after{display:none!important}
+.exam-subject .exam-subject-icon.generated-crystal-art::before,
+.exam-subject .exam-subject-icon.generated-crystal-art::after{display:none!important}
+
+.exam-subject .exam-subject-icon.generated-crystal-art svg{
+  display:block;
+  width:100%;
+  height:100%;
+  overflow:visible;
+  filter:drop-shadow(0 10px 12px rgba(0,0,0,.24));
+}
 
 .exam-subject.glass-reference-card>small{
   grid-area:family;
   justify-self:center;
-  margin:0!important;
-  padding:7px 16px 8px;
   width:max-content;
+  margin:0!important;
+  padding:5px 12px 6px;
   border-radius:999px;
   color:#edf7ff!important;
-  font-size:clamp(11px,.85vw,14px)!important;
+  font-size:11px!important;
   line-height:1;
   font-weight:900;
-  background:linear-gradient(135deg,color-mix(in srgb,var(--card-accent) 20%,rgba(255,255,255,.04)),rgba(255,255,255,.035));
-  border:1px solid color-mix(in srgb,var(--card-accent) 60%,rgba(255,255,255,.16));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.11),0 0 16px color-mix(in srgb,var(--card-accent) 12%,transparent);
+  background:color-mix(in srgb,var(--card-accent) 13%,rgba(255,255,255,.035));
+  border:1px solid color-mix(in srgb,var(--card-accent) 54%,rgba(255,255,255,.15));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 11px color-mix(in srgb,var(--card-accent) 9%,transparent);
 }
 
 .exam-subject.glass-reference-card>strong{
   grid-area:title;
-  margin:0!important;
+  display:block;
+  margin:3px 0 0!important;
   color:#fff!important;
-  font-size:clamp(24px,2vw,34px)!important;
+  font-size:clamp(20px,1.45vw,24px)!important;
   line-height:1.25!important;
   font-weight:1000!important;
-  letter-spacing:-.45px;
-  text-shadow:0 2px 14px rgba(0,0,0,.28);
+  letter-spacing:-.25px;
+  text-shadow:0 2px 10px rgba(0,0,0,.25);
 }
 
 .exam-subject.glass-reference-card>p{
   grid-area:desc;
   align-self:start;
   justify-self:center;
-  width:min(92%,720px);
+  width:94%;
   min-height:0!important;
-  margin:0!important;
+  margin:1px 0 0!important;
   color:#afc2df!important;
-  font-size:clamp(14px,1.08vw,18px)!important;
-  line-height:1.7!important;
+  font-size:13px!important;
+  line-height:1.55!important;
   text-wrap:balance;
 }
 
@@ -146,28 +157,28 @@ body.center-body .exam-setup{
   display:flex!important;
   align-items:center;
   justify-content:flex-start;
-  gap:9px;
+  gap:7px;
   width:100%;
   margin:0!important;
-  padding-top:clamp(13px,1.2vw,18px)!important;
-  border-top:1px solid rgba(125,186,238,.19);
+  padding-top:11px!important;
+  border-top:1px solid rgba(125,186,238,.17);
   color:#f4f8ff!important;
-  font-size:clamp(13px,.95vw,16px)!important;
+  font-size:12px!important;
   font-weight:900!important;
   text-align:right;
 }
 
 .exam-subject.glass-reference-card>b::before{
   content:"";
-  width:18px;
-  height:22px;
-  flex:0 0 18px;
-  border:2px solid color-mix(in srgb,var(--card-accent) 72%,#dceeff);
-  border-radius:4px;
+  width:15px;
+  height:18px;
+  flex:0 0 15px;
+  border:1.7px solid color-mix(in srgb,var(--card-accent) 72%,#dceeff);
+  border-radius:3px;
   box-sizing:border-box;
   background:
-    linear-gradient(currentColor,currentColor) 4px 6px/8px 2px no-repeat,
-    linear-gradient(currentColor,currentColor) 4px 11px/8px 2px no-repeat;
+    linear-gradient(currentColor,currentColor) 3px 5px/7px 1.5px no-repeat,
+    linear-gradient(currentColor,currentColor) 3px 9px/7px 1.5px no-repeat;
   opacity:.92;
 }
 
@@ -175,19 +186,19 @@ body.center-body .exam-setup{
   grid-area:arrow;
   align-self:end;
   justify-self:end;
-  width:clamp(40px,3vw,50px);
-  aspect-ratio:1;
+  width:38px;
+  height:38px;
   display:grid;
   place-items:center;
   border-radius:50%;
   color:#fff;
-  background:linear-gradient(145deg,color-mix(in srgb,var(--card-accent) 22%,rgba(255,255,255,.06)),rgba(255,255,255,.025));
-  border:1px solid color-mix(in srgb,var(--card-accent) 72%,rgba(255,255,255,.25));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 0 18px color-mix(in srgb,var(--card-accent) 14%,transparent);
-  transition:transform .22s ease,background .22s ease,box-shadow .22s ease;
+  background:color-mix(in srgb,var(--card-accent) 14%,rgba(255,255,255,.035));
+  border:1px solid color-mix(in srgb,var(--card-accent) 68%,rgba(255,255,255,.22));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 0 14px color-mix(in srgb,var(--card-accent) 11%,transparent);
+  transition:transform .2s ease,background .2s ease,box-shadow .2s ease;
 }
 
-.exam-subject .exam-subject-arrow svg{width:48%;height:48%;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.exam-subject .exam-subject-arrow svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 
 .exam-subject[data-subject="qudurat-verbal"]{--card-accent:#9784ff}
 .exam-subject[data-subject="qudurat-quant"]{--card-accent:#69b8ff}
@@ -198,42 +209,39 @@ body.center-body .exam-setup{
 
 .exam-subject.glass-reference-card:hover,
 .exam-subject.glass-reference-card.selected{
-  transform:translateY(-8px)!important;
-  border-color:color-mix(in srgb,var(--card-accent) 84%,white 16%)!important;
+  transform:translateY(-5px)!important;
+  border-color:color-mix(in srgb,var(--card-accent) 82%,white 18%)!important;
   background:
-    radial-gradient(circle at 50% 12%,color-mix(in srgb,var(--card-accent) 24%,transparent),transparent 38%),
+    radial-gradient(circle at 50% 12%,color-mix(in srgb,var(--card-accent) 21%,transparent),transparent 38%),
     linear-gradient(160deg,rgba(18,49,93,.99),rgba(8,30,66,.99) 56%,rgba(6,21,50,.995))!important;
-  box-shadow:
-    0 28px 64px rgba(0,0,0,.34),
-    0 0 32px color-mix(in srgb,var(--card-accent) 20%,transparent),
-    inset 0 1px 0 rgba(255,255,255,.1)!important;
+  box-shadow:0 22px 48px rgba(0,0,0,.31),0 0 25px color-mix(in srgb,var(--card-accent) 16%,transparent),inset 0 1px 0 rgba(255,255,255,.09)!important;
 }
 
-.exam-subject.glass-reference-card:hover .neon-subject-icon,
-.exam-subject.glass-reference-card.selected .neon-subject-icon{
-  transform:translateY(-5px) scale(1.035)!important;
+.exam-subject.glass-reference-card:hover .generated-crystal-art,
+.exam-subject.glass-reference-card.selected .generated-crystal-art{
+  transform:translateY(-3px) scale(1.025)!important;
   filter:brightness(1.06) saturate(1.06);
 }
 
 .exam-subject.glass-reference-card:hover .exam-subject-arrow,
 .exam-subject.glass-reference-card.selected .exam-subject-arrow{
-  transform:translateX(3px) scale(1.05);
-  background:linear-gradient(145deg,color-mix(in srgb,var(--card-accent) 36%,rgba(255,255,255,.09)),rgba(255,255,255,.04));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 0 24px color-mix(in srgb,var(--card-accent) 24%,transparent);
+  transform:translateX(2px) scale(1.04);
+  background:color-mix(in srgb,var(--card-accent) 28%,rgba(255,255,255,.055));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 18px color-mix(in srgb,var(--card-accent) 20%,transparent);
 }
 
 @media(max-width:980px){
-  .exam-subjects{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-  .exam-subject.glass-reference-card{aspect-ratio:1/1.04}
+  .exam-subjects{width:min(760px,100%)!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .exam-subject.glass-reference-card{height:370px!important}
 }
 
 @media(max-width:640px){
   body.center-body main{width:calc(100% - 20px)!important}
-  .exam-subjects{grid-template-columns:1fr!important;gap:14px!important}
-  .exam-subject.glass-reference-card{aspect-ratio:auto;min-height:420px!important;padding:20px!important;border-radius:24px!important}
-  .exam-subject .exam-subject-icon.neon-subject-icon{width:58%!important;max-width:none!important}
-  .exam-subject.glass-reference-card>strong{font-size:25px!important}
-  .exam-subject.glass-reference-card>p{font-size:14px!important}
+  .exam-subjects{width:min(390px,100%)!important;grid-template-columns:1fr!important;gap:14px!important}
+  .exam-subject.glass-reference-card{height:355px!important;min-height:355px!important;padding:16px!important;border-radius:21px!important;grid-template-rows:132px auto auto minmax(38px,1fr) auto}
+  .exam-subject .exam-subject-icon.neon-subject-icon.generated-crystal-art{width:154px!important;height:128px!important}
+  .exam-subject.glass-reference-card>strong{font-size:21px!important}
+  .exam-subject.glass-reference-card>p{font-size:12.5px!important}
 }
 
 @media(prefers-reduced-motion:reduce){
