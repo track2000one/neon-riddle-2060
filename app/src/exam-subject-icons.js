@@ -1,12 +1,19 @@
 import './exam-subject-icons.css';
+import './exam-subject-reference-art.css';
+import verbalArt from './assets/exam-subjects/qudurat-verbal.webp';
+import quantArt from './assets/exam-subjects/qudurat-quant.webp';
+import mathArt from './assets/exam-subjects/tahsili-math.webp';
+import physicsArt from './assets/exam-subjects/tahsili-physics.webp';
+import chemistryArt from './assets/exam-subjects/tahsili-chemistry.webp';
+import biologyArt from './assets/exam-subjects/tahsili-biology.webp';
 
 const SUBJECT_ART = {
-  'qudurat-verbal': '/assets/exam-subjects/qudurat-verbal.webp',
-  'qudurat-quant': '/assets/exam-subjects/qudurat-quant.webp',
-  'tahsili-math': '/assets/exam-subjects/tahsili-math.webp',
-  'tahsili-physics': '/assets/exam-subjects/tahsili-physics.webp',
-  'tahsili-chemistry': '/assets/exam-subjects/tahsili-chemistry.webp',
-  'tahsili-biology': '/assets/exam-subjects/tahsili-biology.webp'
+  'qudurat-verbal': verbalArt,
+  'qudurat-quant': quantArt,
+  'tahsili-math': mathArt,
+  'tahsili-physics': physicsArt,
+  'tahsili-chemistry': chemistryArt,
+  'tahsili-biology': biologyArt
 };
 
 const FAMILY_LABELS = {
