@@ -1,0 +1,31 @@
+.exam-subject .exam-subject-icon.neon-subject-icon.reference-subject-art{
+  width:210px;
+  height:190px;
+  border:0;
+  outline:0;
+  background:transparent;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  transform:none;
+  overflow:visible;
+}
+.exam-subject .exam-subject-icon.neon-subject-icon.reference-subject-art::before,
+.exam-subject .exam-subject-icon.neon-subject-icon.reference-subject-art::after{display:none}
+.exam-subject .exam-subject-icon.neon-subject-icon.reference-subject-art img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  filter:drop-shadow(0 16px 18px rgba(0,0,0,.28));
+  user-select:none;
+  pointer-events:none;
+}
+.exam-subject.glass-reference-card:hover .reference-subject-art,
+.exam-subject.glass-reference-card.selected .reference-subject-art{
+  transform:translateY(-5px) scale(1.035);
+  box-shadow:none;
+}
+@media(max-width:1180px){.exam-subject .exam-subject-icon.neon-subject-icon.reference-subject-art{width:180px;height:165px}}
+@media(max-width:920px){.exam-subject .exam-subject-icon.neon-subject-icon.reference-subject-art{width:165px;height:150px}}
+@media(max-width:620px){.exam-subject .exam-subject-icon.neon-subject-icon.reference-subject-art{width:150px;height:135px}}
