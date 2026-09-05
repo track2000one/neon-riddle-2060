@@ -1,4 +1,5 @@
 import './exam-skill-selector.js';
+import './exam-subject-icons.js';
 import { prepareModernExamRuntime } from './exam-modern-runtime.js';
 
 const initialParams = new URLSearchParams(location.search);
