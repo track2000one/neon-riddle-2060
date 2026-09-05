@@ -1,27 +1,99 @@
 import './exam-subject-icons.css';
 
 const ICONS = {
-  'tahsili-math': `<svg viewBox="0 0 96 96" role="img" aria-label="رياضيات"><path d="M17 76h62M22 76V23"/><rect x="31" y="57" width="10" height="19" rx="2"/><rect x="47" y="47" width="10" height="29" rx="2"/><rect x="63" y="34" width="10" height="42" rx="2"/><path d="M28 50c12-5 19-13 27-23 7 5 12 4 20-5"/><path d="M67 21h11v11"/></svg>`,
-  'tahsili-physics': `<svg viewBox="0 0 96 96" role="img" aria-label="فيزياء"><circle cx="48" cy="48" r="6"/><ellipse cx="48" cy="48" rx="34" ry="14"/><ellipse cx="48" cy="48" rx="34" ry="14" transform="rotate(60 48 48)"/><ellipse cx="48" cy="48" rx="34" ry="14" transform="rotate(120 48 48)"/><circle cx="77" cy="48" r="3.2"/><circle cx="31" cy="21" r="3.2"/><circle cx="31" cy="75" r="3.2"/></svg>`,
-  'tahsili-chemistry': `<svg viewBox="0 0 96 96" role="img" aria-label="كيمياء"><path d="M18 18h22M24 18v26L12 72a8 8 0 0 0 7 11h27a8 8 0 0 0 7-11L40 44V18"/><path d="M18 66h29M22 57h21"/><path d="M62 24l9-5 9 5v10l-9 5-9-5V24Z"/><circle cx="71" cy="29" r="2.5"/><path d="M70 39v12M60 56h23M64 56v19h15V56"/><path d="M67 65h9"/></svg>`,
-  'tahsili-biology': `<svg viewBox="0 0 96 96" role="img" aria-label="أحياء"><path d="M34 15c25 12 25 54 0 66M62 15c-25 12-25 54 0 66"/><path d="M35 25h26M30 36h36M30 60h36M35 71h26"/><path d="M66 18c12-4 19 2 16 14-12 3-19-3-16-14ZM12 54c14-3 22 4 18 18-14 2-22-5-18-18Z"/><path d="M26 62c-8 5-12 11-15 18M70 28c7 5 11 10 15 17"/></svg>`,
-  'qudurat-verbal': `<svg viewBox="0 0 96 96" role="img" aria-label="قدرات لفظية"><path d="M13 24c12-5 24-3 35 5v47c-11-8-23-10-35-5V24Z"/><path d="M83 24c-12-5-24-3-35 5v47c11-8 23-10 35-5V24Z"/><path d="M22 39c8-2 14 0 20 3M22 49c8-2 14 0 20 3M74 39c-8-2-14 0-20 3M74 49c-8-2-14 0-20 3"/><path d="M66 21c10-8 16-10 20-9-1 6-5 13-14 21l-9 4 3-16Z"/></svg>`,
-  'qudurat-quant': `<svg viewBox="0 0 96 96" role="img" aria-label="قدرات كمية"><path d="M16 18h26L28 31l14 13H16"/><path d="M51 18h12l7 14 8-24"/><path d="M15 70l12-20 12 20H15Z"/><path d="M51 54l12-7 12 7v14l-12 7-12-7V54Z"/><circle cx="77" cy="72" r="10"/><path d="M77 62v10l7 5"/></svg>`
+  'qudurat-verbal': `<svg viewBox="0 0 120 120" role="img" aria-label="القدرات اللفظية">
+    <path d="M18 36c15-7 29-5 42 5v55c-13-10-27-12-42-6V36Z"/>
+    <path d="M102 36c-15-7-29-5-42 5v55c13-10 27-12 42-6V36Z"/>
+    <path d="M29 52c9-3 17-1 24 3M29 64c9-3 17-1 24 3M91 52c-9-3-17-1-24 3M91 64c-9-3-17-1-24 3"/>
+    <path d="M80 29c13-11 21-14 27-12-2 9-8 18-19 28l-12 5 4-21Z"/>
+    <path d="M30 24h8M34 20v8M48 18l5 6M66 19h8M70 16v7"/>
+  </svg>`,
+  'tahsili-biology': `<svg viewBox="0 0 120 120" role="img" aria-label="أحياء التحصيلي">
+    <path d="M43 20c28 14 28 66 0 80M73 20c-28 14-28 66 0 80"/>
+    <path d="M45 32h26M39 46h38M39 72h38M45 86h26"/>
+    <path d="M80 22c15-5 24 3 20 18-15 4-24-4-20-18ZM20 64c17-4 27 5 22 22-17 3-27-6-22-22Z"/>
+    <path d="M35 75c-9 6-15 14-18 23M85 35c8 6 13 12 17 20"/>
+    <path d="M91 72h13M94 72v24M101 72v24M90 96h15M94 82h7"/>
+    <circle cx="96" cy="63" r="4"/>
+  </svg>`,
+  'tahsili-chemistry': `<svg viewBox="0 0 120 120" role="img" aria-label="كيمياء التحصيلي">
+    <path d="M18 22h28M26 22v31L13 88a10 10 0 0 0 9 14h31a10 10 0 0 0 9-14L46 53V22"/>
+    <path d="M20 82h36M25 71h26"/>
+    <circle cx="82" cy="38" r="7"/>
+    <ellipse cx="82" cy="38" rx="22" ry="9"/>
+    <ellipse cx="82" cy="38" rx="22" ry="9" transform="rotate(60 82 38)"/>
+    <ellipse cx="82" cy="38" rx="22" ry="9" transform="rotate(120 82 38)"/>
+    <path d="M83 61v13M72 78h24M75 78v23h18V78M79 90h10"/>
+  </svg>`,
+  'tahsili-math': `<svg viewBox="0 0 120 120" role="img" aria-label="رياضيات التحصيلي">
+    <path d="M18 22h31L32 39l17 17H18"/>
+    <path d="M60 24h14l8 16 11-28"/>
+    <path d="M19 91l14-24 14 24H19Z"/>
+    <path d="M56 72l15-9 15 9v18l-15 9-15-9V72Z"/>
+    <circle cx="99" cy="90" r="12"/>
+    <path d="M99 78v12l8 5"/>
+  </svg>`,
+  'tahsili-physics': `<svg viewBox="0 0 120 120" role="img" aria-label="فيزياء التحصيلي">
+    <circle cx="60" cy="60" r="8"/>
+    <ellipse cx="60" cy="60" rx="42" ry="17"/>
+    <ellipse cx="60" cy="60" rx="42" ry="17" transform="rotate(60 60 60)"/>
+    <ellipse cx="60" cy="60" rx="42" ry="17" transform="rotate(120 60 60)"/>
+    <circle cx="96" cy="60" r="4"/>
+    <circle cx="39" cy="27" r="4"/>
+    <circle cx="39" cy="93" r="4"/>
+  </svg>`,
+  'qudurat-quant': `<svg viewBox="0 0 120 120" role="img" aria-label="القدرات الكمية">
+    <path d="M18 51h12v26H18V51ZM36 40h12v37H36V40ZM54 27h12v50H54V27Z"/>
+    <path d="M17 31c13-2 23-7 33-17 7 5 14 5 23-4"/>
+    <path d="M66 10h9v9"/>
+    <text x="82" y="34" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="currentColor" stroke="none">1</text>
+    <text x="94" y="49" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="currentColor" stroke="none">2</text>
+    <text x="80" y="64" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="currentColor" stroke="none">3</text>
+    <rect x="16" y="85" width="34" height="25" rx="4"/>
+    <path d="M22 91h22M23 99h5M32 99h5M41 99h4M23 106h5M32 106h5M41 106h4"/>
+    <rect x="59" y="83" width="45" height="29" rx="4"/>
+    <path d="M67 91h29M67 98h29M67 105h29M76 88v6M87 95v6M72 102v6"/>
+  </svg>`
 };
+
+const FAMILY_LABELS = {
+  'qudurat-verbal': 'القدرات العامة',
+  'qudurat-quant': 'القدرات العامة',
+  'tahsili-math': 'التحصيلي',
+  'tahsili-physics': 'التحصيلي',
+  'tahsili-chemistry': 'التحصيلي',
+  'tahsili-biology': 'التحصيلي'
+};
+
+function ensureArrow(card) {
+  if (card.querySelector('.exam-subject-arrow')) return;
+  const arrow = document.createElement('span');
+  arrow.className = 'exam-subject-arrow';
+  arrow.setAttribute('aria-hidden', 'true');
+  arrow.innerHTML = `<svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>`;
+  card.append(arrow);
+}
 
 function enhanceCard(card) {
   const subject = card?.dataset?.subject;
   const icon = card?.querySelector?.('.exam-subject-icon');
-  if (!subject || !icon || icon.dataset.enhanced === 'true') return;
+  if (!subject || !icon) return;
   const markup = ICONS[subject];
   if (!markup) return;
 
-  icon.dataset.enhanced = 'true';
-  icon.dataset.iconSubject = subject;
-  icon.classList.add('neon-subject-icon');
-  icon.setAttribute('aria-hidden', 'true');
-  icon.innerHTML = markup;
-  card.classList.add('has-premium-subject-icon');
+  const family = card.querySelector('small');
+  if (family && FAMILY_LABELS[subject]) family.textContent = FAMILY_LABELS[subject];
+
+  if (icon.dataset.enhanced !== 'true') {
+    icon.dataset.enhanced = 'true';
+    icon.dataset.iconSubject = subject;
+    icon.classList.add('neon-subject-icon');
+    icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML = markup;
+  }
+
+  ensureArrow(card);
+  card.classList.add('has-premium-subject-icon', 'glass-reference-card');
 }
 
 function enhanceAll(root = document) {
